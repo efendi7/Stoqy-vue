@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use DB;
 
 class SupplierController extends Controller
 {
@@ -24,10 +25,17 @@ class SupplierController extends Controller
             'name' => 'required|string|max:255',
             'contact' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
-            
+            'email' => 'required|string|email|max:255',
         ]);
 
-        Supplier::create($request->all());
+        DB::table('suppliers')->insert([
+            'name' => $request->input('name'),
+            'contact' => $request->input('contact'),
+            'address' => $request->input('address'),
+            'email' => $request->input('email'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil ditambahkan!');
     }
@@ -48,6 +56,7 @@ class SupplierController extends Controller
             'name' => 'required|string|max:255',
             'contact' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
+            'email' => 'required|string|email|max:255',
         ]);
 
         $supplier->update($request->all());
@@ -60,6 +69,4 @@ class SupplierController extends Controller
         $supplier->delete();
         return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil dihapus!');
     }
-  
-
 }

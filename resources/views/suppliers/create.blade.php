@@ -17,6 +17,10 @@
             <label for="address" class="block text-sm font-medium text-gray-700">Alamat</label>
             <input type="text" name="address" class="mt-1 block w-full border border-gray-300 rounded-md p-2" id="address" value="{{ old('address') }}">
         </div>
+        <div class="mb-4">
+            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" name="email" class="mt-1 block w-full border border-gray-300 rounded-md p-2" id="email" value="{{ old('email') }}">
+        </div>
         <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Simpan</button>
     </form>
 </div>

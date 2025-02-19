@@ -33,7 +33,7 @@
                     <td class="py-3 px-4 text-center">
                         <div class="inline-flex gap-2">
                             <a href="{{ route('categories.edit', $category->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded hover:bg-yellow-600">Edit</a>
-                            <form action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus kategori ini?')">
+                            <form action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus kategori {{ $category->name }} ini?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded hover:bg-red-600">Hapus</button>
