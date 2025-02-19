@@ -6,8 +6,13 @@
     <form action="{{ route('product_attributes.store') }}" method="POST">
         @csrf
         <div class="mb-4">
-            <label for="product_id" class="block text-sm font-medium text-gray-700">ID Produk</label>
-            <input type="text" name="product_id" class="mt-1 block w-full border border-gray-300 rounded-md p-2" id="product_id" value="{{ old('product_id') }}" required>
+            <label for="product_id" class="block text-sm font-medium text-gray-700">Pilih Produk</label>
+            <select name="product_id" id="product_id" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+                <option value="">Pilih Produk</option>
+                @foreach ($products as $product)
+                    <option value="{{ $product->id }}">{{ $product->name }}</option>
+                @endforeach
+            </select>
         </div>
         <div class="mb-4">
             <label for="attribute_name" class="block text-sm font-medium text-gray-700">Nama Atribut</label>

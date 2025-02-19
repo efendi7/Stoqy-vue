@@ -53,4 +53,12 @@ class Product extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+
+    /**
+     * Get the attributes for the product.
+     */
+    public function attributes()
+    {
+        return $this->hasMany(ProductAttribute::class);
+    }
 }

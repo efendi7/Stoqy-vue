@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\ProductAttribute;
 use Illuminate\Http\Request;
 
@@ -15,7 +16,8 @@ class ProductAttributeController extends Controller
 
     public function create()
     {
-        return view('product_attributes.create');
+        $products = Product::all(); // Ambil semua produk
+        return view('product_attributes.create', compact('products'));
     }
 
     public function store(Request $request)
@@ -37,10 +39,9 @@ class ProductAttributeController extends Controller
     }
 
     public function show(ProductAttribute $productAttribute)
-{
-    return view('product_attributes.show', compact('productAttribute'));
-}
-
+    {
+        return view('product_attributes.show', compact('productAttribute'));
+    }
 
     public function update(Request $request, ProductAttribute $productAttribute)
     {

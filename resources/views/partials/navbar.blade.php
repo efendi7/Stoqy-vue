@@ -2,13 +2,14 @@
     <div class="container mx-auto">
         <div class="flex items-center justify-between">
             <div class="text-white font-bold">
-                <a href="{{ url('/') }}">My Laravel App</a>
+                <a href="{{ url('/') }}">Stockify</a>
             </div>
             <div class="flex items-center space-x-3">
                 <a href="{{ route('products.index') }}" class="text-gray-300 hover:text-white px-3">Products</a>
                 <a href="{{ route('categories.index') }}" class="text-gray-300 hover:text-white px-3">Categories</a>
                 <a href="{{ route('suppliers.index') }}" class="text-gray-300 hover:text-white px-3">Suppliers</a>
                 <a href="{{ route('product_attributes.index') }}" class="text-gray-300 hover:text-white px-3">Product Attributes</a>
+                <a href="{{ route('users.index') }}" class="text-gray-300 hover:text-white px-3">Users</a>
                 <button type="button" class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="user-dropdown" data-dropdown-placement="bottom">
                     <span class="sr-only">Open user menu</span>
                     <img class="w-8 h-8 rounded-full object-cover" src="{{ asset('img/logofenn.png') }}" alt="user photo">

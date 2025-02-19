@@ -24,6 +24,7 @@ class SupplierController extends Controller
             'name' => 'required|string|max:255',
             'contact' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
+            
         ]);
 
         Supplier::create($request->all());

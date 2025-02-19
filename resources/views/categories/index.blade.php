@@ -16,27 +16,29 @@
         </div>
     @endif
 
-    <a href="{{ route('categories.create') }}" class="bg-blue-500 text-white py-2 px-4 rounded">Tambah Kategori</a>
-    <table class="min-w-full leading-normal mt-4">
-        <thead>
+    <a href="{{ route('categories.create') }}" class="bg-blue-500 text-white py-2 px-4 rounded mb-4 inline-block">Tambah Kategori</a>
+    <table class="min-w-full bg-white rounded-lg shadow overflow-hidden">
+        <thead class="bg-gray-800 text-white">
             <tr>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama</th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Deskripsi</th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                <th class="py-3 px-4 text-left">Nama</th>
+                <th class="py-3 px-4 text-left">Deskripsi</th>
+                <th class="py-3 px-4 text-center">Aksi</th>
             </tr>
         </thead>
         <tbody>
             @foreach($categories as $category)
-                <tr>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $category->name ?? 'N/A' }}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $category->description ?? 'N/A' }}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                        <a href="{{ route('categories.edit', $category->id) }}" class="bg-yellow-500 text-white py-1 px-2 rounded">Edit</a>
-                        <form action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="bg-red-500 text-white py-1 px-2 rounded">Hapus</button>
-                        </form>
+                <tr class="border-b">
+                    <td class="py-3 px-4">{{ $category->name ?? 'N/A' }}</td>
+                    <td class="py-3 px-4">{{ $category->description ?? 'N/A' }}</td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="inline-flex gap-2">
+                            <a href="{{ route('categories.edit', $category->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded hover:bg-yellow-600">Edit</a>
+                            <form action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus kategori ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded hover:bg-red-600">Hapus</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             @endforeach

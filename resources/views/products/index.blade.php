@@ -16,37 +16,39 @@
         </div>
     @endif
 
-    <a href="{{ route('products.create') }}" class="bg-blue-500 text-white py-2 px-4 rounded">Tambah Produk</a>
-    <table class="min-w-full leading-normal mt-4">
-        <thead>
+    <a href="{{ route('products.create') }}" class="bg-blue-500 text-white py-2 px-4 rounded mb-4 inline-block">Tambah Produk</a>
+    <table class="min-w-full bg-white rounded-lg shadow overflow-hidden">
+        <thead class="bg-gray-800 text-white">
             <tr>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama</th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">SKU</th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kategori</th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Supplier</th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Harga Beli</th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Harga Jual</th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Stok</th> <!-- Perbaikan baris ini -->
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                <th class="py-3 px-4 text-left">Nama</th>
+                <th class="py-3 px-4 text-left">SKU</th>
+                <th class="py-3 px-4 text-left">Kategori</th>
+                <th class="py-3 px-4 text-left">Supplier</th>
+                <th class="py-3 px-4 text-left">Harga Beli</th>
+                <th class="py-3 px-4 text-left">Harga Jual</th>
+                <th class="py-3 px-4 text-left">Stok</th>
+                <th class="py-3 px-4 text-center">Aksi</th>
             </tr>
         </thead>
         <tbody>
             @foreach($products as $product)
-                <tr>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $product->name ?? 'N/A' }}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $product->sku ?? 'N/A' }}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $product->category->name ?? 'N/A' }}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $product->supplier->name ?? 'N/A' }}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $product->purchase_price ?? 'N/A' }}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $product->sale_price ?? 'N/A' }}</td> <!-- Perbaikan baris ini -->
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $product->stock ?? 'N/A' }}</td> <!-- Perbaikan baris ini -->
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                        <a href="{{ route('products.edit', $product->id) }}" class="bg-yellow-500 text-white py-1 px-2 rounded">Edit</a>
-                        <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="bg-red-500 text-white py-1 px-2 rounded">Hapus</button>
-                        </form>
+                <tr class="border-b">
+                    <td class="py-3 px-4">{{ $product->name ?? 'N/A' }}</td>
+                    <td class="py-3 px-4">{{ $product->sku ?? 'N/A' }}</td>
+                    <td class="py-3 px-4">{{ $product->category->name ?? 'N/A' }}</td>
+                    <td class="py-3 px-4">{{ $product->supplier->name ?? 'N/A' }}</td>
+                    <td class="py-3 px-4">{{ $product->purchase_price ?? 'N/A' }}</td>
+                    <td class="py-3 px-4">{{ $product->sale_price ?? 'N/A' }}</td>
+                    <td class="py-3 px-4">{{ $product->stock ?? 'N/A' }}</td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="inline-flex gap-2">
+                            <a href="{{ route('products.edit', $product->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded hover:bg-yellow-600">Edit</a>
+                            <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded hover:bg-red-600">Hapus</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             @endforeach
