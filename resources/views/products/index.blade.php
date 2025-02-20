@@ -42,6 +42,7 @@
                     <td class="py-3 px-4">{{ $product->stock ?? 'N/A' }}</td>
                     <td class="py-3 px-4 text-center">
                         <div class="inline-flex gap-2">
+                            <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded hover:bg-blue-600">Detail</a>
                             <a href="{{ route('products.edit', $product->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded hover:bg-yellow-600">Edit</a>
                             <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
                                 @csrf

@@ -10,6 +10,7 @@
                 <a href="{{ route('suppliers.index') }}" class="text-gray-300 hover:text-white px-3">Suppliers</a>
                 <a href="{{ route('product_attributes.index') }}" class="text-gray-300 hover:text-white px-3">Product Attributes</a>
                 <a href="{{ route('users.index') }}" class="text-gray-300 hover:text-white px-3">Users</a>
+                <a href="{{ route('stock_transactions.index') }}" class="text-gray-300 hover:text-white px-3">Stock Transactions</a> <!-- Tautan baru untuk Transaksi Stok -->
                 <button type="button" class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="user-dropdown" data-dropdown-placement="bottom">
                     <span class="sr-only">Open user menu</span>
                     <img class="w-8 h-8 rounded-full object-cover" src="{{ asset('img/logofenn.png') }}" alt="user photo">

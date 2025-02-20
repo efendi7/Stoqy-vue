@@ -68,4 +68,12 @@ class ProductController extends Controller
         $product->delete();
         return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
     }
+
+    public function show($id)
+    {
+        $product = Product::with('category', 'supplier', 'attributes')->findOrFail($id);
+        return view('products.show', compact('product'));
+    }
+    
+
 }
