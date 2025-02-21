@@ -52,12 +52,14 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
+            'role' => 'required|in:admin,manager,staff', // Perbaiki validasi role // Pastikan role di-validasi
         ]);
 
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
             'password' => $request->password ? Hash::make($request->password) : $user->password,
+            'role' => $request->role, // Pastikan role diupdate
         ]);
 
         return redirect()->route('users.index')->with('success', 'Pengguna berhasil diperbarui!');

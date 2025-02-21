@@ -10,8 +10,11 @@ use Illuminate\Http\Request;
 class StockTransactionController extends Controller
 {
     public function index()
-    {
-        $transactions = StockTransaction::with('product', 'user')->get();
+{
+    $transactions = StockTransaction::with('product', 'user')->get()->map(function ($transaction) {
+        $transaction->type = $transaction->type === 'Masuk' ? 'in' : 'out';
+        return $transaction;
+    });
         return view('stock_transactions.index', compact('transactions'));
     }
 

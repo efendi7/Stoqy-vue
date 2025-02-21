@@ -39,15 +39,14 @@
             <label for="type" class="block text-sm font-medium text-gray-700">Tipe Transaksi</label>
             <select name="type" id="type" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
                 <option value="">Pilih Tipe</option>
-                <option value="Masuk">Masuk</option>
-                <option value="Keluar">Keluar</option>
+                <option value="Masuk" {{ old('type') == 'Masuk' ? 'selected' : '' }}>Masuk</option>
+                <option value="Keluar" {{ old('type') == 'Keluar' ? 'selected' : '' }}>Keluar</option>
             </select>
         </div>
         <div class="mb-4">
             <label for="quantity" class="block text-sm font-medium text-gray-700">Jumlah</label>
             <input type="number" name="quantity" id="quantity" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
         </div>
-        <!-- Tambahkan kolom tanggal transaksi di sini -->
         <div class="mb-4">
             <label for="transaction_date" class="block text-sm font-medium text-gray-700">Tanggal Transaksi</label>
             <input type="date" name="transaction_date" id="transaction_date" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>

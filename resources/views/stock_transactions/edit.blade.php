@@ -2,7 +2,19 @@
 
 @section('content')
 <div class="container mx-auto px-4">
-    <h1 class="text-2xl font-bold my-4">Update Transaksi Stok</h1>
+    <h1 class="text-2xl font-bold my-4">Edit Transaksi Stok</h1>
+
+    <!-- Tambahkan pesan error di sini -->
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form action="{{ route('stock_transactions.update', $transaction->id) }}" method="POST">
         @csrf
         @method('PUT')
@@ -26,10 +38,21 @@
         </div>
         <div class="mb-4">
             <label for="type" class="block text-sm font-medium text-gray-700">Tipe Transaksi</label>
-            <select name="type" id="type" class="mt1 block w-full border border-gray-300 rounded-md p-2" required>
+            <select name="type" id="type" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
                 <option value="">Pilih Tipe</option>
-                <option value="in" {{ $transaction->type == 'in' ? 'selected' : '' }}>Masuk</option>
-                <option value="out" {{ $transaction->type == 'out' ? 'selected' : '' }}>Keluar</option>
+                <option value="Masuk" {{ $transaction->type == 'Masuk' ? 'selected' : '' }}>Masuk</option>
+                <option value="Keluar" {{ $transaction->type == 'Keluar' ? 'selected' : '' }}>Keluar</option>
             </select>
         </div>
-        <div
+        <div class="mb-4">
+            <label for="quantity" class="block text-sm font-medium text-gray-700">Jumlah</label>
+            <input type="number" name="quantity" id="quantity" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required value="{{ $transaction->quantity }}">
+        </div>
+        <div class="mb-4">
+            <label for="transaction_date" class="block text-sm font-medium text-gray-700">Tanggal Transaksi</label>
+            <input type="date" name="transaction_date" id="transaction_date" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required value="{{ $transaction->transaction_date }}">
+        </div>
+        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Simpan</button>
+    </form>
+</div>
+@endsection

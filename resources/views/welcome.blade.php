@@ -53,9 +53,10 @@
                 <p class="text-slate-300 text-lg mb-6" style="font-family: 'CentraNo2-Book', sans-serif;">
                     Stockify adalah aplikasi web yang dirancang untuk membantu bisnis, khususnya yang memiliki gudang, dalam mengelola stok barang secara efisien dan akurat.
                 </p>
-                <a href="{{ route('products.index') }}" class="inline-block bg-blue-500 text-white py-3 px-6 rounded-full shadow-neumorphism focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out transform hover:scale-105">
-                    Ayo Kelola Stok Barangmu
-                </a>
+                <a href="{{ route('login') }}" class="inline-block bg-blue-500 text-white py-3 px-6 rounded-full shadow-neumorphism focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out transform hover:scale-105">
+    Ayo Kelola Stok Barangmu
+</a>
+
             </div>
             <div class="flex-1 mt-8 md:mt-0 md:w-5/12 flex justify-center md:justify-end">
                 <img src="{{ asset('img/Ordering Groceries Online.png') }}" alt="Header illustration of a developer" class="animation-updown w-full h-auto max-w-lg" />
