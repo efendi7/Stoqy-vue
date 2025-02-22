@@ -1,4 +1,4 @@
-<nav class="bg-gradient-to-r from-[rgb(47,32,95)] to-purple-600 p-4">
+<nav class="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-[rgb(47,32,95)] to-purple-600 p-4">
     <div class="container mx-auto">
         <div class="flex items-center justify-between">
             <div class="text-white font-bold">
@@ -77,6 +77,3 @@
         </div>
     </div>
 </nav>
-
-<script src="https://unpkg.com/flowbite@1.4.0/dist/flowbite.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">

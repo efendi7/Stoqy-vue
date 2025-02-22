@@ -29,23 +29,16 @@ class ProductController extends Controller
             'sku' => 'required|string|unique:products,sku',
             'category_id' => 'required|exists:categories,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
-            'purchase_price' => 'required|numeric',
-            'sale_price' => 'required|numeric',
-            'stock' => 'required|integer',
+            'purchase_price' => 'required|numeric|min:0',
+            'sale_price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
         ]);
-
+    
         Product::create($request->all());
-
+    
         return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
     }
-
-    public function edit(Product $product)
-    {
-        $categories = Category::all();
-        $suppliers = Supplier::all();
-        return view('products.edit', compact('product', 'categories', 'suppliers'));
-    }
-
+    
     public function update(Request $request, Product $product)
     {
         $request->validate([
@@ -53,16 +46,16 @@ class ProductController extends Controller
             'sku' => 'required|string|unique:products,sku,' . $product->id,
             'category_id' => 'required|exists:categories,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
-            'purchase_price' => 'required|numeric',
-            'sale_price' => 'required|numeric',
-            'stock' => 'required|integer',
+            'purchase_price' => 'required|numeric|min:0',
+            'sale_price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
         ]);
-
+    
         $product->update($request->all());
-
+    
         return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui!');
     }
-
+    
     public function destroy(Product $product)
     {
         $product->delete();
