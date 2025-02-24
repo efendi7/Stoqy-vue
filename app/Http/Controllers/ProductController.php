@@ -3,22 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\Category;
-use App\Models\Supplier;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    protected $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
     public function index()
     {
-        $products = Product::with('category', 'supplier')->paginate(10);
+        $products = $this->productService->getAllProducts();
         return view('products.index', compact('products'));
     }
 
     public function create()
     {
-        $categories = Category::all();
-        $suppliers = Supplier::all();
+        $categories = $this->productService->getCategories();
+        $suppliers = $this->productService->getSuppliers();
         return view('products.create', compact('categories', 'suppliers'));
     }
 
@@ -29,16 +34,23 @@ class ProductController extends Controller
             'sku' => 'required|string|unique:products,sku',
             'category_id' => 'required|exists:categories,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
-            'purchase_price' => 'required|numeric|min:0',
-            'sale_price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'purchase_price' => 'nullable|numeric',
+            'sale_price' => 'nullable|numeric',
+            'stock' => 'required|integer',
         ]);
-    
-        Product::create($request->all());
-    
+
+        $this->productService->createProduct($request->all());
+
         return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
     }
-    
+
+    public function edit(Product $product)
+    {
+        $categories = $this->productService->getCategories();
+        $suppliers = $this->productService->getSuppliers();
+        return view('products.edit', compact('product', 'categories', 'suppliers'));
+    }
+
     public function update(Request $request, Product $product)
     {
         $request->validate([
@@ -46,25 +58,25 @@ class ProductController extends Controller
             'sku' => 'required|string|unique:products,sku,' . $product->id,
             'category_id' => 'required|exists:categories,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
-            'purchase_price' => 'required|numeric|min:0',
-            'sale_price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'purchase_price' => 'nullable|numeric',
+            'sale_price' => 'nullable|numeric',
+            'stock' => 'required|integer',
         ]);
-    
-        $product->update($request->all());
-    
+
+        $this->productService->updateProduct($product->id, $request->all());
+
         return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui!');
     }
     
     public function destroy(Product $product)
     {
-        $product->delete();
+        $this->productService->deleteProduct($product->id);
         return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
     }
 
     public function show($id)
     {
-        $product = Product::with('category', 'supplier', 'attributes')->findOrFail($id);
+        $product = $this->productService->getProductById($id);
         return view('products.show', compact('product'));
     }
     

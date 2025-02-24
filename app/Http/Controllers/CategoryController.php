@@ -3,13 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Services\CategoryService;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    protected $categoryService;
+
+    public function __construct(CategoryService $categoryService)
+    {
+        $this->categoryService = $categoryService;
+    }
+
     public function index()
     {
-        $categories = Category::all();
+        $categories = $this->categoryService->getAllCategories();
         return view('categories.index', compact('categories'));
     }
 
@@ -25,7 +33,7 @@ class CategoryController extends Controller
             'description' => 'nullable|string',  // Validasi deskripsi
         ]);
 
-        Category::create($request->all());
+        $this->categoryService->createCategory($request->all());
 
         return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
     }
@@ -42,14 +50,14 @@ class CategoryController extends Controller
             'description' => 'nullable|string',  // Validasi deskripsi
         ]);
 
-        $category->update($request->all());
+        $this->categoryService->updateCategory($category->id, $request->all());
 
         return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui!');
     }
 
     public function destroy(Category $category)
     {
-        $category->delete();
+        $this->categoryService->deleteCategory($category->id);
         return redirect()->route('categories.index')->with('success', 'Kategori berhasil dihapus!');
     }
 }

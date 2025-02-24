@@ -16,7 +16,16 @@
         </div>
     @endif
 
-    <a href="{{ route('stock_transactions.create') }}" class="bg-blue-500 text-white py-2 px-4 rounded mb-4 inline-block">Tambah Transaksi</a>
+    <div class="flex gap-2 mb-4">
+        <a href="{{ route('stock_transactions.create') }}" class="bg-blue-500 text-white py-2 px-4 rounded">Tambah Transaksi</a>
+        <a href="{{ route('stock_transactions.opname') }}" class="bg-green-500 text-white py-2 px-4 rounded">Stock Opname</a>
+        <a href="#" class="bg-purple-500 text-white py-2 px-4 rounded" onclick="event.preventDefault(); document.getElementById('minimum-stock-form').submit();">Pengaturan Stok Minimum</a>
+    </div>
+
+    <form id="minimum-stock-form" action="{{ route('stock_transactions.set_minimum_stock') }}" method="POST" class="hidden">
+        @csrf
+    </form>
+
     <div class="overflow-x-auto">
         <table class="min-w-full bg-white rounded-lg shadow overflow-hidden">
             <thead class="bg-gray-800 text-white">

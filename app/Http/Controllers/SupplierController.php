@@ -3,14 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Supplier;
+use App\Services\SupplierService;
 use Illuminate\Http\Request;
-use DB;
 
 class SupplierController extends Controller
 {
+    protected $supplierService;
+
+    public function __construct(SupplierService $supplierService)
+    {
+        $this->supplierService = $supplierService;
+    }
+
     public function index()
     {
-        $suppliers = Supplier::all();
+        $suppliers = $this->supplierService->getAllSuppliers();
         return view('suppliers.index', compact('suppliers'));
     }
 
@@ -28,14 +35,7 @@ class SupplierController extends Controller
             'email' => 'required|string|email|max:255',
         ]);
 
-        DB::table('suppliers')->insert([
-            'name' => $request->input('name'),
-            'contact' => $request->input('contact'),
-            'address' => $request->input('address'),
-            'email' => $request->input('email'),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $this->supplierService->createSupplier($request->all());
 
         return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil ditambahkan!');
     }
@@ -59,14 +59,14 @@ class SupplierController extends Controller
             'email' => 'required|string|email|max:255',
         ]);
 
-        $supplier->update($request->all());
+        $this->supplierService->updateSupplier($supplier->id, $request->all());
 
         return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil diperbarui!');
     }
 
     public function destroy(Supplier $supplier)
     {
-        $supplier->delete();
+        $this->supplierService->deleteSupplier($supplier->id);
         return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil dihapus!');
     }
 }

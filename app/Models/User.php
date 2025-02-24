@@ -34,6 +34,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(StockTransaction::class, 'user_id', 'id');
     }
 
+    // Definisikan relasi dengan activity_logs
+    public function activities(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
     // Soft delete cascading
     protected static function boot()
     {

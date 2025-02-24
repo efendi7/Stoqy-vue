@@ -14,6 +14,7 @@ class StockTransaction extends Model
         'user_id',
         'type',
         'quantity',
+        'minimum_stock',
         'status',
         'notes',
         'transaction_date' // Pastikan menggunakan snake_case

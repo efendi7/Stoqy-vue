@@ -2,21 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\ProductAttribute;
+use App\Services\ProductAttributeService;
 use Illuminate\Http\Request;
 
 class ProductAttributeController extends Controller
 {
+    protected $productAttributeService;
+
+    public function __construct(ProductAttributeService $productAttributeService)
+    {
+        $this->productAttributeService = $productAttributeService;
+    }
+
     public function index()
     {
-        $productAttributes = ProductAttribute::all();
+        $productAttributes = $this->productAttributeService->getAllProductAttributes();
         return view('product_attributes.index', compact('productAttributes'));
     }
 
     public function create()
     {
-        $products = Product::all(); // Ambil semua produk
+        $products = $this->productAttributeService->getAllProducts();
         return view('product_attributes.create', compact('products'));
     }
 
@@ -28,7 +35,7 @@ class ProductAttributeController extends Controller
             'attribute_value' => 'required|string|max:255',
         ]);
 
-        ProductAttribute::create($request->all());
+        $this->productAttributeService->createProductAttribute($request->all());
 
         return redirect()->route('product_attributes.index')->with('success', 'Atribut produk berhasil ditambahkan!');
     }
@@ -51,14 +58,14 @@ class ProductAttributeController extends Controller
             'attribute_value' => 'required|string|max:255',
         ]);
 
-        $productAttribute->update($request->all());
+        $this->productAttributeService->updateProductAttribute($productAttribute->id, $request->all());
 
         return redirect()->route('product_attributes.index')->with('success', 'Atribut produk berhasil diperbarui!');
     }
 
     public function destroy(ProductAttribute $productAttribute)
     {
-        $productAttribute->delete();
+        $this->productAttributeService->deleteProductAttribute($productAttribute->id);
         return redirect()->route('product_attributes.index')->with('success', 'Atribut produk berhasil dihapus!');
     }
 }

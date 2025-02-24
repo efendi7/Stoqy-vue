@@ -4,10 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\StockTransactionController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ProductAttributeController;
 use App\Http\Controllers\ContactController;
-use App\Http\Controllers\StockTransactionController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 
@@ -41,4 +41,10 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('product_attributes', ProductAttributeController::class);
     Route::post('/contact-submit', [ContactController::class, 'submit'])->name('contact.submit');
     Route::resource('stock_transactions', StockTransactionController::class);
+Route::get('/stock_opname', [StockTransactionController::class, 'stockOpname'])->name('stock_transactions.opname');
+Route::post('/set_minimum_stock', [StockTransactionController::class, 'setMinimumStock'])->name('stock_transactions.set_minimum_stock');
+    
+    // User activity routes
+    Route::get('/users/{user}/activity', [UserController::class, 'activity'])->name('users.activity');
+    Route::get('/activity-logs', [UserController::class, 'allActivities'])->name('activity.logs')->middleware('role:admin');
 });

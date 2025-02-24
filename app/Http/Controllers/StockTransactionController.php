@@ -2,20 +2,45 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StockTransaction;
+use App\Services\StockTransactionService;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class StockTransactionController extends Controller
 {
+    protected $stockTransactionService;
+
+    public function __construct(StockTransactionService $stockTransactionService)
+    {
+        $this->stockTransactionService = $stockTransactionService;
+    }
+
     public function index()
-{
-    $transactions = StockTransaction::with('product', 'user')->get()->map(function ($transaction) {
-        $transaction->type = $transaction->type === 'Masuk' ? 'in' : 'out';
-        return $transaction;
-    });
+    {
+        $transactions = $this->stockTransactionService->getAllTransactions();
         return view('stock_transactions.index', compact('transactions'));
+    }
+
+    public function stockOpname()
+    {
+        $products = Product::all();
+        return view('stock_transactions.opname', compact('products'));
+    }
+
+    public function setMinimumStock(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'minimum_stock' => 'required|integer|min:0'
+        ]);
+
+        $product = Product::find($request->product_id);
+        $product->minimum_stock = $request->minimum_stock;
+        $product->save();
+
+        return redirect()->route('stock_transactions.index')
+            ->with('success', 'Stok minimum berhasil diatur!');
     }
 
     public function create()
@@ -43,25 +68,13 @@ class StockTransactionController extends Controller
         // Log the transaction date
         \Log::info('Tanggal Transaksi: ', ['transaction_date' => $transactionDate]);
 
-        // Buat transaksi baru dengan menyertakan transaction_date
-        $transaction = StockTransaction::create([
+        $this->stockTransactionService->createTransaction([
             'product_id' => $request->product_id,
             'user_id' => $request->user_id,
             'type' => $request->type,
             'quantity' => $request->quantity,
             'transaction_date' => $transactionDate
         ]);
-
-        // Update stok produk
-        $product = Product::find($request->product_id);
-        if ($request->type == 'Masuk') {
-            $product->stock += $request->quantity;
-        } else {
-            $product->stock -= $request->quantity;
-        }
-        $product->save();
-
-        \Log::info('Transaksi stok berhasil dicatat: ', $transaction->toArray());
 
         return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dicatat!');
     }
@@ -85,16 +98,7 @@ class StockTransactionController extends Controller
         ]);
 
         $transaction = StockTransaction::find($id);
-        $transaction->update($request->all());
-
-        // Update stok produk
-        $product = Product::find($request->product_id);
-        if ($request->type == 'Masuk') {
-            $product->stock += $request->quantity;
-        } else {
-            $product->stock -= $request->quantity;
-        }
-        $product->save();
+        $this->stockTransactionService->updateTransaction($transaction->id, $request->all());
 
         return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil diperbarui!');
     }
@@ -102,17 +106,7 @@ class StockTransactionController extends Controller
     public function destroy($id)
     {
         $transaction = StockTransaction::find($id);
-        
-        // Update stock before deleting transaction
-        $product = Product::find($transaction->product_id);
-        if ($transaction->type == 'Masuk') {
-            $product->stock -= $transaction->quantity;
-        } else {
-            $product->stock += $transaction->quantity;
-        }
-        $product->save();
-
-        $transaction->delete();
+        $this->stockTransactionService->deleteTransaction($transaction->id);
 
         return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dihapus!');
     }
