@@ -2,22 +2,33 @@
 
 namespace App\Services;
 
-use App\Interfaces\ProductAttributeRepositoryInterface;
-use Illuminate\Support\Collection;
+use App\Interfaces\{ProductAttributeRepositoryInterface, ProductRepositoryInterface};
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductAttributeService
 {
     protected $productAttributeRepository;
+    protected $productRepository;
 
-    public function __construct(ProductAttributeRepositoryInterface $productAttributeRepository)
+    public function __construct(ProductAttributeRepositoryInterface $productAttributeRepository, ProductRepositoryInterface $productRepository)
     {
         $this->productAttributeRepository = $productAttributeRepository;
+        $this->productRepository = $productRepository;
     }
 
-
-    public function getAllProductAttributes(): Collection
+    public function getAllProductAttributes(): LengthAwarePaginator
     {
         return $this->productAttributeRepository->getAllProductAttributes();
+    }
+
+    public function getAllProducts(): LengthAwarePaginator
+    {
+        return $this->productRepository->getAllProducts();
+    }
+
+    public function findProductAttributeById($id)
+    {
+        return $this->productAttributeRepository->getProductAttributeById($id);
     }
 
     public function createProductAttribute(array $data)
@@ -34,10 +45,4 @@ class ProductAttributeService
     {
         return $this->productAttributeRepository->deleteProductAttribute($productAttributeId);
     }
-
-    public function getAllProducts(): Collection
-    {
-        return $this->productAttributeRepository->getAllProducts();
-    }
-
 }

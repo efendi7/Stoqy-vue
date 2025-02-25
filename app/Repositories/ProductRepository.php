@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Supplier;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ProductRepository implements ProductRepositoryInterface
 {
@@ -15,9 +16,9 @@ class ProductRepository implements ProductRepositoryInterface
         return Product::with('category', 'supplier')->paginate(10);
     }
 
-    public function getProductById($id): Product
+    public function getProductById($id): ?Product
     {
-        return Product::with('category', 'supplier')->findOrFail($id);
+        return Product::with('category', 'supplier')->find($id);
     }
 
     public function createProduct(array $data): Product
@@ -27,22 +28,27 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function updateProduct($id, array $data): bool
     {
-        $product = Product::findOrFail($id);
+        $product = Product::find($id);
+        
+        if (!$product) {
+            return false;
+        }
+        
         return $product->update($data);
     }
 
     public function deleteProduct($id): bool
     {
-        return Product::destroy($id);
+        return Product::destroy($id) > 0;
     }
 
     public function getCategories()
     {
-        return Category::all();
+        return Category::select('id', 'name')->get();
     }
 
     public function getSuppliers()
     {
-        return Supplier::all();
+        return Supplier::select('id', 'name')->get();
     }
 }

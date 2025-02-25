@@ -85,6 +85,13 @@
                     value="{{ old('stock') }}" min="0" required>
             </div>
 
+            <div>
+    <label for="minimum_stock" class="block text-sm font-medium text-white">Minimum Stok</label>
+    <input type="number" name="minimum_stock" id="minimum_stock" 
+        class="w-full mt-1 p-2 rounded-lg bg-opacity-80 border border-gray-500 text-white focus:ring-2 focus:ring-blue-500 transition-all" 
+        value="{{ old('minimum_stock', 5) }}" min="0" required>
+</div>
+
             <button type="submit" 
                 class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105">Simpan</button>
         </form>

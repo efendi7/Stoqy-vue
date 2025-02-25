@@ -51,6 +51,7 @@
                         <td class="py-3 px-4">{{ number_format($product->sale_price, 0, ',', '.') }}</td>
                         <td class="py-3 px-4">{{ $product->stock ?? 0 }}</td>
                         <td class="py-3 px-4 text-center">
+                            @csrf
                             <div class="inline-flex gap-2">
                                 <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 transition-all">Detail</a>
                                 <a href="{{ route('products.edit', $product->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 transition-all">Edit</a>

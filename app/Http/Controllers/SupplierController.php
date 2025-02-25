@@ -28,16 +28,19 @@ class SupplierController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'contact' => 'nullable|string|max:255|unique:suppliers',
-            'address' => 'nullable|string|max:255',
-            'email' => 'required|string|email|max:255',
+            'contact' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'email' => 'required|email|max:255', 
         ]);
 
-        $this->supplierService->createSupplier($request->all());
+        // Simpan dan kembalikan objek Supplier
+        $supplier = $this->supplierService->createSupplier($validated);
 
-        return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil ditambahkan!')->with('supplier', $supplier);
+        return redirect()->route('suppliers.index')
+            ->with('success', 'Supplier berhasil ditambahkan!')
+            ->with('supplier', $supplier);
     }
 
     public function edit(Supplier $supplier)
@@ -61,7 +64,8 @@ class SupplierController extends Controller
 
         $this->supplierService->updateSupplier($supplier->id, $request->all());
 
-        return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil diperbarui!');
+        return redirect()->route('suppliers.index')
+            ->with('success', 'Supplier berhasil diperbarui!');
     }
 
     public function destroy(Supplier $supplier)

@@ -25,9 +25,15 @@ class ProductService
     }
 
     public function createProduct(array $data): Product
-    {
-        return $this->productRepository->createProduct($data);
-    }
+{
+    \Log::info('ProductService: Meneruskan data ke repository', ['data' => $data]);
+
+    $product = $this->productRepository->createProduct($data);
+
+    \Log::info('ProductService: Produk berhasil dibuat', ['product' => $product]);
+
+    return $product;
+}
 
     public function updateProduct($id, array $data): bool
     {

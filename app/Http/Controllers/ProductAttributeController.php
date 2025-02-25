@@ -17,17 +17,21 @@ class ProductAttributeController extends Controller
 
     public function index()
     {
-        $attributes = $this->productAttributeService->getAllAttributes();
-        return view('product_attributes.index', compact('attributes'));
+        $attributes = $this->productAttributeService->getAllProductAttributes();
+    return view('product_attributes.index', ['productAttributes' => $attributes]);
+
     }
 
     public function create()
     {
-        return view('product_attributes.create');
+        $products = $this->productAttributeService->getAllProducts();
+        return view('product_attributes.create', compact('products'));
     }
 
     public function store(Request $request)
+    
     {
+        \Log::info('Store method hit', ['request' => $request->all()]); // Cek apakah method terpanggil
         $request->validate([
             'name' => 'required|string|max:255',
             'value' => 'required|string|max:255',

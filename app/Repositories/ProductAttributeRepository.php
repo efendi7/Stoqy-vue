@@ -9,7 +9,7 @@ class ProductAttributeRepository implements ProductAttributeRepositoryInterface
 {
     public function getAllProductAttributes()
     {
-        return ProductAttribute::all();
+        return ProductAttribute::paginate(10);
     }
 
     public function getProductAttributeById($productAttributeId)
