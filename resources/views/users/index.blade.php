@@ -22,6 +22,7 @@
                     <td class="py-3 px-4">{{ ucfirst($user->role) }}</td> <!-- Tampilkan Role -->
                     <td class="py-3 px-4 text-center">
                         <div class="inline-flex gap-2">
+                            <a href="{{ route('users.activity', $user->id) }}" class="bg-green-500 text-white py-1 px-4 rounded hover:bg-green-600">Aktivitas</a>
                             <a href="{{ route('users.edit', $user->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded hover:bg-yellow-600">Edit</a>
                             <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus pengguna ini?')">
                                 @csrf

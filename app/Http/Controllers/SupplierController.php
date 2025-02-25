@@ -30,14 +30,14 @@ class SupplierController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'contact' => 'nullable|string|max:255',
+            'contact' => 'nullable|string|max:255|unique:suppliers',
             'address' => 'nullable|string|max:255',
             'email' => 'required|string|email|max:255',
         ]);
 
         $this->supplierService->createSupplier($request->all());
 
-        return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil ditambahkan!');
+        return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil ditambahkan!')->with('supplier', $supplier);
     }
 
     public function edit(Supplier $supplier)

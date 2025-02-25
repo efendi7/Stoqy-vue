@@ -2,56 +2,48 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\UserService; // Import UserService
 use App\Services\StockTransactionService;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\StockTransaction;
 use Illuminate\Http\Request;
 
 class StockTransactionController extends Controller
 {
     protected $stockTransactionService;
+    protected $userService;
 
-    public function __construct(StockTransactionService $stockTransactionService)
+    public function __construct(StockTransactionService $stockTransactionService, UserService $userService)
     {
         $this->stockTransactionService = $stockTransactionService;
+        $this->userService = $userService;
     }
 
     public function index()
     {
         $transactions = $this->stockTransactionService->getAllTransactions();
-        return view('stock_transactions.index', compact('transactions'));
-    }
-
-    public function stockOpname()
-    {
-        $products = Product::all();
-        return view('stock_transactions.opname', compact('products'));
-    }
-
-    public function setMinimumStock(Request $request)
-    {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'minimum_stock' => 'required|integer|min:0'
-        ]);
-
-        $product = Product::find($request->product_id);
-        $product->minimum_stock = $request->minimum_stock;
-        $product->save();
-
-        return redirect()->route('stock_transactions.index')
-            ->with('success', 'Stok minimum berhasil diatur!');
+        $userRole = $this->userService->getUserRole(auth()->id()); // Get user role
+        return view('stock_transactions.index', compact('transactions', 'userRole'));
     }
 
     public function create()
     {
         $products = Product::all();
         $users = User::all();
-        return view('stock_transactions.create', compact('products', 'users'));
+        $userRole = $this->userService->getUserRole(auth()->id()); // Get user role
+        return view('stock_transactions.create', compact('products', 'users', 'userRole'));
     }
 
     public function store(Request $request)
     {
+        $userRole = $this->userService->getUserRole(auth()->id()); // Get user role
+        
+        if (!in_array($userRole, ['Admin', 'Manajer Gudang'])) {
+            return redirect()->route('stock_transactions.index')
+                ->with('error', 'Anda tidak memiliki izin untuk membuat transaksi stok.');
+        }
+
         \Log::info('Data yang diterima di metode store: ', $request->all());
 
         $request->validate([
@@ -62,19 +54,7 @@ class StockTransactionController extends Controller
             'transaction_date' => 'nullable|date',
         ]);
 
-        // Gunakan current date jika transaction_date tidak disertakan
-        $transactionDate = $request->transaction_date ?? date('Y-m-d');
-
-        // Log the transaction date
-        \Log::info('Tanggal Transaksi: ', ['transaction_date' => $transactionDate]);
-
-        $this->stockTransactionService->createTransaction([
-            'product_id' => $request->product_id,
-            'user_id' => $request->user_id,
-            'type' => $request->type,
-            'quantity' => $request->quantity,
-            'transaction_date' => $transactionDate
-        ]);
+        $this->stockTransactionService->createTransaction($request->all());
 
         return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dicatat!');
     }
@@ -84,11 +64,19 @@ class StockTransactionController extends Controller
         $transaction = StockTransaction::find($id);
         $products = Product::all();
         $users = User::all();
-        return view('stock_transactions.edit', compact('transaction', 'products', 'users'));
+        $userRole = $this->userService->getUserRole(auth()->id()); // Get user role
+        return view('stock_transactions.edit', compact('transaction', 'products', 'users', 'userRole'));
     }
 
     public function update(Request $request, $id)
     {
+        $userRole = $this->userService->getUserRole(auth()->id()); // Get user role
+        
+        if (!in_array($userRole, ['Admin', 'Manajer Gudang'])) {
+            return redirect()->route('stock_transactions.index')
+                ->with('error', 'Anda tidak memiliki izin untuk memperbarui transaksi stok.');
+        }
+
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'user_id' => 'required|exists:users,id',
@@ -97,17 +85,14 @@ class StockTransactionController extends Controller
             'transaction_date' => 'required|date',
         ]);
 
-        $transaction = StockTransaction::find($id);
-        $this->stockTransactionService->updateTransaction($transaction->id, $request->all());
+        $this->stockTransactionService->updateTransaction($id, $request->all());
 
         return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil diperbarui!');
     }
 
     public function destroy($id)
     {
-        $transaction = StockTransaction::find($id);
-        $this->stockTransactionService->deleteTransaction($transaction->id);
-
+        $this->stockTransactionService->deleteTransaction($id);
         return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dihapus!');
     }
 }

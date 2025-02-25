@@ -1,10 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-cover bg-center w-full" style="background-image: url('/img/box.jpg');">
-    <div class="container mx-auto px-4 pt-24 pb-8 flex items-center justify-center">
-        <div class="w-full max-w-5xl bg-gray-900 bg-opacity-60 p-6 rounded-lg shadow-lg">
-            <h1 class="text-2xl font-bold text-white my-4 text-center">Daftar Produk</h1>
+<div class="container mx-auto px-4">
+    <h1 class="text-2xl font-bold my-4">Daftar Produk</h1>
+    <form method="GET" action="{{ route('products.index') }}" class="mb-4">
+        <input type="text" name="search" placeholder="Cari berdasarkan nama, SKU, atau kategori" class="border rounded py-2 px-4">
+        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Cari</button>
+    </form>
 
             @if ($errors->any())
                 <div class="bg-red-600 border border-red-400 text-white px-4 py-3 rounded relative mb-4" role="alert">

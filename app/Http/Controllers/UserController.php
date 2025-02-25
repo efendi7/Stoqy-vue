@@ -73,7 +73,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:admin,manager,staff', // Perbaiki validasi role // Pastikan role di-validasi
+            'role' => 'required|in:Admin,Staff Gudang,Manajer Gudang', // Perbaiki validasi role // Pastikan role di-validasi
         ]);
 
         $this->userService->updateUser($user->id, [

@@ -2,39 +2,54 @@
 
 namespace App\Services;
 
-use App\Interfaces\UserRepositoryInterface;
+use App\Models\User;
 
 class UserService
 {
-    protected $userRepository;
-
-    public function __construct(UserRepositoryInterface $userRepository)
+    public function createUser(array $data)
     {
-        $this->userRepository = $userRepository;
+        // Logic to create a user
+        return User::create($data);
+    }
+
+    public function updateUser($id, array $data)
+    {
+        // Logic to update a user
+        $user = User::findOrFail($id);
+        $user->update($data);
+        return $user;
+    }
+
+    public function deleteUser($id)
+    {
+        // Logic to delete a user
+        $user = User::findOrFail($id);
+        return $user->delete();
+    }
+
+    public function getUserRole($userId)
+    {
+        $user = User::find($userId);
+        return $user ? $user->role : null;
+    }
+
+    public function isAdmin($userId)
+    {
+        return $this->getUserRole($userId) === 'Admin';
+    }
+
+    public function isManagerGudang($userId)
+    {
+        return $this->getUserRole($userId) === 'Manajer Gudang';
+    }
+
+    public function isStaffGudang($userId)
+    {
+        return $this->getUserRole($userId) === 'Staff Gudang';
     }
 
     public function getAllUsers()
     {
-        return $this->userRepository->getAllUsers();
-    }
-
-    public function getUserById($userId)
-    {
-        return $this->userRepository->getUserById($userId);
-    }
-
-    public function createUser(array $data)
-    {
-        return $this->userRepository->createUser($data);
-    }
-
-    public function updateUser($userId, array $data)
-    {
-        return $this->userRepository->updateUser($userId, $data);
-    }
-
-    public function deleteUser($userId)
-    {
-        return $this->userRepository->deleteUser($userId);
+        return User::all();
     }
 }
