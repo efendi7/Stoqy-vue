@@ -17,27 +17,25 @@ class ProductAttributeController extends Controller
 
     public function index()
     {
-        $productAttributes = $this->productAttributeService->getAllProductAttributes();
-        return view('product_attributes.index', compact('productAttributes'));
+        $attributes = $this->productAttributeService->getAllAttributes();
+        return view('product_attributes.index', compact('attributes'));
     }
 
     public function create()
     {
-        $products = $this->productAttributeService->getAllProducts();
-        return view('product_attributes.create', compact('products'));
+        return view('product_attributes.create');
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'attribute_name' => 'required|string|max:255',
-            'attribute_value' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'value' => 'required|string|max:255',
         ]);
 
-        $this->productAttributeService->createProductAttribute($request->all());
+        $this->productAttributeService->createAttribute($request->all());
 
-        return redirect()->route('product_attributes.index')->with('success', 'Atribut produk berhasil ditambahkan!');
+        return redirect()->route('product_attributes.index')->with('success', 'Product attribute successfully added!');
     }
 
     public function edit(ProductAttribute $productAttribute)
@@ -45,27 +43,21 @@ class ProductAttributeController extends Controller
         return view('product_attributes.edit', compact('productAttribute'));
     }
 
-    public function show(ProductAttribute $productAttribute)
-    {
-        return view('product_attributes.show', compact('productAttribute'));
-    }
-
     public function update(Request $request, ProductAttribute $productAttribute)
     {
         $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'attribute_name' => 'required|string|max:255',
-            'attribute_value' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'value' => 'required|string|max:255',
         ]);
 
-        $this->productAttributeService->updateProductAttribute($productAttribute->id, $request->all());
+        $this->productAttributeService->updateAttribute($productAttribute->id, $request->all());
 
-        return redirect()->route('product_attributes.index')->with('success', 'Atribut produk berhasil diperbarui!');
+        return redirect()->route('product_attributes.index')->with('success', 'Product attribute successfully updated!');
     }
 
     public function destroy(ProductAttribute $productAttribute)
     {
-        $this->productAttributeService->deleteProductAttribute($productAttribute->id);
-        return redirect()->route('product_attributes.index')->with('success', 'Atribut produk berhasil dihapus!');
+        $this->productAttributeService->deleteAttribute($productAttribute->id);
+        return redirect()->route('product_attributes.index')->with('success', 'Product attribute successfully deleted!');
     }
 }

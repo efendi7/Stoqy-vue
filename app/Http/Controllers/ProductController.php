@@ -33,7 +33,7 @@ class ProductController extends Controller
         return view('products.create', compact('categories', 'suppliers', 'userRole'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, LoggerService $logger)
     {
         $userRole = $this->userService->getUserRole(auth()->id()); // Get user role
 
@@ -51,7 +51,13 @@ class ProductController extends Controller
             return redirect()->route('products.index')->with('error', 'You do not have permission to add products.');
         }
 
-        $this->productService->createProduct($request->all());
+        try {
+            $this->productService->createProduct($request->all());
+            return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            $logger->logError('Error creating product: ' . $e->getMessage(), ['request' => $request->all()]);
+            return redirect()->route('products.index')->with('error', 'Gagal menambahkan produk.');
+        }
 
         return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
     }
@@ -64,7 +70,7 @@ class ProductController extends Controller
         return view('products.edit', compact('product', 'categories', 'suppliers', 'userRole'));
     }
 
-    public function update(Request $request, Product $product)
+    public function update(Request $request, Product $product, LoggerService $logger)
     {
         $userRole = $this->userService->getUserRole(auth()->id()); // Get user role
 
@@ -82,15 +88,26 @@ class ProductController extends Controller
             return redirect()->route('products.index')->with('error', 'You do not have permission to update products.');
         }
 
-        $this->productService->updateProduct($product->id, $request->all());
+        try {
+            $this->productService->updateProduct($product->id, $request->all());
+            return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui!');
+        } catch (\Exception $e) {
+            $logger->logError('Error updating product: ' . $e->getMessage(), ['request' => $request->all(), 'product_id' => $product->id]);
+            return redirect()->route('products.index')->with('error', 'Gagal memperbarui produk.');
+        }
 
         return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui!');
     }
     
-    public function destroy(Product $product)
+    public function destroy(Product $product, LoggerService $logger)
     {
-        $this->productService->deleteProduct($product->id);
-        return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
+        try {
+            $this->productService->deleteProduct($product->id);
+            return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
+        } catch (\Exception $e) {
+            $logger->logError('Error deleting product: ' . $e->getMessage(), ['product_id' => $product->id]);
+            return redirect()->route('products.index')->with('error', 'Gagal menghapus produk.');
+        }
     }
 
     public function show($id)
