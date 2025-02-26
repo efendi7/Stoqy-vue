@@ -37,6 +37,8 @@
                     <th class="py-3 px-4 text-left">Harga Beli</th>
                     <th class="py-3 px-4 text-left">Harga Jual</th>
                     <th class="py-3 px-4 text-left">Stok</th>
+                    <th class="py-3 px-4 text-left">Stok Minimum</th>
+                    <th class="py-3 px-4 text-center">Status</th> <!-- Kolom Status -->
                     <th class="py-3 px-4 text-center">Aksi</th>
                 </tr>
             </thead>
@@ -50,6 +52,24 @@
                         <td class="py-3 px-4">{{ number_format($product->purchase_price, 0, ',', '.') }}</td>
                         <td class="py-3 px-4">{{ number_format($product->sale_price, 0, ',', '.') }}</td>
                         <td class="py-3 px-4">{{ $product->stock ?? 0 }}</td>
+                        <td class="py-3 px-4">{{ $product->minimum_stock ?? 0 }}</td>
+                        <td class="py-3 px-4 text-center">
+                            @php
+                                $status = '';
+                                $statusClass = '';
+                                if ($product->stock == 0) {
+                                    $status = 'Habis';
+                                    $statusClass = 'bg-red-500 text-white';
+                                } elseif ($product->stock < $product->minimum_stock) {
+                                    $status = 'Warning';
+                                    $statusClass = 'bg-yellow-500 text-white';
+                                } else {
+                                    $status = 'Tersedia';
+                                    $statusClass = 'bg-green-500 text-white';
+                                }
+                            @endphp
+                            <span class="{{ $statusClass }} px-2 py-1 rounded">{{ $status }}</span>
+                        </td>
                         <td class="py-3 px-4 text-center">
                             @csrf
                             <div class="inline-flex gap-2">
