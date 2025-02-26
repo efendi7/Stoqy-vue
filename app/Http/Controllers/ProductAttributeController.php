@@ -18,8 +18,7 @@ class ProductAttributeController extends Controller
     public function index()
     {
         $attributes = $this->productAttributeService->getAllProductAttributes();
-    return view('product_attributes.index', ['productAttributes' => $attributes]);
-
+        return view('product_attributes.index', ['productAttributes' => $attributes]);
     }
 
     public function create()
@@ -29,16 +28,17 @@ class ProductAttributeController extends Controller
     }
 
     public function store(Request $request)
-    
     {
         \Log::info('Store method hit', ['request' => $request->all()]); // Cek apakah method terpanggil
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'value' => 'required|string|max:255',
+    
+        $validatedData = $request->validate([
+            'attribute_name' => 'required|string|max:255',
+            'attribute_value' => 'required|string|max:255',
+            'product_id' => 'required|exists:products,id', // Pastikan product_id ada di tabel products
         ]);
-
-        $this->productAttributeService->createAttribute($request->all());
-
+    
+        $this->productAttributeService->createProductAttribute($validatedData);
+    
         return redirect()->route('product_attributes.index')->with('success', 'Product attribute successfully added!');
     }
 
@@ -54,14 +54,14 @@ class ProductAttributeController extends Controller
             'value' => 'required|string|max:255',
         ]);
 
-        $this->productAttributeService->updateAttribute($productAttribute->id, $request->all());
+        $this->productAttributeService->updateProductAttribute($productAttribute->id, $request->all());
 
         return redirect()->route('product_attributes.index')->with('success', 'Product attribute successfully updated!');
     }
 
     public function destroy(ProductAttribute $productAttribute)
     {
-        $this->productAttributeService->deleteAttribute($productAttribute->id);
+        $this->productAttributeService->deleteProductAttribute($productAttribute->id);
         return redirect()->route('product_attributes.index')->with('success', 'Product attribute successfully deleted!');
     }
 }

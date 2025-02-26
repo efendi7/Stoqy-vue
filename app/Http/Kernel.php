@@ -18,8 +18,8 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
+            
         ],
-
         'api' => [
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -27,9 +27,7 @@ class Kernel extends HttpKernel
     ];
 
     protected $middlewareAliases = [
+        'role' => \App\Http\Middleware\RoleMiddleware::class, // Middleware role tetap ada
         'auth' => \App\Http\Middleware\Authenticate::class,
-        'role' => \App\Http\Middleware\RoleMiddleware::class, // Tambahkan middleware role di sini
     ];
-
-    
 }

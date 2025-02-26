@@ -28,10 +28,12 @@ class UserService
     }
 
     public function getUserRole($userId)
-    {
-        $user = User::find($userId);
-        return $user ? $user->role : null;
-    }
+{
+    $user = User::find($userId);
+    \Log::info("User Role:", ['user_id' => $userId, 'role' => $user ? $user->role : 'Not Found']);
+    return $user ? $user->role : null;
+}
+
 
     public function isAdmin($userId)
     {

@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\StockTransactionController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\ProductAttributeController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\StockOpnameController;
 
 // Halaman utama
 Route::get('/', function () {
@@ -17,7 +19,7 @@ Route::get('/', function () {
 });
 
 // Rute untuk login dan registrasi
-Route::middleware('guest')->group(function() {
+Route::middleware('web','guest')->group(function() {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
     Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
@@ -27,7 +29,7 @@ Route::middleware('guest')->group(function() {
 // Rute logout
 Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
-// Rute yang hanya bisa diakses setelah login (tanpa verifikasi email)
+// Rute yang hanya bisa diakses setelah login
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -40,9 +42,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/contact-submit', [ContactController::class, 'submit'])->name('contact.submit');
     Route::resource('stock_transactions', StockTransactionController::class);
     Route::get('/stock_opname', [StockTransactionController::class, 'stockOpname'])->name('stock_transactions.opname');
-    Route::post('/set_minimum_stock', [StockTransactionController::class, 'setMinimumStock'])->name('stock_transactions.set_minimum_stock');
     
+    // 🔥 Perbaiki typo pada controller berikut
+    Route::post('/set_minimum_stock', [StockTransactionController::class, 'setMinimumStock'])->name('stock_transactions.set_minimum_stock');
+
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+
     // User activity routes
     Route::get('/users/{user}/activity', [UserController::class, 'activity'])->name('users.activity');
     Route::get('/activity-logs', [UserController::class, 'allActivities'])->name('activity.logs')->middleware('role:admin');
+
+Route::post('/stock-opname', [StockOpnameController::class, 'store'])->name('stock_opname');
+Route::get('/stock-opname', [StockOpnameController::class, 'index'])->name('stock_opname.index');
+
 });

@@ -26,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'role' => 'string',
     ];
 
     // Definisikan relasi dengan stock_transactions

@@ -45,12 +45,17 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|in:Admin,Staff Gudang,Manajer Gudang,admin,manager', // Tidak perlu 'staff' karena sudah ada 'Staff Gudang'
         ]);
+
+        // Memetakan role jika perlu
+        $role = $this->mapRole($request->role);
 
         $user = $this->userService->createUser([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $role,
         ]);
 
         $this->logActivity('create', 'Created new user: ' . $user->name);
@@ -73,18 +78,44 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:Admin,Staff Gudang,Manajer Gudang', // Perbaiki validasi role // Pastikan role di-validasi
+            'role' => 'required|in:Admin,Staff Gudang,Manajer Gudang,admin,manager', // Tidak perlu 'staff' karena sudah ada 'Staff Gudang'
         ]);
 
-        $this->userService->updateUser($user->id, [
+        // Memetakan role jika perlu
+        $role = $this->mapRole($request->role);
+
+        $userData = [
             'name' => $request->name,
             'email' => $request->email,
-            'password' => $request->password ? Hash::make($request->password) : $user->password,
-            'role' => $request->role,
-        ]);
+            'role' => $role,
+        ];
+        
+        // Hanya update password jika disediakan
+        if ($request->filled('password')) {
+            $userData['password'] = Hash::make($request->password);
+        }
+
+        $this->userService->updateUser($user->id, $userData);
 
         $this->logActivity('update', 'Updated user: ' . $user->name);
         return redirect()->route('users.index')->with('success', 'Pengguna berhasil diperbarui!');
+    }
+
+    /**
+     * Memetakan nilai role dari form ke nilai yang akan disimpan di database
+     */
+    private function mapRole($role)
+    {
+        $roleMap = [
+            'admin' => 'Admin',
+            'manager' => 'Manajer Gudang',
+            // Nilai-nilai yang sudah benar tidak perlu dipetakan
+            'Admin' => 'Admin',
+            'Manajer Gudang' => 'Manajer Gudang', 
+            'Staff Gudang' => 'Staff Gudang'
+        ];
+
+        return $roleMap[$role] ?? $role;
     }
 
     public function destroy(User $user)
