@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Services;
 
 use App\Interfaces\StockTransactionRepositoryInterface;
@@ -22,10 +21,9 @@ class StockTransactionService
     }
 
     public function getStockTransactionById($id)
-{
-    return $this->stockTransactionRepository->getStockTransactionById($id);
-}
-
+    {
+        return $this->stockTransactionRepository->getStockTransactionById($id);
+    }
 
     public function createStockTransaction(array $data)
     {
@@ -36,6 +34,12 @@ class StockTransactionService
             return false;
         }
 
+        // Jika transaksi adalah keluar, pastikan stok cukup
+        if ($data['type'] == 'Keluar' && $product->stock < $data['quantity']) {
+            Log::error("Stok tidak mencukupi untuk produk ID {$data['product_id']}. Stok yang tersedia: {$product->stock}, jumlah yang diminta: {$data['quantity']}");
+            return false; // Jangan simpan transaksi jika stok tidak mencukupi
+        }
+
         // Buat transaksi stok
         $transaction = $this->stockTransactionRepository->createStockTransaction($data);
 
@@ -43,10 +47,6 @@ class StockTransactionService
         if ($data['type'] == 'Masuk') {
             $product->stock += $data['quantity'];
         } else {
-            if ($product->stock < $data['quantity']) {
-                Log::error("Stok tidak mencukupi untuk produk ID {$data['product_id']}");
-                return false;
-            }
             $product->stock -= $data['quantity'];
         }
         $product->save();

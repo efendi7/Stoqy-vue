@@ -14,5 +14,28 @@
         </main>
     </div>
     @vite('resources/js/app.js')
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const darkModeToggle = document.getElementById("dark-mode-toggle");
+    const htmlElement = document.documentElement;
+
+    // Cek apakah dark mode sudah diaktifkan sebelumnya
+    if (localStorage.getItem("dark-mode") === "enabled") {
+        htmlElement.classList.add("dark");
+    }
+
+    darkModeToggle.addEventListener("click", function () {
+        htmlElement.classList.toggle("dark");
+
+        // Simpan preferensi ke localStorage
+        if (htmlElement.classList.contains("dark")) {
+            localStorage.setItem("dark-mode", "enabled");
+        } else {
+            localStorage.setItem("dark-mode", "disabled");
+        }
+    });
+});
+</script>
+
 </body>
 </html>
