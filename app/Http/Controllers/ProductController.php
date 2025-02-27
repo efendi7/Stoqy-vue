@@ -52,7 +52,7 @@ class ProductController extends Controller
     
         //dd($request->all()); // Debugging: Cek apakah data terkirim dengan benar
     
-        if ($userRole !== 'Admin') {
+        if ($userRole !== 'admin') {
             return redirect()->route('products.index')->with('error', 'You do not have permission to add products.');
         }
     
@@ -89,7 +89,7 @@ class ProductController extends Controller
         
         ]);
 
-        if ($userRole !== 'Admin') {
+        if ($userRole !== 'admin') {
             return redirect()->route('products.index')->with('error', 'You do not have permission to update products.');
         }
 
@@ -103,7 +103,10 @@ class ProductController extends Controller
     }
 
     public function destroy(Product $product)
+    
     {
+        if ($userRole !== 'admin') {
+            return redirect()->route('products.index')->with('error', 'You do not have permission to update products.');
         try {
             $this->productService->deleteProduct($product->id);
             return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
@@ -111,7 +114,7 @@ class ProductController extends Controller
             \Log::error('Error deleting product: ' . $e->getMessage(), ['product_id' => $product->id]);
             return redirect()->route('products.index')->with('error', 'Gagal menghapus produk.');
         }
-    }
+        }}
 
     public function show($id)
     {

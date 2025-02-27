@@ -18,7 +18,7 @@
     @endif
 
     {{-- Form Stok Opname --}}
-    <form action="{{ route('stock_opname') }}" method="POST" class="mb-4 bg-white p-4 shadow rounded-lg">
+    <form action="{{ route('stock_opname.store') }}" method="POST" class="mb-4 bg-white p-4 shadow rounded-lg">
         @csrf
         <label for="product_id" class="block font-semibold">Pilih Produk:</label>
         <select name="product_id" required class="border rounded w-full py-2 px-3">
@@ -28,13 +28,17 @@
         </select>
 
         <label for="new_stock" class="block font-semibold mt-2">Stok Baru:</label>
-        <input type="number" name="new_stock" min="0" required class="border rounded w-full py-2 px-3">
+        <input type="number" name="new_stock" min="0" required class="border rounded w-full py-2 px-3" value="{{ old('new_stock') }}">
+
+        @error('new_stock')
+            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+        @enderror
 
         <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded mt-3">Simpan</button>
     </form>
 
     {{-- Tombol Stok Opname --}}
-    <a href="{{ route('stock_opname') }}" class="bg-purple-500 text-white py-2 px-4 rounded mb-4 inline-block">
+    <a href="{{ route('stock_opname.index') }}" class="bg-purple-500 text-white py-2 px-4 rounded mb-4 inline-block">
         Lakukan Stok Opname
     </a>
 
@@ -88,4 +92,3 @@
     </table>
 </div>
 @endsection
-c

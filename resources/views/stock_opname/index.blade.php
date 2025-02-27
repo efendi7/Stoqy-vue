@@ -58,12 +58,13 @@
 
     function updateStock(productId) {
         let actualStock = document.getElementById(`actual_stock_${productId}`).value;
+        let csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        fetch(`/stock-opname/${productId}`, {
+        fetch(`/stock_opname/${productId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': csrfToken
             },
             body: JSON.stringify({ actual_stock: actualStock })
         }).then(response => response.json())
