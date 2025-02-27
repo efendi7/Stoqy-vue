@@ -4,6 +4,9 @@ namespace App\Services;
 use App\Interfaces\ProductRepositoryInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\Product;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProductsExport;
+use App\Imports\ProductsImport;
 
 class ProductService
 {
@@ -19,7 +22,7 @@ class ProductService
         return $this->productRepository->getAllProducts();
     }
 
-    public function getProductById($id): Product
+    public function getProductById($id): ?Product
     {
         return $this->productRepository->getProductById($id);
     }
@@ -54,4 +57,18 @@ class ProductService
     {
         return $this->productRepository->getSuppliers();
     }
+
+    public function exportProducts()
+{
+    return Excel::download(new ProductsExport, 'products.xlsx');
 }
+
+public function importProducts($file)
+{
+    Excel::import(new ProductsImport, $file);
+}
+
+}
+
+
+

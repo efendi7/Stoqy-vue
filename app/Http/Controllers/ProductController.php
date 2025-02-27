@@ -121,4 +121,17 @@ class ProductController extends Controller
         $product = $this->productService->getProductById($id);
         return view('products.show', compact('product'));
     }
+
+    public function export()
+{
+    return $this->productService->exportProducts();
+}
+
+public function import(Request $request)
+{
+    $request->validate(['file' => 'required|mimes:xlsx,csv']);
+    $this->productService->importProducts($request->file('file'));
+    return back()->with('success', 'Produk berhasil diimpor!');
+}
+
 }
