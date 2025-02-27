@@ -1,28 +1,45 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
     public function index()
     {
-        return view('settings.index'); // Pastikan view ini ada di resources/views/settings/index.blade.php
+        return view('settings.index');
     }
 
     public function update(Request $request)
     {
-        // Validasi request
+        // Perbaikan: Typo pada validate
         $request->validate([
             'app_name' => 'required|string|max:255',
+            'app_logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // Simpan data ke konfigurasi atau database (sesuai kebutuhan)
-        // Contoh jika menyimpan ke .env atau config
-        config(['app.name' => $request->app_name]);
+        // Ambil data pertama atau buat baru jika tidak ada
+        $setting = Setting::firstOrNew([]);
 
-        // Redirect kembali dengan pesan sukses
-        return redirect()->route('settings.index')->with('success', 'Settings updated successfully');
+        $setting->app_name = $request->app_name;
+
+        if ($request->hasFile('app_logo')) {
+            // Hapus logo lama jika ada
+            if ($setting->logo && Storage::exists('public/' . $setting->logo)) {
+                Storage::delete('public/' . $setting->logo);
+            }
+
+            // Simpan logo baru di storage/public/logos
+            $path = $request->file('app_logo')->store('logos', 'public');
+            $setting->logo = $path;
+        }
+
+        $setting->save();
+        
+
+        return redirect()->back()->with('success', 'Settings updated successfully.');
+        
     }
 }

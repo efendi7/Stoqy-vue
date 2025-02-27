@@ -1,11 +1,17 @@
+@php
+    $setting = App\Models\Setting::first();
+@endphp
+
 <nav class="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-purple-900 to-purple-700 shadow-md">
     <div class="container mx-auto px-4">
         <div class="flex items-center justify-between py-3">
-            <!-- Logo -->
+            <!-- Logo & App Name -->
             <div class="text-white font-bold text-lg">
                 <a href="{{ url('/') }}" class="flex items-center space-x-2 hover:scale-105 transition">
-                    <i class="fas fa-boxes text-xl"></i>
-                    <span>Stockify</span>
+                <img src="{{ asset('storage/' . $setting->logo) }}?v={{ time() }}" class="w-8 h-8 rounded" alt="Logo">
+
+
+                    <span>{{ $setting->app_name ?? config('app.name') }}</span>
                 </a>
             </div>
 
@@ -46,11 +52,11 @@
                         <ul class="py-2">
                             <li><a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a></li>
                             <li>
-    <a href="{{ route('settings.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-        Settings
-    </a>
-</li>
-
+                                <a href="{{ route('settings.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    Settings
+                                </a>
+                            </li>
+                            <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</button>
@@ -64,6 +70,7 @@
         </div>
     </div>
 </nav>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const userMenuButton = document.getElementById("user-menu-button");
