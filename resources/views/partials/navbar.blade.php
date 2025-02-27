@@ -20,9 +20,6 @@
                 <a href="{{ route('products.index') }}" class="text-gray-300 hover:text-white transition">
                     <i class="fas fa-cube mr-1"></i> Products
                 </a>
-                <a href="{{ route('categories.index') }}" class="text-gray-300 hover:text-white transition">
-                    <i class="fas fa-th-list mr-1"></i> Categories
-                </a>
                 <a href="{{ route('suppliers.index') }}" class="text-gray-300 hover:text-white transition">
                     <i class="fas fa-truck mr-1"></i> Suppliers
                 </a>

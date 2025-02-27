@@ -12,7 +12,8 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\StockOpnameController;
-use App\Http\Controllers\SettingController; // ✅ Tambahkan SettingController
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\ProductImportExportController;
 
 // Halaman utama
 Route::get('/', function () {
@@ -55,4 +56,11 @@ Route::middleware(['auth'])->group(function () {
     // ✅ Tambahkan rute untuk pengaturan aplikasi
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/update', [SettingController::class, 'update'])->name('settings.update');
+
+    // Import/Export routes
+    Route::post('/products/import', [ProductImportExportController::class, 'import'])->name('products.import');
+    Route::get('/products/export', [ProductImportExportController::class, 'export'])->name('products.export');
+
+
+
 });

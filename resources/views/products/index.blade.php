@@ -22,8 +22,22 @@
         </div>
     @endif
 
-    {{-- Tombol Tambah Produk --}}
-    <a href="{{ route('products.create') }}" class="bg-green-500 text-white py-2 px-6 rounded-lg mb-6 inline-block hover:bg-green-600 transition-all">Tambah Produk</a>
+    {{-- Tombol Tambah, Lihat Kategori, Lihat Atribut, Import, dan Export --}}
+    <div class="flex flex-wrap gap-3 mb-6">
+        <a href="{{ route('products.create') }}" class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition-all">Tambah Produk</a>
+        <a href="{{ route('categories.index') }}" class="bg-purple-500 text-white py-2 px-6 rounded-lg hover:bg-purple-600 transition-all">Lihat Kategori Produk</a>
+        <a href="{{ route('product_attributes.index') }}" class="bg-purple-500 text-white py-2 px-6 rounded-lg hover:bg-purple-600 transition-all">Lihat Atribut Produk</a>
+        
+        {{-- Form Import --}}
+        <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-3">
+            @csrf
+            <input type="file" name="file" class="block w-full text-sm text-gray-300 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer focus:outline-none">
+            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-all">Import</button>
+        </form>
+
+        {{-- Tombol Export --}}
+        <a href="{{ route('products.export') }}" class="bg-yellow-500 text-white py-2 px-6 rounded-lg hover:bg-yellow-600 transition-all">Export Produk</a>
+    </div>
 
     {{-- Tabel Produk --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-gray-800 bg-opacity-50">
@@ -71,7 +85,6 @@
                             <span class="{{ $statusClass }} px-2 py-1 rounded">{{ $status }}</span>
                         </td>
                         <td class="py-3 px-4 text-center">
-                            @csrf
                             <div class="inline-flex gap-2">
                                 <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 transition-all">Detail</a>
                                 <a href="{{ route('products.edit', $product->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 transition-all">Edit</a>
