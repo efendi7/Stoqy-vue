@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Services\UserService;
 use App\Models\Product;
 use App\Models\StockTransaction;
+use App\Models\Supplier; 
 use App\Models\User;
 use App\Models\ActivityLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+
 
 class DashboardController extends Controller 
 {
@@ -31,6 +33,8 @@ class DashboardController extends Controller
         // Get key metrics
         $totalProducts = Product::count();
         $lowStockItems = Product::whereColumn('stock', '<=', 'minimum_stock')->count();
+        $availableStock = Product::whereColumn('stock', '>', 'minimum_stock')->count();
+        $outOfStock = Product::where('stock', '=', 0)->count(); // Stok habis
         $activeUsers = User::where('last_login_at', '>=', Carbon::now()->subDays(7))->count();
     
         // Dapatkan rentang tanggal
@@ -70,6 +74,9 @@ class DashboardController extends Controller
         $recentActivities = ActivityLog::with('user')->latest()->limit(10)->get();
     
         return view('dashboard', [
+            'availableStock' => $availableStock,
+            'outOfStock' => $outOfStock,
+            'totalSuppliers' => Supplier::count(),
             'totalUsers' => $totalUsers,
             'totalProducts' => $totalProducts,
             'lowStockItems' => $lowStockItems,

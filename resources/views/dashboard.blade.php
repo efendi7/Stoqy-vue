@@ -46,10 +46,13 @@
         @php
             $metrics = [
                 ['label' => 'Total Produk', 'value' => $totalProducts, 'color' => 'bg-green-100 text-green-800', 'icon' => '📦'],
-                ['label' => 'Stok Rendah', 'value' => $lowStockItems, 'color' => 'bg-red-100 text-red-800', 'icon' => '⚠️'],
+                ['label' => 'Total Supplier', 'value' => $totalSuppliers, 'color' => 'bg-teal-100 text-teal-800', 'icon' => '🏭'], 
                 ['label' => 'Transaksi Masuk', 'value' => $incomingTransactions, 'color' => 'bg-blue-100 text-blue-800', 'icon' => '📥'],
                 ['label' => 'Transaksi Keluar', 'value' => $outgoingTransactions, 'color' => 'bg-yellow-100 text-yellow-800', 'icon' => '📤'],
                 ['label' => 'Pengguna Aktif', 'value' => $totalUsers, 'color' => 'bg-purple-100 text-purple-800', 'icon' => '👥'],
+                ['label' => 'Stok Tersedia', 'value' => $availableStock, 'color' => 'bg-green-100 text-green-800', 'icon' => '✅'], // Stok lebih dari minimum
+                ['label' => 'Stok Rendah', 'value' => $lowStockItems, 'color' => 'bg-red-100 text-red-800', 'icon' => '⚠️'],
+                ['label' => 'Stok Habis', 'value' => $outOfStock, 'color' => 'bg-red-100 text-red-800', 'icon' => '❌'], // Stok habis
             ];
         @endphp
 
