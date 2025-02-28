@@ -20,15 +20,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Rute untuk login dan registrasi
-Route::middleware(['web', 'guest'])->group(function () {
+Route::middleware(['guest'])->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
     Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('register', [RegisterController::class, 'register']);
 });
 
-// Rute logout
+// Logout route
 Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Rute yang hanya bisa diakses setelah login

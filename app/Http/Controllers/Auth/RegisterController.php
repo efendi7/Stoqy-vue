@@ -6,28 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
 
 class RegisterController extends Controller
 {
-    // Show the registration form
+    // Menampilkan form registrasi
     public function showRegistrationForm()
     {
         return view('auth.register');
     }
 
-    // Handle registration attempt
+    // Menangani proses registrasi
     public function register(Request $request)
     {
-        // Validate the request data
+        // Validasi data input
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        // Create new user & langsung verifikasi email
-        $user = User::create([
+        // Membuat user baru
+        User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
@@ -35,10 +34,7 @@ class RegisterController extends Controller
             'email_verified_at' => now(), // Auto-verifikasi email
         ]);
 
-        // Login user setelah registrasi
-        Auth::login($user);
-
-        // Redirect ke dashboard
-        return redirect()->route('dashboard')->with('success', 'Registrasi berhasil. Email Anda telah diverifikasi.');
+        // Redirect ke halaman login dengan pesan sukses
+        return redirect()->route('login')->with('success', 'Registrasi berhasil. Silahkan login.');
     }
 }
