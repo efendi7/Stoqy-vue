@@ -6,8 +6,39 @@
     <!-- Welcome Message -->
     <div class="bg-blue-100 text-blue-800 p-4 rounded-lg shadow-md mb-6">
         <h2 class="text-base md:text-2xl font-bold">
-            Selamat datang <span class="capitalize">{{ ucfirst(auth()->user()->role) }}</span>, {{ auth()->user()->name }}!
+            Selamat datang, <span class="capitalize">{{ ucfirst(auth()->user()->role) }}</span>, {{ auth()->user()->name }}!
         </h2>
+    </div>
+
+    <!-- Periode Filter -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <h3 class="text-gray-600 text-sm font-medium mb-4">Filter Periode</h3>
+        <form action="{{ route('dashboard') }}" method="GET" class="flex flex-wrap gap-4">
+            <div class="flex items-center">
+                <label for="start_date" class="mr-2 text-sm">Dari:</label>
+                <input type="date" id="start_date" name="start_date" value="{{ $startDate ?? date('Y-m-d', strtotime('-30 days')) }}" 
+                    class="border rounded px-2 py-1 text-sm">
+            </div>
+            <div class="flex items-center">
+                <label for="end_date" class="mr-2 text-sm">Sampai:</label>
+                <input type="date" id="end_date" name="end_date" value="{{ $endDate ?? date('Y-m-d') }}" 
+                    class="border rounded px-2 py-1 text-sm">
+            </div>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-1 rounded text-sm hover:bg-blue-600">
+                Terapkan
+            </button>
+        </form>
+    </div>
+
+    <!-- Period Info -->
+    <div class="bg-indigo-100 text-indigo-800 p-4 rounded-lg shadow-md mb-6">
+        <h3 class="text-sm font-medium">Informasi Periode</h3>
+        <p class="text-base font-bold">{{ date('d M Y', strtotime($startDate ?? '-30 days')) }} - 
+        {{ date('d M Y', strtotime($endDate ?? 'now')) }}</p>
+        <p class="text-sm mt-1">
+            Transaksi Masuk: <span class="font-bold">{{ $incomingTransactions }}</span> | 
+            Transaksi Keluar: <span class="font-bold">{{ $outgoingTransactions }}</span>
+        </p>
     </div>
 
     <!-- Key Metrics -->
@@ -92,8 +123,6 @@
                     }
                 }
             });
-        } else {
-            console.error('Stock chart canvas element not found');
         }
 
         // Transaction Chart
@@ -121,8 +150,6 @@
                     }
                 }
             });
-        } else {
-            console.error('Transaction chart canvas element not found');
         }
     } catch (error) {
         console.error('Error initializing charts:', error);

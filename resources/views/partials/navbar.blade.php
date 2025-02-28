@@ -7,7 +7,7 @@
         <div class="flex items-center justify-between py-3">
             <!-- Logo & App Name -->
             <div class="text-white font-bold text-lg">
-                <a href="{{ url('/') }}" class="flex items-center space-x-2 hover:scale-105 transition">
+                <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 hover:scale-105 transition">
                 <img src="{{ asset('storage/' . $setting->logo) }}?v={{ time() }}" class="w-8 h-8 rounded" alt="Logo">
 
 
