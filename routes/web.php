@@ -14,11 +14,18 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ProductImportExportController;
+use App\Http\Controllers\LaporanController;
+
 
 // Halaman utama
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/laporan/stok', [LaporanController::class, 'stok'])->name('laporan.stok');
+Route::get('/laporan/transaksi', [LaporanController::class, 'transaksi'])->name('laporan.transaksi');
+Route::get('/laporan/aktivitas', [LaporanController::class, 'aktivitas'])->name('laporan.aktivitas');
+
 
 Route::middleware(['guest'])->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');

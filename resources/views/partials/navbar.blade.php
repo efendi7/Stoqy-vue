@@ -8,9 +8,7 @@
             <!-- Logo & App Name -->
             <div class="text-white font-bold text-lg">
                 <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 hover:scale-105 transition">
-                <img src="{{ asset('storage/' . $setting->logo) }}?v={{ time() }}" class="w-8 h-8 rounded" alt="Logo">
-
-
+                    <img src="{{ asset('storage/' . $setting->logo) }}?v={{ time() }}" class="w-8 h-8 rounded" alt="Logo">
                     <span>{{ $setting->app_name ?? config('app.name') }}</span>
                 </a>
             </div>
@@ -24,8 +22,25 @@
                     <i class="fas fa-truck mr-1"></i> Penyuplai
                 </a>
                 <a href="{{ route('stock_transactions.index') }}" class="text-gray-300 hover:text-white transition">
-                    <i class="fas fa-exchange-alt mr-1"></i> Stok
+                    <i class="fas fa-exchange-alt mr-1"></i> Transaksi Stok
                 </a>
+
+                <!-- Dropdown Laporan -->
+                <div class="relative">
+                    <button id="laporan-menu-button" class="text-gray-300 hover:text-white transition flex items-center space-x-1">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Laporan</span>
+                        <i class="fas fa-chevron-down text-gray-300"></i>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="laporan-dropdown" class="absolute hidden bg-white shadow-md rounded-md mt-2 w-48 right-0 z-50">
+                        <a href="{{ route('laporan.stok') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Laporan Stok</a>
+                        <a href="{{ route('laporan.transaksi') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Laporan Transaksi</a>
+                        <a href="{{ route('laporan.aktivitas') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Laporan Aktivitas</a>
+                    </div>
+                </div>
+
                 <a href="{{ route('users.index') }}" class="text-gray-300 hover:text-white transition">
                     <i class="fas fa-users mr-1"></i> Pengguna
                 </a>
@@ -68,21 +83,33 @@
     </div>
 </nav>
 
+<!-- Script JavaScript untuk Dropdown -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    const laporanMenuButton = document.getElementById("laporan-menu-button");
+    const laporanDropdown = document.getElementById("laporan-dropdown");
     const userMenuButton = document.getElementById("user-menu-button");
     const userDropdown = document.getElementById("user-dropdown");
 
-    userMenuButton.addEventListener("click", function () {
+    // Toggle dropdown laporan
+    laporanMenuButton.addEventListener("click", function (event) {
+        event.stopPropagation();
+        laporanDropdown.classList.toggle("hidden");
+    });
+
+    // Toggle dropdown user
+    userMenuButton.addEventListener("click", function (event) {
+        event.stopPropagation();
         userDropdown.classList.toggle("hidden");
-        userDropdown.classList.toggle("scale-100");
     });
 
     // Tutup dropdown jika klik di luar
     document.addEventListener("click", function (event) {
+        if (!laporanMenuButton.contains(event.target) && !laporanDropdown.contains(event.target)) {
+            laporanDropdown.classList.add("hidden");
+        }
         if (!userMenuButton.contains(event.target) && !userDropdown.contains(event.target)) {
             userDropdown.classList.add("hidden");
-            userDropdown.classList.remove("scale-100");
         }
     });
 });

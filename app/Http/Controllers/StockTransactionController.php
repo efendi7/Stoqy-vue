@@ -42,13 +42,13 @@ class StockTransactionController extends Controller
     public function store(Request $request)
     {
         $userRole = $this->userService->getUserRole(auth()->id());
-
+    
         if (!in_array($userRole, ['admin', 'Manajer Gudang'])) {
             return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk membuat transaksi stok.');
         }
-
+    
         Log::info('Data yang diterima di metode store:', $request->all());
-
+    
         $validatedData = $request->validate([
             'product_id' => 'required|exists:products,id',
             'user_id' => 'required|exists:users,id',
@@ -56,16 +56,19 @@ class StockTransactionController extends Controller
             'quantity' => 'required|integer|min:1',
             'transaction_date' => 'nullable|date',
         ]);
-
+    
+        // Menetapkan status default ke 'Pending'
+        $validatedData['status'] = 'Pending';
+    
         $transaction = $this->stockTransactionService->createStockTransaction($validatedData);
-
+    
         if (!$transaction) {
             return redirect()->route('stock_transactions.index')->with('error', 'Gagal mencatat transaksi stok. Pastikan data valid dan stok mencukupi.');
         }
-
+    
         return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dicatat!');
     }
-
+    
     public function edit($id)
     {
         $transaction = $this->stockTransactionService->getStockTransactionById($id);
