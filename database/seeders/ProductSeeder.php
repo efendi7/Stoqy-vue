@@ -3,43 +3,49 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Product;
+use Illuminate\Support\Facades\DB;
 
 class ProductSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
-        Product::create([
-            'category_id' => 1,
-            'supplier_id' => 1,
-            'name' => 'Laptop',
-            'sku' => 'ELEC001',
-            'purchase_price' => 5000000,
-            'selling_price' => 6000000,
-            'stock' => 10
-        ]);
-        Product::create([
-            'category_id' => 2,
-            'supplier_id' => 2,
-            'name' => 'Kemeja',
-            'sku' => 'CLOTH001',
-            'purchase_price' => 100000,
-            'selling_price' => 150000,
-            'stock' => 20
-        ]);
-        Product::create([
-            'category_id' => 3,
-            'supplier_id' => 3,
-            'name' => 'Biskuit',
-            'sku' => 'FOOD001',
-            'purchase_price' => 5000,
-            'selling_price' => 8000,
-            'stock' => 50
+        DB::table('products')->insert([
+            [
+                'name' => 'Laptop ASUS ROG',
+                'sku' => 'LAP-001',
+                'category_id' => 1, // Pastikan ID kategori sesuai
+                'supplier_id' => 1, // Pastikan ID supplier sesuai
+                'purchase_price' => 15000000,
+                'sale_price' => 17500000,
+                'stock' => 10,
+                'minimum_stock' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Keyboard Mechanical RGB',
+                'sku' => 'KEY-002',
+                'category_id' => 2,
+                'supplier_id' => 2,
+                'purchase_price' => 500000,
+                'sale_price' => 650000,
+                'stock' => 25,
+                'minimum_stock' => 5,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Mouse Gaming Logitech',
+                'sku' => 'MOU-003',
+                'category_id' => 2,
+                'supplier_id' => 2,
+                'purchase_price' => 300000,
+                'sale_price' => 450000,
+                'stock' => 15,
+                'minimum_stock' => 4,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

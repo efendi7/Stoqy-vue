@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Interfaces\CategoryRepositoryInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 class CategoryService
@@ -15,7 +16,7 @@ class CategoryService
     }
 
 
-    public function getAllCategories(): Collection
+    public function getAllCategories(): LengthAwarePaginator
     {
         return $this->categoryRepository->getAllCategories();
     }

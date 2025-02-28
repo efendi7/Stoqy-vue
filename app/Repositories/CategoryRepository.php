@@ -4,12 +4,13 @@ namespace App\Repositories;
 
 use App\Models\Category;
 use App\Interfaces\CategoryRepositoryInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
-    public function getAllCategories()
+    public function getAllCategories(): LengthAwarePaginator
     {
-        return Category::all();
+        return Category::paginate(10);
     }
 
     public function getCategoryById($categoryId)

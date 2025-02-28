@@ -4,12 +4,14 @@ namespace App\Repositories;
 
 use App\Models\Supplier;
 use App\Interfaces\SupplierRepositoryInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
+
 
 class SupplierRepository implements SupplierRepositoryInterface
 {
-    public function getAllSuppliers()
+    public function getAllSuppliers(): LengthAwarePaginator
     {
-        return Supplier::all();
+        return Supplier::paginate(10);
     }
 
     public function getSupplierById($supplierId)

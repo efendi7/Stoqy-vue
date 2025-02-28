@@ -14,8 +14,10 @@ class CategorySeeder extends Seeder
      */
     public function run()
     {
-        Category::create(['name' => 'Elektronik', 'description' => 'Kategori untuk produk elektronik']);
-        Category::create(['name' => 'Pakaian', 'description' => 'Kategori untuk produk pakaian']);
-        Category::create(['name' => 'Makanan', 'description' => 'Kategori untuk produk makanan']);
+        Category::create(['name' => 'Laptop', 'description' => 'Kategori untuk produk laptop']);
+        Category::create(['name' => 'Keyboard', 'description' => 'Kategori untuk produk keyboard']);
+        Category::create(['name' => 'Mouse', 'description' => 'Kategori untuk produk mouse']);
+        Category::create(['name' => 'Monitor', 'description' => 'Kategori untuk produk monitor']);
+        Category::create(['name' => 'Aksesoris', 'description' => 'Kategori untuk produk aksesoris komputer']);
     }
 }

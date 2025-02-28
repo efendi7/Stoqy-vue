@@ -36,7 +36,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('users', UserController::class);
-    Route::resource('products', ProductController::class);
     Route::resource('categories', CategoryController::class);
     Route::resource('suppliers', SupplierController::class);
     Route::resource('product_attributes', ProductAttributeController::class);
@@ -57,10 +56,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/update', [SettingController::class, 'update'])->name('settings.update');
 
-    // Import/Export routes
-    Route::post('/products/import', [ProductImportExportController::class, 'import'])->name('products.import');
+    // Rute CRUD produk
+    Route::resource('products', ProductController::class);
+
+    // Rute import & export produk
+    Route::get('/products/import-export', [ProductImportExportController::class, 'index'])->name('products.import-export.index');
     Route::get('/products/export', [ProductImportExportController::class, 'export'])->name('products.export');
+    Route::post('/products/import', [ProductImportExportController::class, 'import'])->name('products.import');
+    Route::get('/products/export-template', [ProductImportExportController::class, 'exportTemplate'])
+    ->name('products.export-template');
 
-
-
+    // Rute khusus untuk menampilkan satu produk berdasarkan ID numerik
+    Route::get('/products/{product}', [ProductController::class, 'show'])
+        ->where('product', '[0-9]+')
+        ->name('products.show');
 });

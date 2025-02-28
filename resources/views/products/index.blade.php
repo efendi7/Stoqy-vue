@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 bg-[url('/img/box.jpg')] bg-cover bg-center">
-    <h1 class="text-3xl font-extrabold my-6 text-white">Daftar Produk</h1>
+<div class="container mx-auto px-4 min-h-screen bg-cover bg-center mt-16">
+    <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Daftar Produk</h1>
 
     {{-- Form Pencarian --}}
     <form method="GET" action="{{ route('products.index') }}" class="mb-6 flex gap-4">
-        <input type="text" name="search" placeholder="Cari berdasarkan nama, SKU, atau kategori" class="border border-gray-300 rounded-lg py-2 px-4 w-full text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" name="search" placeholder="Cari berdasarkan nama, SKU, atau kategori" class="border border-gray-300 rounded-lg py-2 px-4 w-full text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
         <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all">Cari</button>
     </form>
 
@@ -27,22 +27,13 @@
         <a href="{{ route('products.create') }}" class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition-all">Tambah Produk</a>
         <a href="{{ route('categories.index') }}" class="bg-purple-500 text-white py-2 px-6 rounded-lg hover:bg-purple-600 transition-all">Lihat Kategori Produk</a>
         <a href="{{ route('product_attributes.index') }}" class="bg-purple-500 text-white py-2 px-6 rounded-lg hover:bg-purple-600 transition-all">Lihat Atribut Produk</a>
-        
-        {{-- Form Import --}}
-        <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-3">
-            @csrf
-            <input type="file" name="file" class="block w-full text-sm text-gray-300 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer focus:outline-none">
-            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-all">Import</button>
-        </form>
-
-        {{-- Tombol Export --}}
-        <a href="{{ route('products.export') }}" class="bg-yellow-500 text-white py-2 px-6 rounded-lg hover:bg-yellow-600 transition-all">Export Produk</a>
+        <a href="{{ route('products.import-export.index') }}" class="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition-all">Import/Export</a>
     </div>
 
     {{-- Tabel Produk --}}
-    <div class="overflow-x-auto rounded-lg shadow-lg bg-gray-800 bg-opacity-50">
-        <table class="min-w-full text-white">
-            <thead class="bg-gray-700 bg-opacity-70">
+    <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
+        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
+            <thead class="bg-gray-800 bg-opacity-70 text-white">
                 <tr>
                     <th class="py-3 px-4 text-left">Nama</th>
                     <th class="py-3 px-4 text-left">SKU</th>
@@ -52,13 +43,13 @@
                     <th class="py-3 px-4 text-left">Harga Jual</th>
                     <th class="py-3 px-4 text-left">Stok</th>
                     <th class="py-3 px-4 text-left">Stok Minimum</th>
-                    <th class="py-3 px-4 text-center">Status</th> <!-- Kolom Status -->
+                    <th class="py-3 px-4 text-center">Status</th>
                     <th class="py-3 px-4 text-center">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-700">
                 @foreach($products as $product)
-                    <tr class="hover:bg-gray-700 transition-all bg-gray-900 bg-opacity-40">
+                    <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
                         <td class="py-3 px-4">{{ $product->name ?? 'N/A' }}</td>
                         <td class="py-3 px-4">{{ $product->sku ?? 'N/A' }}</td>
                         <td class="py-3 px-4">{{ $product->category->name ?? 'N/A' }}</td>

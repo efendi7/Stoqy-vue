@@ -1,6 +1,6 @@
-/** @type {import('tailwindcss').Config} */
 export default {
-    darkMode: 'class', // Pastikan pakai mode class, bukan 'media'
+    // Hapus atau komentar darkMode
+    // darkMode: , // Nonaktifkan dark mode
     content: [
         "./resources/**/*.blade.php",
         "./resources/**/*.js",

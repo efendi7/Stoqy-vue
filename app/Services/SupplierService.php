@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Interfaces\SupplierRepositoryInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class SupplierService
 {
@@ -15,7 +16,7 @@ class SupplierService
     }
 
 
-    public function getAllSuppliers(): Collection
+    public function getAllSuppliers(): LengthAwarePaginator
     {
         return $this->supplierRepository->getAllSuppliers();
     }
@@ -34,5 +35,4 @@ class SupplierService
     {
         return $this->supplierRepository->deleteSupplier($supplierId);
     }
-
 }

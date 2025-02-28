@@ -194,7 +194,7 @@ class ProductImportExportController extends Controller
                 // Validate data
                 $rowValidator = Validator::make($productData, [
                     'name' => 'required|string|max:255',
-                    'sku' => 'required|string|unique:products,sku',
+                    'sku' => 'required|string|unique:products,sku,NULL,id,deleted_at,NULL',
                     'category_id' => 'required|exists:categories,id',
                     'supplier_id' => 'nullable|exists:suppliers,id',
                     'purchase_price' => 'nullable|numeric',
