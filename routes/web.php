@@ -58,6 +58,8 @@ Route::middleware(['auth'])->group(function () {
     // Rute CRUD produk
     Route::resource('products', ProductController::class);
 
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     // Rute import & export produk
     Route::get('/products/import-export', [ProductImportExportController::class, 'index'])->name('products.import-export.index');
     Route::get('/products/export', [ProductImportExportController::class, 'export'])->name('products.export');

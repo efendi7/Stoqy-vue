@@ -18,16 +18,16 @@
             <!-- Navigation Links -->
             <div class="flex items-center space-x-4">
                 <a href="{{ route('products.index') }}" class="text-gray-300 hover:text-white transition">
-                    <i class="fas fa-cube mr-1"></i> Products
+                    <i class="fas fa-cube mr-1"></i> Produk
                 </a>
                 <a href="{{ route('suppliers.index') }}" class="text-gray-300 hover:text-white transition">
-                    <i class="fas fa-truck mr-1"></i> Suppliers
+                    <i class="fas fa-truck mr-1"></i> Penyuplai
                 </a>
                 <a href="{{ route('stock_transactions.index') }}" class="text-gray-300 hover:text-white transition">
-                    <i class="fas fa-exchange-alt mr-1"></i> Stock Transactions
+                    <i class="fas fa-exchange-alt mr-1"></i> Stok
                 </a>
                 <a href="{{ route('users.index') }}" class="text-gray-300 hover:text-white transition">
-                    <i class="fas fa-users mr-1"></i> Users
+                    <i class="fas fa-users mr-1"></i> Pengguna
                 </a>
 
                 <!-- User Dropdown -->
@@ -50,7 +50,7 @@
                             <li><a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a></li>
                             <li>
                                 <a href="{{ route('settings.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    Settings
+                                    Pengaturan
                                 </a>
                             </li>
                             <li>

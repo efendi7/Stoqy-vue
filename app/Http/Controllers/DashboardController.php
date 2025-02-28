@@ -21,9 +21,12 @@ class DashboardController extends Controller
     
     public function index(Request $request)
     {
+        // Total user
+        $totalUsers = User::count(); 
+
         // Default periode: 30 hari terakhir jika tidak ada input
-        $startDate = $request->input('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
-        $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
+        $startDate = Carbon::parse($request->input('start_date', Carbon::now()->subDays(30)->format('Y-m-d')));
+        $endDate = Carbon::parse($request->input('end_date', Carbon::now()->format('Y-m-d')));
     
         // Get key metrics
         $totalProducts = Product::count();
@@ -31,12 +34,12 @@ class DashboardController extends Controller
         $activeUsers = User::where('last_login_at', '>=', Carbon::now()->subDays(7))->count();
     
         // Dapatkan rentang tanggal
-        $dateRange = Carbon::parse($startDate)->daysUntil(Carbon::parse($endDate));
+        $dateRange = $startDate->daysUntil($endDate);
     
         $transactionLabels = [];
         $incomingTransactionData = [];
         $outgoingTransactionData = [];
-        $combinedTransactionData = [];  // Tambahkan baris ini
+        $combinedTransactionData = [];
     
         foreach ($dateRange as $date) {
             $formattedDate = $date->format('Y-m-d');
@@ -55,11 +58,11 @@ class DashboardController extends Controller
             $transactionLabels[] = $displayDate;
             $incomingTransactionData[] = $incomingCount;
             $outgoingTransactionData[] = $outgoingCount;
-            $combinedTransactionData[] = $incomingCount + $outgoingCount;  // Tambahkan baris ini
+            $combinedTransactionData[] = $incomingCount + $outgoingCount;
         }
     
         // Get data for top 10 products by stock
-        $topProducts = Product::orderBy('stock', 'desc')->limit(10)->get();
+        $topProducts = Product::orderByDesc('stock')->limit(10)->get(['name', 'stock']);
         $stockLabels = $topProducts->pluck('name')->toArray();
         $stockData = $topProducts->pluck('stock')->toArray();
     
@@ -67,6 +70,7 @@ class DashboardController extends Controller
         $recentActivities = ActivityLog::with('user')->latest()->limit(10)->get();
     
         return view('dashboard', [
+            'totalUsers' => $totalUsers,
             'totalProducts' => $totalProducts,
             'lowStockItems' => $lowStockItems,
             'incomingTransactions' => array_sum($incomingTransactionData),
@@ -77,11 +81,11 @@ class DashboardController extends Controller
             'transactionLabels' => $transactionLabels,
             'incomingTransactionData' => $incomingTransactionData,
             'outgoingTransactionData' => $outgoingTransactionData,
-            'combinedTransactionData' => $combinedTransactionData,  // Tambahkan baris ini
+            'combinedTransactionData' => $combinedTransactionData,
             'recentActivities' => $recentActivities,
             'userRole' => auth()->user()->role,
-            'startDate' => $startDate,
-            'endDate' => $endDate
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d')
         ]);
     }
 }
