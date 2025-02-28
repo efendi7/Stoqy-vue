@@ -24,79 +24,60 @@ class DashboardController extends Controller
         // Default periode: 30 hari terakhir jika tidak ada input
         $startDate = $request->input('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
         $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
-        
+    
         // Get key metrics
         $totalProducts = Product::count();
         $lowStockItems = Product::whereColumn('stock', '<=', 'minimum_stock')->count();
-        
-        // Get transaction counts dengan filter periode
-        $incomingTransactions = StockTransaction::whereBetween('transaction_date', 
-            [$startDate.' 00:00:00', $endDate.' 23:59:59'])
-            ->where('type', 'Masuk')
-            ->count();
-            
-        $outgoingTransactions = StockTransaction::whereBetween('transaction_date', 
-            [$startDate.' 00:00:00', $endDate.' 23:59:59'])
-            ->where('type', 'Keluar')
-            ->count();
-            
         $activeUsers = User::where('last_login_at', '>=', Carbon::now()->subDays(7))->count();
-        
-        $userRole = $this->userService->getUserRole(auth()->id());
-        
-        // Get data for top 10 products by stock
-        $topProducts = Product::orderBy('stock', 'desc')
-            ->limit(10)
-            ->get();
-            
-        $stockLabels = $topProducts->pluck('name')->toArray();
-        $stockData = $topProducts->pluck('stock')->toArray();
-        
-        // Prepare data for transaction chart - format untuk Chart.js
-        $transactionLabels = [];
-        $transactionData = [];
-        
-        // Generate date range dari start date ke end date
+    
+        // Dapatkan rentang tanggal
         $dateRange = Carbon::parse($startDate)->daysUntil(Carbon::parse($endDate));
-        
+    
+        $transactionLabels = [];
+        $incomingTransactionData = [];
+        $outgoingTransactionData = [];
+        $combinedTransactionData = [];  // Tambahkan baris ini
+    
         foreach ($dateRange as $date) {
             $formattedDate = $date->format('Y-m-d');
             $displayDate = $date->format('d M');
-            
-            // Hitung jumlah transaksi untuk tanggal ini
-            $count = StockTransaction::whereDate('transaction_date', $formattedDate)->count();
-            
+    
+            // Hitung transaksi masuk dan keluar per hari
+            $incomingCount = StockTransaction::whereDate('transaction_date', $formattedDate)
+                ->where('type', 'Masuk')
+                ->count();
+                
+            $outgoingCount = StockTransaction::whereDate('transaction_date', $formattedDate)
+                ->where('type', 'Keluar')
+                ->count();
+    
+            // Simpan data ke array
             $transactionLabels[] = $displayDate;
-            $transactionData[] = $count;
+            $incomingTransactionData[] = $incomingCount;
+            $outgoingTransactionData[] = $outgoingCount;
+            $combinedTransactionData[] = $incomingCount + $outgoingCount;  // Tambahkan baris ini
         }
-        
+    
+        // Get data for top 10 products by stock
+        $topProducts = Product::orderBy('stock', 'desc')->limit(10)->get();
+        $stockLabels = $topProducts->pluck('name')->toArray();
+        $stockData = $topProducts->pluck('stock')->toArray();
+    
         // Get recent activities
-        $recentActivities = ActivityLog::with('user')
-            ->latest()
-            ->limit(10)
-            ->get();
-        
-        // Debug log
-        \Log::debug('Stock Chart Data:', [
-            'labels' => $stockLabels,
-            'data' => $stockData
-        ]);
-        
-        \Log::debug('Transaction Chart Data:', [
-            'labels' => $transactionLabels,
-            'data' => $transactionData
-        ]);
-        
+        $recentActivities = ActivityLog::with('user')->latest()->limit(10)->get();
+    
         return view('dashboard', [
             'totalProducts' => $totalProducts,
             'lowStockItems' => $lowStockItems,
-            'incomingTransactions' => $incomingTransactions,
-            'outgoingTransactions' => $outgoingTransactions,
+            'incomingTransactions' => array_sum($incomingTransactionData),
+            'outgoingTransactions' => array_sum($outgoingTransactionData),
             'activeUsers' => $activeUsers,
             'stockLabels' => $stockLabels,
             'stockData' => $stockData,
             'transactionLabels' => $transactionLabels,
-            'transactionData' => $transactionData,
+            'incomingTransactionData' => $incomingTransactionData,
+            'outgoingTransactionData' => $outgoingTransactionData,
+            'combinedTransactionData' => $combinedTransactionData,  // Tambahkan baris ini
             'recentActivities' => $recentActivities,
             'userRole' => auth()->user()->role,
             'startDate' => $startDate,

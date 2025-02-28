@@ -69,12 +69,20 @@
     <!-- Charts Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-gray-600 text-sm font-medium mb-4">Stock Levels</h3>
+            <h3 class="text-gray-600 text-sm font-medium mb-4">Stok Barang</h3>
             <canvas id="stockChart" class="w-full h-64"></canvas>
         </div>
         <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-gray-600 text-sm font-medium mb-4">Transaction Trends</h3>
-            <canvas id="transactionChart" class="w-full h-64"></canvas>
+            <h3 class="text-gray-600 text-sm font-medium mb-4">Semua Transaksi</h3>
+            <canvas id="combinedTransactionChart" class="w-full h-64"></canvas>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-gray-600 text-sm font-medium mb-4">Transaksi Masuk</h3>
+            <canvas id="incomingTransactionChart" class="w-full h-64"></canvas>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-gray-600 text-sm font-medium mb-4">Transaction Keluar</h3>
+            <canvas id="outgoingTransactionChart" class="w-full h-64"></canvas>
         </div>
     </div>
 
@@ -107,7 +115,7 @@
                 data: {
                     labels: {!! json_encode($stockLabels) !!},
                     datasets: [{
-                        label: 'Stock Levels',
+                        label: 'Stok Barang',
                         data: {!! json_encode($stockData) !!},
                         backgroundColor: 'rgba(34, 197, 94, 0.2)',
                         borderColor: 'rgba(34, 197, 94, 1)',
@@ -125,32 +133,124 @@
             });
         }
 
-        // Transaction Chart
-        const transactionCtx = document.getElementById('transactionChart');
-        if (transactionCtx) {
-            new Chart(transactionCtx.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: {!! json_encode($transactionLabels) !!},
-                    datasets: [{
-                        label: 'Transactions',
-                        data: {!! json_encode($transactionData) !!},
-                        borderColor: 'rgba(59, 130, 246, 1)',
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        borderWidth: 2,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
+      // Incoming Transaction Chart
+const incomingTransactionCtx = document.getElementById('incomingTransactionChart');
+if (incomingTransactionCtx) {
+    new Chart(incomingTransactionCtx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($transactionLabels) !!},
+            datasets: [
+                {
+                    label: 'Transaksi Masuk',
+                    data: {!! json_encode($incomingTransactionData) !!},
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderWidth: 2,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        precision: 0
+                    },
+                    suggestedMin: 1,
+                    suggestedMax: 10
+                }
+            }
+        }
+    });
+}
+
+// Outgoing Transaction Chart
+const outgoingTransactionCtx = document.getElementById('outgoingTransactionChart');
+if (outgoingTransactionCtx) {
+    new Chart(outgoingTransactionCtx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($transactionLabels) !!},
+            datasets: [
+                {
+                    label: 'Transaksi Keluar',
+                    data: {!! json_encode($outgoingTransactionData) !!},
+                    borderColor: 'rgba(220, 38, 38, 1)',
+                    backgroundColor: 'rgba(220, 38, 38, 0.2)',
+                    borderWidth: 1,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        precision: 0
+                    },
+                    suggestedMin: 1,
+                    suggestedMax: 10
+                }
+            }
+        }
+    });
+}
+// Combined Transaction Chart
+const combinedTransactionCtx = document.getElementById('combinedTransactionChart');
+if (combinedTransactionCtx) {
+    new Chart(combinedTransactionCtx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($transactionLabels) !!},
+            datasets: [
+                {
+                    label: 'Transaksi Masuk + Transaksi Keluar',
+                    data: {!! json_encode($combinedTransactionData) !!},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 2,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        precision: 0
+                    },
+                    suggestedMin: 1,
+                    suggestedMax: 10
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const index = context.dataIndex;
+                            const incomingCount = {!! json_encode($incomingTransactionData) !!}[index];
+                            const outgoingCount = {!! json_encode($outgoingTransactionData) !!}[index];
+                            return [
+                                'Total Transaksi: ' + context.raw,
+                                'Transaksi Masuk: ' + incomingCount,
+                                'Transaksi Keluar: ' + outgoingCount
+                            ];
                         }
                     }
                 }
-            });
+            }
         }
+    });
+}
+
+
     } catch (error) {
         console.error('Error initializing charts:', error);
     }
