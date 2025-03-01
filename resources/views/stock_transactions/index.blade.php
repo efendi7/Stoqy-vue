@@ -18,7 +18,15 @@
     @endif
 
     {{-- Form Stok Opname (hanya untuk admin & Manajer Gudang) --}}
-    @if(in_array($userRole, ['admin', 'Manajer Gudang']))
+    @if(in_array($userRole, ['admin', 'manager']))
+    <div class="mb-6">
+        <a href="{{ route('stock_opname.index') }}" class="bg-green-500 text-white py-2 px-4 rounded inline-block">
+            Lihat Stok Opname
+        </a>
+    </div>
+@endif
+
+@if(in_array($userRole, ['admin', 'manager']))
     <div class="mb-6">
         <h2 class="text-xl font-semibold mb-2">Stok Opname</h2>
         <form action="{{ route('stock_opname.store') }}" method="POST" class="mb-4 bg-white p-4 shadow rounded-lg">

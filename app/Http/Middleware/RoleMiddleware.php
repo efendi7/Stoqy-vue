@@ -13,7 +13,8 @@ class RoleMiddleware
     {
         Log::info('RoleMiddleware dijalankan', ['role' => $role]);
 
-        if (Auth::check() && Auth::user()->role === $role) {
+        $roles = explode('|', $role);
+        if (Auth::check() && in_array(Auth::user()->role, $roles)) {
             return $next($request);
         }
 

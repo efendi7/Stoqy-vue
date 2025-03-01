@@ -26,7 +26,6 @@ Route::get('/laporan/stok', [LaporanController::class, 'stok'])->name('laporan.s
 Route::get('/laporan/transaksi', [LaporanController::class, 'transaksi'])->name('laporan.transaksi');
 Route::get('/laporan/aktivitas', [LaporanController::class, 'aktivitas'])->name('laporan.aktivitas');
 
-Route::post('/stock_transactions/{id}/update-status', [StockTransactionController::class, 'updateStatus'])->name('stock_transactions.updateStatus');
 Route::post('/stock-transactions/{id}/update-status', [StockTransactionController::class, 'updateStatus'])->name('stock_transactions.update-status');
 
 
@@ -68,8 +67,7 @@ Route::middleware(['auth'])->group(function () {
     // Rute CRUD produk
     Route::resource('products', ProductController::class);
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
+   
     // Rute import & export produk
     Route::get('/products/import-export', [ProductImportExportController::class, 'index'])->name('products.import-export.index');
     Route::get('/products/export', [ProductImportExportController::class, 'export'])->name('products.export');
