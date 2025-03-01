@@ -26,7 +26,6 @@ class StockTransactionController extends Controller
         $userRole = $this->userService->getUserRole(auth()->id());
         $products = Product::all();
         
-
         return view('stock_transactions.index', compact('transactions', 'userRole', 'products'));
     }
 
@@ -144,5 +143,23 @@ class StockTransactionController extends Controller
         $product->save();
 
         return redirect()->route('stock_transactions.index')->with('success', 'Stock opname berhasil diperbarui!');
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:Pending,Diterima,Ditolak',
+        ]);
+
+        $transaction = $this->stockTransactionService->getStockTransactionById($id);
+
+        if (!$transaction) {
+            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
+        }
+
+        $transaction->status = $request->status;
+        $transaction->save();
+
+        return redirect()->route('stock_transactions.index')->with('success', 'Status transaksi berhasil diperbarui.');
     }
 }

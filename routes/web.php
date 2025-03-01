@@ -26,6 +26,9 @@ Route::get('/laporan/stok', [LaporanController::class, 'stok'])->name('laporan.s
 Route::get('/laporan/transaksi', [LaporanController::class, 'transaksi'])->name('laporan.transaksi');
 Route::get('/laporan/aktivitas', [LaporanController::class, 'aktivitas'])->name('laporan.aktivitas');
 
+Route::post('/stock_transactions/{id}/update-status', [StockTransactionController::class, 'updateStatus'])->name('stock_transactions.updateStatus');
+
+
 
 Route::middleware(['guest'])->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');

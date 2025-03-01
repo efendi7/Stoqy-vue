@@ -62,6 +62,7 @@
                 <th class="border border-gray-300 px-4 py-2">User</th>
                 <th class="border border-gray-300 px-4 py-2">Jenis</th>
                 <th class="border border-gray-300 px-4 py-2">Kuantitas</th>
+                <th class="border border-gray-300 px-4 py-2">Status</th>
                 <th class="border border-gray-300 px-4 py-2">Tanggal Transaksi</th>
                 <th class="border border-gray-300 px-4 py-2">Aksi</th>
             </tr>
@@ -73,6 +74,16 @@
                 <td class="border border-gray-300 px-4 py-2">{{ $transaction->user->name ?? 'User Tidak Ditemukan' }}</td>
                 <td class="border border-gray-300 px-4 py-2">{{ $transaction->type }}</td>
                 <td class="border border-gray-300 px-4 py-2">{{ $transaction->quantity }}</td>
+                <td class="border border-gray-300 px-4 py-2">
+                    <form action="{{ route('stock_transactions.updateStatus', $transaction->id) }}" method="POST" class="inline">
+                        @csrf
+                        <select name="status" onchange="this.form.submit()" class="border rounded px-2 py-1">
+                            <option value="Pending" @if($transaction->status == 'Pending') selected @endif>Pending</option>
+                            <option value="Accepted" @if($transaction->status == 'Accepted') selected @endif>Accepted</option>
+                            <option value="Rejected" @if($transaction->status == 'Rejected') selected @endif>Rejected</option>
+                        </select>
+                    </form>
+                </td>
                 <td class="border border-gray-300 px-4 py-2">{{ $transaction->transaction_date }}</td>
                 <td class="border border-gray-300 px-4 py-2">
                     <a href="{{ route('stock_transactions.edit', $transaction->id) }}" class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</a>
@@ -85,7 +96,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="text-center py-4">Tidak ada transaksi stok.</td>
+                <td colspan="7" class="text-center py-4">Tidak ada transaksi stok.</td>
             </tr>
             @endforelse
         </tbody>

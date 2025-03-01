@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 min-h-screen bg-cover bg-center mt-16">
-    <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Daftar Supplier</h1>
+    <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Daftar Penyuplai</h1>
 
     {{-- Form Pencarian --}}
     <form method="GET" action="{{ route('suppliers.index') }}" class="mb-6 flex gap-4">
