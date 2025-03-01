@@ -27,7 +27,7 @@ Route::get('/laporan/transaksi', [LaporanController::class, 'transaksi'])->name(
 Route::get('/laporan/aktivitas', [LaporanController::class, 'aktivitas'])->name('laporan.aktivitas');
 
 Route::post('/stock_transactions/{id}/update-status', [StockTransactionController::class, 'updateStatus'])->name('stock_transactions.updateStatus');
-
+Route::post('/stock-transactions/{id}/update-status', [StockTransactionController::class, 'updateStatus'])->name('stock_transactions.update-status');
 
 
 Route::middleware(['guest'])->group(function () {

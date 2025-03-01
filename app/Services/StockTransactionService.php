@@ -1,124 +1,152 @@
 <?php
+
 namespace App\Services;
 
-use App\Interfaces\StockTransactionRepositoryInterface;
-use App\Models\Product;
 use App\Models\StockTransaction;
+use App\Models\Product;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class StockTransactionService
 {
-    protected $stockTransactionRepository;
-
-    public function __construct(StockTransactionRepositoryInterface $stockTransactionRepository)
-    {
-        $this->stockTransactionRepository = $stockTransactionRepository;
-    }
-
     public function getAllStockTransactions()
     {
-        return $this->stockTransactionRepository->getAllStockTransactions();
+        return StockTransaction::with(['product', 'user'])->latest()->get();
     }
 
     public function getStockTransactionById($id)
     {
-        return $this->stockTransactionRepository->getStockTransactionById($id);
+        return StockTransaction::find($id);
     }
 
     public function createStockTransaction(array $data)
     {
-        // Cek apakah produk ada
-        $product = Product::find($data['product_id']);
-        if (!$product) {
-            Log::error("Produk dengan ID {$data['product_id']} tidak ditemukan.");
+        DB::beginTransaction();
+        try {
+            // Buat transaksi dengan status 'Pending' dan tidak mempengaruhi stok
+            $transaction = StockTransaction::create($data);
+            
+            DB::commit();
+            return $transaction;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating stock transaction: ' . $e->getMessage());
             return false;
         }
-
-        // Jika transaksi adalah keluar, pastikan stok cukup
-        if ($data['type'] == 'Keluar' && $product->stock < $data['quantity']) {
-            Log::error("Stok tidak mencukupi untuk produk ID {$data['product_id']}. Stok yang tersedia: {$product->stock}, jumlah yang diminta: {$data['quantity']}");
-            return false; // Jangan simpan transaksi jika stok tidak mencukupi
-        }
-
-        // Buat transaksi stok
-        $transaction = $this->stockTransactionRepository->createStockTransaction($data);
-
-        // Update stok produk
-        if ($data['type'] == 'Masuk') {
-            $product->stock += $data['quantity'];
-        } else {
-            $product->stock -= $data['quantity'];
-        }
-        $product->save();
-
-        Log::info("Transaksi stok berhasil dicatat: ", $transaction->toArray());
-
-        return $transaction;
     }
 
-    public function updateStockTransaction($transactionId, array $data): bool
+    public function updateStockTransaction($id, array $data)
     {
-        // Ambil transaksi lama
-        $transaction = $this->stockTransactionRepository->getStockTransactionById($transactionId);
+        $transaction = StockTransaction::find($id);
+        
         if (!$transaction) {
-            Log::error("Transaksi dengan ID {$transactionId} tidak ditemukan.");
             return false;
         }
 
-        // Ambil produk terkait
-        $product = Product::find($data['product_id']);
-        if (!$product) {
-            Log::error("Produk dengan ID {$data['product_id']} tidak ditemukan.");
+        DB::beginTransaction();
+        try {
+            // Update transaksi tanpa mengubah status atau stok
+            $transaction->update($data);
+            
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating stock transaction: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function deleteStockTransaction($id)
+    {
+        $transaction = StockTransaction::find($id);
+        
+        if (!$transaction) {
             return false;
         }
 
-        // Kembalikan stok lama sebelum update
-        if ($transaction->type == 'Masuk') {
-            $product->stock -= $transaction->quantity;
-        } else {
-            $product->stock += $transaction->quantity;
-        }
-
-        // Update dengan data baru
-        if ($data['type'] == 'Masuk') {
-            $product->stock += $data['quantity'];
-        } else {
-            if ($product->stock < $data['quantity']) {
-                Log::error("Stok tidak mencukupi setelah update untuk produk ID {$data['product_id']}");
-                return false;
+        // Jika transaksi sudah diterima dan mempengaruhi stok, kembalikan stok ke semula
+        if ($transaction->status === 'Diterima') {
+            $product = Product::find($transaction->product_id);
+            
+            if ($transaction->type === 'Masuk') {
+                $product->stock -= $transaction->quantity;
+            } else { // Keluar
+                $product->stock += $transaction->quantity;
             }
-            $product->stock -= $data['quantity'];
+            
+            $product->save();
         }
 
-        $product->save();
-
-        return $this->stockTransactionRepository->updateStockTransaction($transactionId, $data);
+        $transaction->delete();
+        return true;
     }
 
-    public function deleteStockTransaction($transactionId): bool
+    public function updateTransactionStatus($id, $newStatus)
     {
-        // Ambil transaksi sebelum dihapus
-        $transaction = $this->stockTransactionRepository->getStockTransactionById($transactionId);
+        $transaction = StockTransaction::find($id);
+        
         if (!$transaction) {
-            Log::error("Transaksi dengan ID {$transactionId} tidak ditemukan.");
             return false;
         }
 
-        // Ambil produk terkait
+        DB::beginTransaction();
+        try {
+            $oldStatus = $transaction->status;
+            $transaction->status = $newStatus;
+            $transaction->save();
+            
+            // Jika status berubah menjadi 'Diterima', update stok produk
+            if ($oldStatus !== 'Diterima' && $newStatus === 'Diterima') {
+                $this->processApprovedTransaction($transaction);
+            }
+            // Jika status berubah dari 'Diterima' ke status lain, kembalikan stok
+            else if ($oldStatus === 'Diterima' && $newStatus !== 'Diterima') {
+                $this->revertApprovedTransaction($transaction);
+            }
+            
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating transaction status: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function processApprovedTransaction($transaction)
+    {
         $product = Product::find($transaction->product_id);
-        if (!$product) {
-            Log::error("Produk dengan ID {$transaction->product_id} tidak ditemukan.");
-            return false;
-        }
-
-        // Kembalikan stok sebelum transaksi dihapus
-        if ($transaction->type == 'Masuk') {
+        
+        if ($transaction->type === 'Masuk') {
+            $product->stock += $transaction->quantity;
+        } else { // Keluar
+            // Cek apakah stok cukup
+            if ($product->stock < $transaction->quantity) {
+                throw new \Exception('Stok tidak mencukupi untuk transaksi keluar');
+            }
+            
             $product->stock -= $transaction->quantity;
-        } else {
+        }
+        
+        $product->save();
+    }
+
+    private function revertApprovedTransaction($transaction)
+    {
+        $product = Product::find($transaction->product_id);
+        
+        if ($transaction->type === 'Masuk') {
+            // Cek apakah stok cukup untuk dikurangi
+            if ($product->stock < $transaction->quantity) {
+                throw new \Exception('Stok tidak mencukupi untuk mengembalikan transaksi masuk');
+            }
+            
+            $product->stock -= $transaction->quantity;
+        } else { // Keluar
             $product->stock += $transaction->quantity;
         }
+        
         $product->save();
-
-        return $this->stockTransactionRepository->deleteStockTransaction($transactionId);
     }
 }

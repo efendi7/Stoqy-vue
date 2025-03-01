@@ -65,7 +65,7 @@ class StockTransactionController extends Controller
             return redirect()->route('stock_transactions.index')->with('error', 'Gagal mencatat transaksi stok. Pastikan data valid dan stok mencukupi.');
         }
     
-        return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dicatat!');
+        return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dicatat dan menunggu persetujuan!');
     }
     
     public function edit($id)
@@ -110,6 +110,12 @@ class StockTransactionController extends Controller
 
     public function destroy($id)
     {
+        $userRole = $this->userService->getUserRole(auth()->id());
+
+        if (!in_array($userRole, ['admin', 'Manajer Gudang'])) {
+            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk menghapus transaksi stok.');
+        }
+
         $transaction = $this->stockTransactionService->getStockTransactionById($id);
         
         if (!$transaction) {
@@ -147,19 +153,26 @@ class StockTransactionController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
+        $userRole = $this->userService->getUserRole(auth()->id());
+
+        if (!in_array($userRole, ['admin', 'Manajer Gudang'])) {
+            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengubah status transaksi.');
+        }
+
         $request->validate([
             'status' => 'required|in:Pending,Diterima,Ditolak',
         ]);
 
-        $transaction = $this->stockTransactionService->getStockTransactionById($id);
+        $updated = $this->stockTransactionService->updateTransactionStatus($id, $request->status);
 
-        if (!$transaction) {
-            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
+        if (!$updated) {
+            return redirect()->route('stock_transactions.index')->with('error', 'Gagal mengubah status transaksi. Periksa kembali data.');
         }
 
-        $transaction->status = $request->status;
-        $transaction->save();
+        $statusMessage = $request->status === 'Diterima' ? 
+            'Status transaksi berhasil diubah menjadi Diterima dan stok produk telah diperbarui.' : 
+            'Status transaksi berhasil diubah menjadi ' . $request->status . '.';
 
-        return redirect()->route('stock_transactions.index')->with('success', 'Status transaksi berhasil diperbarui.');
+        return redirect()->route('stock_transactions.index')->with('success', $statusMessage);
     }
 }
