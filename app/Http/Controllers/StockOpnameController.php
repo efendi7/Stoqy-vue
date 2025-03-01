@@ -3,6 +3,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\StockOpname;
+
 
 class StockOpnameController extends Controller
 {
@@ -26,4 +28,33 @@ class StockOpnameController extends Controller
 
         return redirect()->back()->with('success', 'Stok berhasil diperbarui.');
     }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'actual_stock' => 'required|integer|min:0',
+        ]);
+    
+        $product = Product::findOrFail($id); // Ambil produk berdasarkan ID
+    
+        // Cek apakah sudah ada data stock opname untuk produk ini
+        $stockOpname = StockOpname::where('product_id', $product->id)->first();
+    
+        if ($stockOpname) {
+            // Jika sudah ada, update data
+            $stockOpname->update([
+                'actual_stock' => $request->actual_stock,
+            ]);
+        } else {
+            // Jika belum ada, buat data baru
+            StockOpname::create([
+                'product_id' => $product->id,
+                'actual_stock' => $request->actual_stock,
+            ]);
+        }
+    
+        return redirect()->back()->with('success', 'Stock opname berhasil diperbarui!');
+    }
+    
+
 }

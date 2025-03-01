@@ -6,7 +6,9 @@
     <!-- Welcome Message -->
     <div class="bg-blue-100 text-blue-800 p-4 rounded-lg shadow-md mb-6">
         <h2 class="text-base md:text-2xl font-bold">
-            Selamat datang, <span class="capitalize">{{ ucfirst(auth()->user()->role) }}</span>, {{ auth()->user()->name }}!
+        Selamat datang 
+    <span class="capitalize">{{ ucfirst(app(\App\Services\UserService::class)->getRoleLabel(auth()->user()->role)) }}</span>, 
+    {{ auth()->user()->name }}!
         </h2>
     </div>
 

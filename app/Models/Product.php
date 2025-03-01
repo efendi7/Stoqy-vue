@@ -19,7 +19,8 @@ class Product extends Model
         'supplier_id',
         'sku',
         'purchase_price',
-        'sale_price'
+        'sale_price',
+        'stock'
     ];
 
     public function category()

@@ -24,6 +24,9 @@
                 <a href="{{ route('stock_transactions.index') }}" class="text-gray-300 hover:text-white transition">
                     <i class="fas fa-exchange-alt mr-1"></i> Transaksi Stok
                 </a>
+                <a href="{{ route('stock_opname.index') }}" class="text-gray-300 hover:text-white transition">
+                    <i class="fas fa-clipboard-list mr-1"></i> Stok Opname
+                </a>
 
                 <!-- Dropdown Laporan -->
                 <div class="relative">
@@ -59,7 +62,8 @@
                         <div class="px-4 py-3 border-b">
                             <span class="block text-sm font-semibold text-gray-900">{{ Auth::user()->name }}</span>
                             <span class="block text-sm text-gray-500 truncate w-full overflow-hidden text-ellipsis">{{ Auth::user()->email }}</span>
-                            <span class="block text-xs text-gray-400">Role: {{ ucfirst(Auth::user()->role) }}</span>
+                            <span class="block text-xs text-gray-400">Role: {{ ucfirst(app(\App\Services\UserService::class)->getRoleLabel(Auth::user()->role)) }}
+                            </span>
                         </div>
                         <ul class="py-2">
                             <li><a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a></li>

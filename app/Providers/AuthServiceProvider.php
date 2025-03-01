@@ -24,7 +24,11 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
+         // Pastikan hanya Admin yang bisa menghapus user
+    Gate::define('delete-user', function (User $user) {
+        return strtolower($user->role) === 'admin';
 
         //
-    }
+    });
+}
 }

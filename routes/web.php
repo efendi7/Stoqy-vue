@@ -55,6 +55,10 @@ Route::middleware(['auth'])->group(function () {
     // Endpoint tambahan untuk fitur khusus
     Route::post('/set_minimum_stock', [StockTransactionController::class, 'setMinimumStock'])->name('stock_transactions.set_minimum_stock');
     Route::get('/stock_opname_manual', [StockTransactionController::class, 'stockOpname'])->name('stock_transactions.opname');
+    Route::post('/stock-opname', [StockOpnameController::class, 'store'])->name('stock_opname.store');
+    Route::put('/stock-opname/{id}', [StockOpnameController::class, 'update'])->name('stock_opname.update');
+
+
 
     // User activity routes
     Route::get('/users/{user}/activity', [UserController::class, 'activity'])->name('users.activity');

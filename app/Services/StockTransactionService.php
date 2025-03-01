@@ -4,28 +4,36 @@ namespace App\Services;
 
 use App\Models\StockTransaction;
 use App\Models\Product;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class StockTransactionService
 {
-    public function getAllStockTransactions()
+    /**
+     * Get all stock transactions with pagination.
+     */
+    public function getAllStockTransactionsPaginated($perPage = 10): LengthAwarePaginator
     {
-        return StockTransaction::with(['product', 'user'])->latest()->get();
+        return StockTransaction::with(['product', 'user'])->latest()->paginate($perPage);
     }
 
-    public function getStockTransactionById($id)
+    /**
+     * Get a single stock transaction by ID.
+     */
+    public function getStockTransactionById($id): StockTransaction
     {
-        return StockTransaction::find($id);
+        return StockTransaction::with(['product', 'user'])->findOrFail($id);
     }
 
-    public function createStockTransaction(array $data)
+    /**
+     * Create a new stock transaction.
+     */
+    public function createStockTransaction(array $data): StockTransaction|bool
     {
         DB::beginTransaction();
         try {
-            // Buat transaksi dengan status 'Pending' dan tidak mempengaruhi stok
             $transaction = StockTransaction::create($data);
-            
             DB::commit();
             return $transaction;
         } catch (\Exception $e) {
@@ -35,19 +43,19 @@ class StockTransactionService
         }
     }
 
-    public function updateStockTransaction($id, array $data)
+    /**
+     * Update an existing stock transaction.
+     */
+    public function updateStockTransaction($id, array $data): bool
     {
         $transaction = StockTransaction::find($id);
-        
         if (!$transaction) {
             return false;
         }
 
         DB::beginTransaction();
         try {
-            // Update transaksi tanpa mengubah status atau stok
             $transaction->update($data);
-            
             DB::commit();
             return true;
         } catch (\Exception $e) {
@@ -57,35 +65,30 @@ class StockTransactionService
         }
     }
 
-    public function deleteStockTransaction($id)
+    /**
+     * Delete a stock transaction and revert stock if necessary.
+     */
+    public function deleteStockTransaction($id): bool
     {
         $transaction = StockTransaction::find($id);
-        
         if (!$transaction) {
             return false;
         }
 
-        // Jika transaksi sudah diterima dan mempengaruhi stok, kembalikan stok ke semula
         if ($transaction->status === 'Diterima') {
-            $product = Product::find($transaction->product_id);
-            
-            if ($transaction->type === 'Masuk') {
-                $product->stock -= $transaction->quantity;
-            } else { // Keluar
-                $product->stock += $transaction->quantity;
-            }
-            
-            $product->save();
+            $this->handleStockUpdate($transaction, 'revert');
         }
 
         $transaction->delete();
         return true;
     }
 
-    public function updateTransactionStatus($id, $newStatus)
+    /**
+     * Update stock transaction status and handle stock changes.
+     */
+    public function updateTransactionStatus($id, $newStatus): bool
     {
         $transaction = StockTransaction::find($id);
-        
         if (!$transaction) {
             return false;
         }
@@ -95,16 +98,13 @@ class StockTransactionService
             $oldStatus = $transaction->status;
             $transaction->status = $newStatus;
             $transaction->save();
-            
-            // Jika status berubah menjadi 'Diterima', update stok produk
+
             if ($oldStatus !== 'Diterima' && $newStatus === 'Diterima') {
-                $this->processApprovedTransaction($transaction);
+                $this->handleStockUpdate($transaction, 'process');
+            } elseif ($oldStatus === 'Diterima' && $newStatus !== 'Diterima') {
+                $this->handleStockUpdate($transaction, 'revert');
             }
-            // Jika status berubah dari 'Diterima' ke status lain, kembalikan stok
-            else if ($oldStatus === 'Diterima' && $newStatus !== 'Diterima') {
-                $this->revertApprovedTransaction($transaction);
-            }
-            
+
             DB::commit();
             return true;
         } catch (\Exception $e) {
@@ -114,39 +114,30 @@ class StockTransactionService
         }
     }
 
-    private function processApprovedTransaction($transaction)
+    /**
+     * Process or revert stock updates based on transaction type.
+     */
+    private function handleStockUpdate(StockTransaction $transaction, string $action)
     {
         $product = Product::find($transaction->product_id);
-        
-        if ($transaction->type === 'Masuk') {
-            $product->stock += $transaction->quantity;
-        } else { // Keluar
-            // Cek apakah stok cukup
-            if ($product->stock < $transaction->quantity) {
-                throw new \Exception('Stok tidak mencukupi untuk transaksi keluar');
-            }
-            
-            $product->stock -= $transaction->quantity;
+        if (!$product) {
+            throw new \Exception('Product not found.');
         }
-        
-        $product->save();
-    }
 
-    private function revertApprovedTransaction($transaction)
-    {
-        $product = Product::find($transaction->product_id);
-        
         if ($transaction->type === 'Masuk') {
-            // Cek apakah stok cukup untuk dikurangi
-            if ($product->stock < $transaction->quantity) {
-                throw new \Exception('Stok tidak mencukupi untuk mengembalikan transaksi masuk');
+            $amount = $transaction->quantity;
+            if ($action === 'revert' && $product->stock < $amount) {
+                throw new \Exception('Not enough stock to revert.');
             }
-            
-            $product->stock -= $transaction->quantity;
-        } else { // Keluar
-            $product->stock += $transaction->quantity;
+            $product->stock += ($action === 'process') ? $amount : -$amount;
+        } else { // type 'Keluar'
+            $amount = $transaction->quantity;
+            if ($action === 'process' && $product->stock < $amount) {
+                throw new \Exception('Insufficient stock.');
+            }
+            $product->stock -= ($action === 'process') ? $amount : -$amount;
         }
-        
+
         $product->save();
     }
 }

@@ -1,6 +1,20 @@
 @extends('layouts.app')
 
 @section('content')
+@if(session('success'))
+    <div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-4 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md">
+        <span>{{ session('success') }}</span>
+        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+    </div>
+@endif
+
+@if(session('error'))
+    <div id="flash-error" class="max-w-lg mx-auto bg-red-600 text-white p-3 rounded-lg mb-4 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md">
+        <span>{{ session('error') }}</span>
+        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+    </div>
+@endif
+
 <div class="container mx-auto px-4 min-h-screen bg-cover bg-center mt-16">
     <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Daftar Penyuplai</h1>
 
