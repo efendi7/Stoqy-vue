@@ -35,18 +35,22 @@ class StockOpnameController extends Controller
             'actual_stock' => 'required|integer|min:0',
         ]);
     
-        $product = Product::findOrFail($id); // Ambil produk berdasarkan ID
+        $product = Product::findOrFail($id);
+    
+        // Update stok di tabel Product
+        $product->stock = $request->actual_stock;
+        $product->save(); // Simpan perubahan ke database
     
         // Cek apakah sudah ada data stock opname untuk produk ini
         $stockOpname = StockOpname::where('product_id', $product->id)->first();
     
         if ($stockOpname) {
-            // Jika sudah ada, update data
+            // Jika sudah ada, update datanya
             $stockOpname->update([
                 'actual_stock' => $request->actual_stock,
             ]);
         } else {
-            // Jika belum ada, buat data baru
+            // Jika belum ada, buat data baru di tabel stock_opname
             StockOpname::create([
                 'product_id' => $product->id,
                 'actual_stock' => $request->actual_stock,

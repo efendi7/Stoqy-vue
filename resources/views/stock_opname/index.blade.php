@@ -37,16 +37,15 @@
                         </td>
                         <td class="border p-2" id="difference_{{ $product->id }}">0</td>
                         <td class="border p-2">
-                        <form action="{{ route('stock_opname.update', $product->id) }}" method="POST">
-    @csrf
-    @method('PUT')
-    <input type="hidden" name="product_id" value="{{ $product->id }}">
-    <input type="hidden" name="actual_stock" id="hidden_stock_{{ $product->id }}" value="{{ $product->stock }}">
-    <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">
-        Update
-    </button>
-</form>
-
+                            <form action="{{ route('stock_opname.update', $product->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <input type="hidden" name="actual_stock" id="hidden_stock_{{ $product->id }}" value="{{ $product->stock }}">
+                                <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">
+                                    Update
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 @endforeach
@@ -58,17 +57,12 @@
 <script>
     function calculateDifference(productId) {
         let recordedStock = parseInt(document.getElementById(`recorded_stock_${productId}`).innerText);
-        let actualStockInput = document.getElementById(`actual_stock_${productId}`);
-        let actualStock = parseInt(actualStockInput.value) || 0;
-        
-        if (actualStock < 0) {
-            actualStockInput.value = 0;
-            actualStock = 0;
-        }
-
+        let actualStock = parseInt(document.getElementById(`actual_stock_${productId}`).value) || 0;
         let stockDifference = actualStock - recordedStock;
+
         document.getElementById(`difference_${productId}`).innerText = stockDifference;
-        document.getElementById(`hidden_stock_${productId}`).value = actualStock;
+        document.getElementById(`hidden_stock_${productId}`).value = actualStock; // Update hidden input
     }
 </script>
+
 @endsection
