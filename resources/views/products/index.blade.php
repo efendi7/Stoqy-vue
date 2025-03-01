@@ -64,13 +64,13 @@
                                 $statusClass = '';
                                 if ($product->stock == 0) {
                                     $status = 'Habis';
-                                    $statusClass = 'bg-red-500 text-white';
+                                    $statusClass = 'font-bold text-red-500';
                                 } elseif ($product->stock < $product->minimum_stock) {
                                     $status = 'Warning';
-                                    $statusClass = 'bg-yellow-500 text-white';
+                                    $statusClass = 'font-bold text-yellow-500';
                                 } else {
                                     $status = 'Tersedia';
-                                    $statusClass = 'bg-green-500 text-white';
+                                    $statusClass = 'font-bold text-green-500';
                                 }
                             @endphp
                             <span class="{{ $statusClass }} px-2 py-1 rounded">{{ $status }}</span>

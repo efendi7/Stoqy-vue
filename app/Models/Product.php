@@ -37,4 +37,9 @@ class Product extends Model
     {
         return $this->hasMany(StockTransaction::class);
     }
+
+    public function attributes()
+{
+    return $this->hasMany(ProductAttribute::class, 'product_id');
+}
 }

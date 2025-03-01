@@ -1,65 +1,70 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto p-6">
-    <h2 class="text-2xl font-bold mb-4">Stock Opname</h2>
+<div class="container mx-auto px-4 min-h-screen bg-cover bg-center mt-16">
+    <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Stok Opname</h1>
 
     @if(session('success'))
-        <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
-            {{ session('success') }}
+        <div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">  
+            <div class="flex items-center space-x-2">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
         </div>
+        <script>
+            setTimeout(() => {
+                let flashSuccess = document.getElementById('flash-success');
+                if (flashSuccess) {
+                    flashSuccess.style.opacity = '0';
+                    setTimeout(() => flashSuccess.remove(), 500);
+                }
+            }, 4000);
+        </script>
     @endif
 
-    <div class="overflow-x-auto">
-        <table class="w-full border-collapse border border-gray-300">
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="border p-2">No</th>
-                    <th class="border p-2">Nama Produk</th>
-                    <th class="border p-2">Stok Tercatat</th>
-                    <th class="border p-2">Stok Fisik</th>
-                    <th class="border p-2">Selisih</th>
-                    <th class="border p-2">Aksi</th>
+    <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
+        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
+            <thead class="bg-gray-800 bg-opacity-70 text-white">
+                <tr>
+                    <th class="py-3 px-4 text-left">No</th>
+                    <th class="py-3 px-4 text-left">Nama Produk</th>
+                    <th class="py-3 px-4 text-left">Stok Tercatat</th>
+                    <th class="py-3 px-4 text-left">Stok Fisik</th>
+                    <th class="py-3 px-4 text-left">Selisih</th>
+                    <th class="py-3 px-4 text-left">Aksi</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-gray-700">
                 @foreach ($products as $index => $product)
-                    <tr>
-                        <td class="border p-2">{{ $index + 1 }}</td>
-                        <td class="border p-2">{{ $product->name }}</td>
-                        <td class="border p-2" id="recorded_stock_{{ $product->id }}">{{ $product->stock }}</td>
-                        <td class="border p-2">
-                            <input type="number" name="actual_stock" id="actual_stock_{{ $product->id }}" 
-                                class="border p-1 w-full"
-                                value="{{ $product->stock }}"
-                                min="0"
-                                oninput="calculateDifference({{ $product->id }})">
-                        </td>
-                        <td class="border p-2" id="difference_{{ $product->id }}">0</td>
-                        <td class="border p-2">
-    <form action="{{ route('stock_opname.update', $product->id) }}" method="POST" class="inline">
-        @csrf
-        @method('PUT')
-        <input type="hidden" name="product_id" value="{{ $product->id }}">
-        <input type="hidden" name="actual_stock" id="hidden_stock_{{ $product->id }}" value="{{ $product->stock }}">
-        
-        <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">
-            Update
-        </button>
-    </form>
-
-    <form action="{{ route('stock_opname.store') }}" method="POST" class="inline">
-        @csrf
-        <input type="hidden" name="product_id" value="{{ $product->id }}">
-        <input type="hidden" name="actual_stock" id="hidden_audit_{{ $product->id }}" value="{{ $product->stock }}">
-
-        <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">
-            Save Audit
-        </button>
-    </form>
-</td>
-
-                    </tr>
+                <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
+                    <td class="py-3 px-4">{{ $index + 1 }}</td>
+                    <td class="py-3 px-4">{{ $product->name }}</td>
+                    <td class="py-3 px-4" id="recorded_stock_{{ $product->id }}">{{ $product->stock }}</td>
+                    <td class="py-3 px-4">
+                        <input type="number" name="actual_stock" id="actual_stock_{{ $product->id }}" 
+                            class="border p-1 w-full"
+                            value="{{ $product->stock }}"
+                            min="0"
+                            oninput="calculateDifference({{ $product->id }})">
+                    </td>
+                    <td class="py-3 px-4" id="difference_{{ $product->id }}">0</td>
+                    <td class="py-3 px-4 flex gap-2">
+                        <form action="{{ route('stock_opname.update', $product->id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="actual_stock" id="hidden_stock_{{ $product->id }}" value="{{ $product->stock }}">
+                            <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">Update</button>
+                        </form>
+                        <form action="{{ route('stock_opname.store') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="actual_stock" id="hidden_audit_{{ $product->id }}" value="{{ $product->stock }}">
+                            <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">Save Audit</button>
+                        </form>
+                    </td>
+                </tr>
                 @endforeach
             </tbody>
         </table>
