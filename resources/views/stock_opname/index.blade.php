@@ -37,16 +37,28 @@
                         </td>
                         <td class="border p-2" id="difference_{{ $product->id }}">0</td>
                         <td class="border p-2">
-                            <form action="{{ route('stock_opname.update', $product->id) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <input type="hidden" name="actual_stock" id="hidden_stock_{{ $product->id }}" value="{{ $product->stock }}">
-                                <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">
-                                    Update
-                                </button>
-                            </form>
-                        </td>
+    <form action="{{ route('stock_opname.update', $product->id) }}" method="POST" class="inline">
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="product_id" value="{{ $product->id }}">
+        <input type="hidden" name="actual_stock" id="hidden_stock_{{ $product->id }}" value="{{ $product->stock }}">
+        
+        <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">
+            Update
+        </button>
+    </form>
+
+    <form action="{{ route('stock_opname.store') }}" method="POST" class="inline">
+        @csrf
+        <input type="hidden" name="product_id" value="{{ $product->id }}">
+        <input type="hidden" name="actual_stock" id="hidden_audit_{{ $product->id }}" value="{{ $product->stock }}">
+
+        <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">
+            Save Audit
+        </button>
+    </form>
+</td>
+
                     </tr>
                 @endforeach
             </tbody>

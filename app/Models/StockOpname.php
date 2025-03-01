@@ -8,7 +8,7 @@ class StockOpname extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['product_id', 'actual_stock'];
+    protected $fillable = ['product_id', 'actual_stock', 'difference'];
 
     public function product()
     {

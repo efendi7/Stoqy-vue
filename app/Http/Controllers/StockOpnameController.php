@@ -19,16 +19,27 @@ class StockOpnameController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'new_stock' => 'required|integer|min:0',
+            'actual_stock' => 'required|integer|min:0',
         ]);
-
+    
         $product = Product::findOrFail($request->product_id);
-        $product->stock = $request->new_stock;
-        $product->save();
-
-        return redirect()->back()->with('success', 'Stok berhasil diperbarui.');
+        $difference = $request->actual_stock - $product->stock;
+    
+        // Simpan hasil stock opname ke database
+        $stockOpname = StockOpname::create([
+            'product_id' => $product->id,
+            'actual_stock' => $request->actual_stock,
+            'difference' => $difference,
+        ]);
+    
+        if ($stockOpname) {
+            return redirect()->back()->with('success', 'Stock audit berhasil disimpan!');
+        } else {
+            return redirect()->back()->with('error', 'Gagal menyimpan stock audit.');
+        }
     }
-
+    
+    
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -36,28 +47,12 @@ class StockOpnameController extends Controller
         ]);
     
         $product = Product::findOrFail($id);
-    
-        // Update stok di tabel Product
+        
+        // Update stok produk agar sesuai dengan stok fisik
         $product->stock = $request->actual_stock;
-        $product->save(); // Simpan perubahan ke database
+        $product->save();
     
-        // Cek apakah sudah ada data stock opname untuk produk ini
-        $stockOpname = StockOpname::where('product_id', $product->id)->first();
-    
-        if ($stockOpname) {
-            // Jika sudah ada, update datanya
-            $stockOpname->update([
-                'actual_stock' => $request->actual_stock,
-            ]);
-        } else {
-            // Jika belum ada, buat data baru di tabel stock_opname
-            StockOpname::create([
-                'product_id' => $product->id,
-                'actual_stock' => $request->actual_stock,
-            ]);
-        }
-    
-        return redirect()->back()->with('success', 'Stock opname berhasil diperbarui!');
+        return redirect()->back()->with('success', 'Stok berhasil diperbarui!');
     }
     
 
