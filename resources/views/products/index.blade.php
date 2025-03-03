@@ -5,30 +5,46 @@
     <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Daftar Produk</h1>
 
     {{-- Flash Message Sukses --}}
-    @if(session('success'))
-    <div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
-        <div class="flex items-center space-x-2">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            <span>{{ session('success') }}</span>
-        </div>
-        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+@if(session('success'))
+<div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
+    <div class="flex items-center space-x-2">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span>{{ session('success') }}</span>
     </div>
-    @endif
+    <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+</div>
+@endif
 
-    {{-- Flash Message Error --}}
-    @if(session('error'))
-    <div id="flash-error" class="max-w-lg mx-auto bg-red-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
-        <div class="flex items-center space-x-2">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-            <span>{{ session('error') }}</span>
-        </div>
-        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+{{-- Flash Message Error --}}
+@if(session('error'))
+<div id="flash-error" class="max-w-lg mx-auto bg-red-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
+    <div class="flex items-center space-x-2">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        <span>{{ session('error') }}</span>
     </div>
-    @endif
+    <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+</div>
+@endif
+
+<script>
+    // Flash message otomatis hilang setelah 5 detik
+    setTimeout(function() {
+        const successMessage = document.getElementById('flash-success');
+        const errorMessage = document.getElementById('flash-error');
+        
+        if (successMessage) {
+            successMessage.remove();
+        }
+        if (errorMessage) {
+            errorMessage.remove();
+        }
+    }, 5000); // 5000 ms = 5 detik
+</script>
+
 
     {{-- Form Pencarian --}}
     <form method="GET" action="{{ route('products.index') }}" class="mb-6 flex gap-4">
