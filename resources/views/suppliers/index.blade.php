@@ -20,8 +20,8 @@
 
     {{-- Form Pencarian --}}
     <form method="GET" action="{{ route('suppliers.index') }}" class="mb-6 flex gap-4">
-        <input type="text" name="search" placeholder="Cari berdasarkan nama atau kontak" class="border border-gray-300 rounded-lg py-2 px-4 w-full text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-        <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all">Cari</button>
+        <input type="text" name="search" id="search" placeholder="Cari berdasarkan nama atau kontak" class="border border-gray-300 rounded-lg py-2 px-4 w-full text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+        <button type="button" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all">Cari</button>
     </form>
 
     {{-- Notifikasi Kesalahan --}}
@@ -53,11 +53,11 @@
                     <th class="py-3 px-4 text-center">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-700">
+            <tbody class="divide-y divide-gray-700" id="supplier-table-body">
                 @foreach($suppliers as $supplier)
-                    <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
-                        <td class="py-3 px-4">{{ $supplier->name ?? 'N/A' }}</td>
-                        <td class="py-3 px-4">{{ $supplier->contact ?? 'N/A' }}</td>
+                    <tr class="supplier-row hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
+                        <td class="py-3 px-4 supplier-name">{{ $supplier->name ?? 'N/A' }}</td>
+                        <td class="py-3 px-4 supplier-contact">{{ $supplier->contact ?? 'N/A' }}</td>
                         <td class="py-3 px-4">{{ $supplier->address ?? 'N/A' }}</td>
                         <td class="py-3 px-4">{{ $supplier->email ?? 'N/A' }}</td>
                         <td class="py-3 px-4 text-center">
@@ -81,4 +81,38 @@
         {{ $suppliers->appends(request()->input())->links('vendor.pagination.custom') }}
     </div>
 </div>
+
+<script>
+    // Fungsi untuk pencarian langsung
+    document.querySelector('#search').addEventListener('input', function() {
+        const searchQuery = this.value.toLowerCase(); // Ambil nilai input pencarian
+        const rows = document.querySelectorAll('.supplier-row'); // Ambil semua baris supplier
+        rows.forEach(row => {
+            const nameCell = row.querySelector('.supplier-name');
+            const contactCell = row.querySelector('.supplier-contact');
+
+            const name = nameCell.textContent.toLowerCase();
+            const contact = contactCell.textContent.toLowerCase();
+
+            // Reset highlight sebelum pengecekan
+            nameCell.innerHTML = nameCell.textContent; 
+            contactCell.innerHTML = contactCell.textContent;
+
+            // Cek apakah nama atau kontak sesuai dengan query pencarian
+            if (name.includes(searchQuery) || contact.includes(searchQuery)) {
+                row.style.display = ''; // Tampilkan baris yang sesuai
+                // Soroti teks yang cocok dengan background kuning
+                if (name.includes(searchQuery)) {
+                    nameCell.innerHTML = name.replace(new RegExp(searchQuery, 'gi'), match => `<mark class="bg-yellow-300">${match}</mark>`);
+                }
+                if (contact.includes(searchQuery)) {
+                    contactCell.innerHTML = contact.replace(new RegExp(searchQuery, 'gi'), match => `<mark class="bg-yellow-300">${match}</mark>`);
+                }
+            } else {
+                row.style.display = 'none'; // Sembunyikan baris yang tidak cocok
+            }
+        });
+    });
+</script>
+
 @endsection

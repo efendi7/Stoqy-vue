@@ -33,7 +33,7 @@
     {{-- Form Pencarian --}}
     <form method="GET" action="{{ route('products.index') }}" class="mb-6 flex gap-4">
         <input type="text" name="search" placeholder="Cari berdasarkan nama, SKU, atau kategori" class="border border-gray-300 rounded-lg py-2 px-4 w-full text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" oninput="filterProducts()">
-        <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all">Cari</button>
+        <button type="button" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all">Cari</button>
     </form>
 
     {{-- Notifikasi Kesalahan --}}
@@ -145,48 +145,95 @@
 </div>
 
 <script>
-    function filterProducts() {
-        const searchQuery = document.querySelector('input[name="search"]').value.toLowerCase();
-        const rows = document.querySelectorAll('.product-row');
-        let found = false;
-
-        rows.forEach(row => {
-            const nameCell = row.querySelector('.product-name');
-            const skuCell = row.querySelector('.product-sku');
-            const categoryCell = row.querySelector('.product-category');
-
-            const name = nameCell.textContent.toLowerCase();
-            const sku = skuCell.textContent.toLowerCase();
-            const category = categoryCell.textContent.toLowerCase();
-
-            nameCell.innerHTML = nameCell.textContent;
-            skuCell.innerHTML = skuCell.textContent;
-            categoryCell.innerHTML = categoryCell.textContent;
-
-            if (name.includes(searchQuery) || sku.includes(searchQuery) || category.includes(searchQuery)) {
-                row.style.display = '';
-                found = true;
-
-                if (name.includes(searchQuery)) {
-                    nameCell.innerHTML = name.replace(new RegExp(searchQuery, 'gi'), match => `<mark>${match}</mark>`);
-                }
-                if (sku.includes(searchQuery)) {
-                    skuCell.innerHTML = sku.replace(new RegExp(searchQuery, 'gi'), match => `<mark>${match}</mark>`);
-                }
-                if (category.includes(searchQuery)) {
-                    categoryCell.innerHTML = category.replace(new RegExp(searchQuery, 'gi'), match => `<mark>${match}</mark>`);
-                }
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        const noResultsMessage = document.querySelector('#no-results-message');
-        if (!found) {
-            noResultsMessage.style.display = 'block';
+     function toggleDropdown(productId) {
+        const menu = document.getElementById(`menu-items-${productId}`);
+        const isVisible = menu.classList.contains('hidden');
+        if (isVisible) {
+            menu.classList.remove('hidden');
+            menu.classList.add('block');
         } else {
-            noResultsMessage.style.display = 'none';
+            menu.classList.remove('block');
+            menu.classList.add('hidden');
         }
     }
+
+    // Tutup dropdown jika klik di luar dropdown atau tombol
+    document.addEventListener('click', function(event) {
+        const allDropdowns = document.querySelectorAll('.origin-top-right');
+        allDropdowns.forEach(function(menu) {
+            const button = menu.previousElementSibling; // Tombol aksi
+            if (!menu.contains(event.target) && !button.contains(event.target)) {
+                menu.classList.remove('block');
+                menu.classList.add('hidden');
+            }
+        });
+    });
+  document.querySelector('form').addEventListener('submit', function(event) {
+    const searchQuery = document.querySelector('input[name="search"]').value.trim();
+    
+    // Jika pencarian langsung tidak dilakukan (misalnya input kosong), baru lanjutkan pengiriman form
+    if (!searchQuery) {
+        return;
+    }
+
+    // Jika ada pencarian, jangan kirim form tetapi jalankan filter produk
+    event.preventDefault(); 
+    filterProducts();
+});
+
+// Fungsi pencarian langsung saat mengetik
+document.querySelector('input[name="search"]').addEventListener('input', function() {
+    filterProducts();  // Panggil fungsi filter produk saat input diubah
+});
+
+
+function filterProducts() {
+    const searchQuery = document.querySelector('input[name="search"]').value.toLowerCase();
+    const rows = document.querySelectorAll('.product-row');  // Ambil semua baris produk
+    let found = false; // Variabel untuk memeriksa apakah ada hasil yang cocok
+
+    rows.forEach(row => {
+        const nameCell = row.querySelector('.product-name');
+        const skuCell = row.querySelector('.product-sku');
+        const categoryCell = row.querySelector('.product-category');
+
+        const name = nameCell.textContent.toLowerCase();
+        const sku = skuCell.textContent.toLowerCase();
+        const category = categoryCell.textContent.toLowerCase();
+
+        // Reset styling (highlight) setiap kali pengecekan
+        nameCell.innerHTML = nameCell.textContent; 
+        skuCell.innerHTML = skuCell.textContent;
+        categoryCell.innerHTML = categoryCell.textContent;
+
+        // Cek jika pencarian cocok dengan nama, SKU, atau kategori
+        if (name.includes(searchQuery) || sku.includes(searchQuery) || category.includes(searchQuery)) {
+            row.style.display = '';  // Tampilkan baris produk
+            found = true;  // Menandakan ada hasil yang cocok
+
+            // Menyoroti teks yang cocok
+            if (name.includes(searchQuery)) {
+                nameCell.innerHTML = name.replace(new RegExp(searchQuery, 'gi'), match => `<mark>${match}</mark>`);
+            }
+            if (sku.includes(searchQuery)) {
+                skuCell.innerHTML = sku.replace(new RegExp(searchQuery, 'gi'), match => `<mark>${match}</mark>`);
+            }
+            if (category.includes(searchQuery)) {
+                categoryCell.innerHTML = category.replace(new RegExp(searchQuery, 'gi'), match => `<mark>${match}</mark>`);
+            }
+        } else {
+            row.style.display = 'none';  // Sembunyikan baris produk yang tidak cocok
+        }
+    });
+
+    // Jika tidak ada hasil yang cocok, sembunyikan tabel dan beri notifikasi
+    const noResultsMessage = document.querySelector('#no-results-message');
+    if (!found) {
+        noResultsMessage.style.display = 'block';
+    } else {
+        noResultsMessage.style.display = 'none';
+    }
+}
+
 </script>
 @endsection

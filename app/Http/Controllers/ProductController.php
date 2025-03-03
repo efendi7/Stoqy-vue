@@ -20,17 +20,16 @@ class ProductController extends Controller
     }
 
     public function index(Request $request)
-{
-    $search = $request->input('search');  // Mengambil query parameter untuk pencarian
+    {
+        $search = $request->input('search');  // Mengambil query parameter untuk pencarian
 
-    // Mendapatkan produk berdasarkan pencarian (jika ada)
-    $products = $this->productService->getAllProducts($search);
+        // Mendapatkan produk berdasarkan pencarian (jika ada)
+        $products = $this->productService->getAllProducts($search);
 
-    $userRole = $this->userService->getUserRole(auth()->id());
+        $userRole = $this->userService->getUserRole(auth()->id());
 
-    return view('products.index', compact('products', 'userRole', 'search'));
-}
-
+        return view('products.index', compact('products', 'userRole', 'search'));
+    }
 
     public function create()
     {
@@ -92,6 +91,7 @@ class ProductController extends Controller
             return redirect()->route('products.index')->with('error', 'You do not have permission to update products.');
         }
     
+        // Validasi input
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'required|string|unique:products,sku,' . $product->id,
@@ -101,23 +101,15 @@ class ProductController extends Controller
             'sale_price' => 'nullable|numeric',
             'stock' => 'required|integer',
             'minimum_stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
     
         try {
             // Proses upload gambar jika ada
-            if ($request->hasFile('image')) {
-                // Hapus gambar lama jika ada
-                if ($product->image && Storage::exists('public/' . $product->image)) {
-                    Storage::delete('public/' . $product->image);
-                }
-
-                // Simpan gambar baru ke storage/public/product_images
-                $validatedData['image'] = $request->file('image')->store('product_images', 'public');
-            }
     
-            // Gunakan service untuk update produk
+            // Update produk dengan gambar baru jika ada
             $this->productService->updateProduct($product->id, $validatedData);
+    
             return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui!');
         } catch (\Exception $e) {
             \Log::error('Error updating product: ' . $e->getMessage(), ['request' => $request->all(), 'product_id' => $product->id]);
