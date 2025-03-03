@@ -6,6 +6,15 @@
     <title>Tambah Produk Baru</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @if ($errors->any())
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
         /* Custom input styles to prevent background color change */
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
@@ -25,7 +34,7 @@
     <div class="bg-white bg-opacity-70 p-6 rounded-2xl shadow-xl w-full max-w-md animate-fadeIn">
         <h1 class="text-xl font-bold text-gray-800 text-center mb-6">Tambah Produk Baru</h1>
 
-        <form action="{{ route('products.store') }}" method="POST" class="space-y-4">
+        <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
             @csrf
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-800">Nama Produk</label>
@@ -91,6 +100,11 @@
                     class="w-full mt-1 p-2 rounded-lg bg-opacity-50 border border-gray-300 text-gray-800 focus:ring-2 focus:ring-blue-500 transition-all" 
                     value="{{ old('minimum_stock', 5) }}" min="0" required>
             </div>
+
+            <div>
+        <label for="image" class="block text-sm font-medium text-gray-800">Gambar Produk</label>
+        <input type="file" name="image" id="image" class="w-full mt-1 p-2 rounded-lg border border-gray-300">
+    </div>
 
             <button type="submit" 
                 class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105">Simpan</button>

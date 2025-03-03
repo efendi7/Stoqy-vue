@@ -26,7 +26,7 @@ class SettingController extends Controller
         $setting->app_name = $request->app_name;
 
         if ($request->hasFile('app_logo')) {
-            // Hapus logo lama jika ada
+            // Hapus  logo lama jika ada
             if ($setting->logo && Storage::exists('public/' . $setting->logo)) {
                 Storage::delete('public/' . $setting->logo);
             }

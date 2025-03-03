@@ -70,6 +70,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Rute CRUD produk
     Route::resource('products', ProductController::class);
+    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+
+
 
    
     // Rute import & export produk

@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Services\UserService;
 use App\Models\Product;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -35,8 +37,12 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $userRole = $this->userService->getUserRole(auth()->id());
-
-        $request->validate([
+    
+        if ($userRole !== 'admin') {
+            return redirect()->route('products.index')->with('error', 'You do not have permission to add products.');
+        }
+    
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'required|string|unique:products,sku',
             'category_id' => 'required|exists:categories,id',
@@ -45,14 +51,18 @@ class ProductController extends Controller
             'sale_price' => 'nullable|numeric',
             'stock' => 'required|integer',
             'minimum_stock' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
-
-        if ($userRole !== 'admin') {
-            return redirect()->route('products.index')->with('error', 'You do not have permission to add products.');
-        }
-
+    
         try {
-            $this->productService->createProduct($request->all());
+            // Proses upload gambar
+            if ($request->hasFile('image')) {
+                // Menggunakan disk 'public' untuk menyimpan file ke public/storage/product_images
+                $validatedData['image'] = $request->file('image')->store('product_images', 'public');
+            }
+    
+            // Gunakan service untuk membuat produk
+            $this->productService->createProduct($validatedData);
             return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
         } catch (\Exception $e) {
             \Log::error('Error creating product: ' . $e->getMessage(), ['request' => $request->all()]);
@@ -71,8 +81,12 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $userRole = $this->userService->getUserRole(auth()->id());
-
-        $request->validate([
+    
+        if ($userRole !== 'admin') {
+            return redirect()->route('products.index')->with('error', 'You do not have permission to update products.');
+        }
+    
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'required|string|unique:products,sku,' . $product->id,
             'category_id' => 'required|exists:categories,id',
@@ -80,14 +94,24 @@ class ProductController extends Controller
             'purchase_price' => 'nullable|numeric',
             'sale_price' => 'nullable|numeric',
             'stock' => 'required|integer',
+            'minimum_stock' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
-
-        if ($userRole !== 'admin') {
-            return redirect()->route('products.index')->with('error', 'You do not have permission to update products.');
-        }
-
+    
         try {
-            $this->productService->updateProduct($product->id, $request->all());
+            // Proses upload gambar jika ada
+            if ($request->hasFile('image')) {
+                // Hapus gambar lama jika ada
+                if ($product->image && Storage::exists('public/' . $product->image)) {
+                    Storage::delete('public/' . $product->image);
+                }
+
+                // Simpan gambar baru ke storage/public/product_images
+                $validatedData['image'] = $request->file('image')->store('product_images', 'public');
+            }
+    
+            // Gunakan service untuk update produk
+            $this->productService->updateProduct($product->id, $validatedData);
             return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui!');
         } catch (\Exception $e) {
             \Log::error('Error updating product: ' . $e->getMessage(), ['request' => $request->all(), 'product_id' => $product->id]);
@@ -104,6 +128,12 @@ class ProductController extends Controller
         }
 
         try {
+            // Hapus gambar produk jika ada
+            if ($product->image && Storage::exists('public/' . $product->image)) {
+                Storage::delete('public/' . $product->image);
+            }
+
+            // Hapus produk
             $this->productService->deleteProduct($product->id);
             return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
         } catch (\Exception $e) {

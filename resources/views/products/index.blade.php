@@ -4,6 +4,33 @@
 <div class="container mx-auto px-4 min-h-screen bg-cover bg-center mt-16">
     <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Daftar Produk</h1>
 
+    {{-- Flash Message Sukses --}}
+@if(session('success'))
+    <div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">  
+        <div class="flex items-center space-x-2">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>{{ session('success') }}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+    </div>
+@endif
+
+{{-- Flash Message Error --}}
+@if(session('error'))
+    <div id="flash-error" class="max-w-lg mx-auto bg-red-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">  
+        <div class="flex items-center space-x-2">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ session('error') }}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+    </div>
+@endif
+
+
     {{-- Form Pencarian --}}
     <form method="GET" action="{{ route('products.index') }}" class="mb-6 flex gap-4">
         <input type="text" name="search" placeholder="Cari berdasarkan nama, SKU, atau kategori" class="border border-gray-300 rounded-lg py-2 px-4 w-full text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
@@ -36,6 +63,7 @@
             <thead class="bg-gray-800 bg-opacity-70 text-white">
                 <tr>
                     <th class="py-3 px-4 text-left">Nama</th>
+                    <th class="py-3 px-4 text-left">Gambar</th>
                     <th class="py-3 px-4 text-left">SKU</th>
                     <th class="py-3 px-4 text-left">Kategori</th>
                     <th class="py-3 px-4 text-left">Supplier</th>
@@ -51,6 +79,13 @@
                 @foreach($products as $product)
                     <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
                         <td class="py-3 px-4">{{ $product->name ?? 'N/A' }}</td>
+                        <td class="text-center">
+    @if($product->image)
+        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-8 w-8 object-cover mx-auto rounded">
+    @else
+        <img src="{{ asset('images/no-image.png') }}" alt="" class="h-8 w-8 object-cover mx-auto opacity-30">
+    @endif
+</td>
                         <td class="py-3 px-4">{{ $product->sku ?? 'N/A' }}</td>
                         <td class="py-3 px-4">{{ $product->category->name ?? 'N/A' }}</td>
                         <td class="py-3 px-4">{{ $product->supplier->name ?? 'N/A' }}</td>
@@ -59,22 +94,27 @@
                         <td class="py-3 px-4">{{ $product->stock ?? 0 }}</td>
                         <td class="py-3 px-4">{{ $product->minimum_stock ?? 0 }}</td>
                         <td class="py-3 px-4 text-center">
-                            @php
-                                $status = '';
-                                $statusClass = '';
-                                if ($product->stock == 0) {
-                                    $status = 'Habis';
-                                    $statusClass = 'font-bold text-red-500';
-                                } elseif ($product->stock < $product->minimum_stock) {
-                                    $status = 'Warning';
-                                    $statusClass = 'font-bold text-yellow-500';
-                                } else {
-                                    $status = 'Tersedia';
-                                    $statusClass = 'font-bold text-green-500';
-                                }
-                            @endphp
-                            <span class="{{ $statusClass }} px-2 py-1 rounded">{{ $status }}</span>
-                        </td>
+    @php
+        $statusMap = [
+            'Habis' => 'border-red-500 font-semibold text-red-500',
+            'Warning' => 'border-yellow-500 font-semibold text-yellow-500',
+            'Tersedia' => 'border-green-500 font-semibold text-green-500',
+        ];
+
+        if ($product->stock == 0) {
+            $status = 'Habis';
+        } elseif ($product->stock < $product->minimum_stock) {
+            $status = 'Warning';
+        } else {
+            $status = 'Tersedia';
+        }
+    @endphp
+
+    <span class="px-3 py-1 rounded-lg border {{ $statusMap[$status] }}">
+        {{ $status }}
+    </span>
+</td>
+
                         <td class="py-3 px-4 text-center">
                             <div class="inline-flex gap-2">
                                 <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 transition-all">Detail</a>
