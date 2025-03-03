@@ -104,6 +104,7 @@
             <div>
         <label for="image" class="block text-sm font-medium text-gray-800">Gambar Produk</label>
         <input type="file" name="image" id="image" class="w-full mt-1 p-2 rounded-lg border border-gray-300">
+        <p id="image-error" class="text-red-500 text-sm mt-1 hidden"></p>
     </div>
 
             <button type="submit" 
@@ -127,5 +128,28 @@
             animation: fadeIn 0.8s ease-out;
         }
     </style>
+
+<script>
+    document.getElementById('image').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        const errorMessage = document.getElementById('image-error');
+        errorMessage.classList.add('hidden'); // Sembunyikan error saat awal
+
+        if (file) {
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+
+            if (!allowedTypes.includes(file.type)) {
+                errorMessage.textContent = "Format file tidak didukung! (Hanya JPG, PNG, GIF)";
+                errorMessage.classList.remove('hidden');
+                event.target.value = ''; // Reset input file
+            } else if (file.size > maxSize) {
+                errorMessage.textContent = "Ukuran file terlalu besar! Maksimal 2MB.";
+                errorMessage.classList.remove('hidden');
+                event.target.value = ''; // Reset input file
+            }
+        }
+    });
+</script>
 </body>
 </html>

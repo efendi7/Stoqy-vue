@@ -19,12 +19,18 @@ class ProductController extends Controller
         $this->userService = $userService;
     }
 
-    public function index()
-    {
-        $products = $this->productService->getAllProducts();
-        $userRole = $this->userService->getUserRole(auth()->id());
-        return view('products.index', compact('products', 'userRole'));
-    }
+    public function index(Request $request)
+{
+    $search = $request->input('search');  // Mengambil query parameter untuk pencarian
+
+    // Mendapatkan produk berdasarkan pencarian (jika ada)
+    $products = $this->productService->getAllProducts($search);
+
+    $userRole = $this->userService->getUserRole(auth()->id());
+
+    return view('products.index', compact('products', 'userRole', 'search'));
+}
+
 
     public function create()
     {
