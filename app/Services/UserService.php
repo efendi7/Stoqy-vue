@@ -77,7 +77,7 @@ class UserService
 
     public function getAllUsers()
     {
-        $users = User::all();
+        $users = User::paginate(10);
         foreach ($users as $user) {
             $user->role_label = $this->getRoleLabel($user->role);
         }

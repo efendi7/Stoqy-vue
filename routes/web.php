@@ -44,6 +44,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('users', UserController::class);
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+
     Route::resource('categories', CategoryController::class);
     Route::resource('suppliers', SupplierController::class);
     Route::resource('product_attributes', ProductAttributeController::class);

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Services\UserService;
 use Illuminate\Http\Request;
+use App\Models\User;
+
 
 class UserController extends Controller
 {
@@ -34,6 +36,13 @@ class UserController extends Controller
         return $user ? redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.') 
                      : redirect()->back()->with('error', 'Gagal menambahkan user.');
     }
+
+    public function edit($id)
+{
+    $user = User::findOrFail($id);
+    return view('users.edit', compact('user'));
+}
+
 
     public function update(Request $request, $id)
     {

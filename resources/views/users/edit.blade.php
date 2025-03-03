@@ -51,9 +51,10 @@
             <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
             <select name="role" id="role" 
                 class="mt-1 block w-full border border-gray-300 rounded-md p-2 {{ $errors->has('role') ? 'border-red-500' : '' }}" required>
-                <option value="Staff Gudang" {{ old('role', $user->role) == 'Staff Gudang' ? 'selected' : '' }}>Staff Gudang</option>
-                <option value="Manajer Gudang" {{ old('role', $user->role) == 'Manajer Gudang' ? 'selected' : '' }}>Manajer Gudang</option>
-                <option value="Admin" {{ old('role', $user->role) == 'Admin' ? 'selected' : '' }}>Admin</option>
+                <option value="warehouse_staff" {{ old('role', $user->role) == 'warehouse_staff' ? 'selected' : '' }}>Staff</option>
+<option value="warehouse_manager" {{ old('role', $user->role) == 'warehouse_manager' ? 'selected' : '' }}>Manajer</option>
+<option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+
             </select>
             @error('role')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
