@@ -22,9 +22,21 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/laporan/stok', [LaporanController::class, 'stok'])->name('laporan.stok');
-Route::get('/laporan/transaksi', [LaporanController::class, 'transaksi'])->name('laporan.transaksi');
-Route::get('/laporan/aktivitas', [LaporanController::class, 'aktivitas'])->name('laporan.aktivitas');
+// Rute laporan
+Route::prefix('laporan')->middleware('auth')->group(function () {
+    Route::get('/stok', [LaporanController::class, 'stok'])->name('laporan.stok');
+    Route::get('/transaksi', [LaporanController::class, 'transaksi'])->name('laporan.transaksi');
+    Route::get('/aktivitas', [LaporanController::class, 'aktivitas'])->name('laporan.aktivitas');
+
+    // Tambahkan filter berdasarkan kategori dan periode
+    Route::get('/stok/filter', [LaporanController::class, 'stokFilter'])->name('laporan.stok.filter');
+    Route::get('/transaksi/filter', [LaporanController::class, 'transaksiFilter'])->name('laporan.transaksi.filter');
+
+    // Ekspor laporan ke Excel atau PDF
+    Route::get('/stok/export', [LaporanController::class, 'exportStok'])->name('laporan.stok.export');
+    Route::get('/transaksi/export', [LaporanController::class, 'exportTransaksi'])->name('laporan.transaksi.export');
+});
+
 
 Route::post('/stock-transactions/{id}/update-status', [StockTransactionController::class, 'updateStatus'])->name('stock_transactions.update-status');
 

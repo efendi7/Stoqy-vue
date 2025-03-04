@@ -43,4 +43,9 @@ class Product extends Model
 {
     return $this->hasMany(ProductAttribute::class, 'product_id');
 }
+
+public function transactions()
+{
+    return $this->hasMany(StockTransaction::class);
+}
 }
