@@ -29,8 +29,9 @@
                 </option>
             @endforeach
         </select>
-        <input type="date" name="start_date" value="{{ request('start_date') }}" class="border p-2 rounded-lg">
-        <input type="date" name="end_date" value="{{ request('end_date') }}" class="border p-2 rounded-lg">
+        <input type="date" name="start_date" value="{{ request('start_date', $startDate) }}">
+        <input type="date" name="end_date" value="{{ request('end_date', $endDate) }}">
+
         <button type="submit" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">Filter</button>
     </form>
 
@@ -53,7 +54,7 @@
                     <tr class="hover:bg-gray-100 transition">
                         <td class="py-3 px-4">{{ $item->name }}</td>
                         <td class="py-3 px-4">{{ $item->category->name }}</td>
-                        <td class="py-3 px-4 text-center">{{ $item->stock }}</td>
+                        <td class="py-3 px-4 text-center">{{ $item->initial_stock}}</td>
                         <td class="py-3 px-4 text-center">{{ $item->barang_masuk ?? 0 }}</td>  {{-- ✅ FIXED --}}
                         <td class="py-3 px-4 text-center">{{ $item->barang_keluar ?? 0 }}</td>  {{-- ✅ FIXED --}}
                         <td class="py-3 px-4 text-center font-semibold">{{ $item->stok_akhir }}</td>

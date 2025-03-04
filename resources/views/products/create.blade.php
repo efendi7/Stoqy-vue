@@ -88,7 +88,23 @@
             </div>
 
             <div>
-                <label for="stock" class="block text-sm font-medium text-gray-800">Stok</label>
+    <label for="initial_stock" class="block text-sm font-medium text-gray-800">Inisial Stok</label>
+    <input type="number" name="initial_stock" id="initial_stock" 
+        class="w-full mt-1 p-2 rounded-lg bg-opacity-50 border border-gray-300 text-gray-800 focus:ring-2 focus:ring-blue-500 transition-all" 
+        value="{{ old('initial_stock', 0) }}" min="0" readonly required>
+</div>
+
+<script>
+    document.getElementById('stock').addEventListener('input', function() {
+        let initialStockInput = document.getElementById('initial_stock');
+        initialStockInput.value = this.value;
+    });
+</script>
+
+
+
+            <div>
+                <label for="stock" class="block text-sm font-medium text-gray-800">Stok realtime</label>
                 <input type="number" name="stock" id="stock" 
                     class="w-full mt-1 p-2 rounded-lg bg-opacity-50 border border-gray-300 text-gray-800 focus:ring-2 focus:ring-blue-500 transition-all" 
                     value="{{ old('stock') }}" min="0" required>
@@ -128,6 +144,13 @@
             animation: fadeIn 0.8s ease-out;
         }
     </style>
+
+<script>
+    document.getElementById('stock').addEventListener('input', function() {
+        document.getElementById('initial_stock').value = this.value;
+    });
+</script>
+
 
 <script>
     document.getElementById('image').addEventListener('change', function(event) {

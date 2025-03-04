@@ -17,7 +17,7 @@ class LaporanController extends Controller
             'products.id', 
             'products.name', 
             'products.category_id',
-            'products.stock',
+            'products.initial_stock',
             DB::raw('COALESCE(transaksi.total_masuk, 0) as barang_masuk'),
             DB::raw('COALESCE(transaksi.total_keluar, 0) as barang_keluar'),
             DB::raw('COALESCE(products.stock, 0) + COALESCE(transaksi.total_masuk, 0) - COALESCE(transaksi.total_keluar, 0) as stok_akhir')
@@ -55,15 +55,16 @@ public function exportStok()
 public function stok(Request $request)
 {
     $categories = Category::all();
-    // Ambil tanggal awal laporan, gunakan default jika tidak ada input
-    $startDate = $request->input('start_date', '2000-01-01');
+    
+    // Set tanggal default: dari satu bulan yang lalu hingga hari ini
+    $startDate = $request->input('start_date', now()->subMonth()->toDateString());
     $endDate   = $request->input('end_date', now()->toDateString());
 
     $stok = Product::select(
         'products.id', 
         'products.name', 
         'products.category_id',
-        // Gantikan COALESCE(products.initial_stock, 0) dengan 0
+        'products.initial_stock',
         DB::raw('0
             + (
                 SELECT COALESCE(SUM(CASE WHEN type = "Masuk" AND status = "Diterima" THEN quantity ELSE 0 END),0)
@@ -103,7 +104,7 @@ public function stok(Request $request)
     ->orderBy('products.category_id')
     ->paginate(10);
 
-    return view('laporan.stok', compact('stok', 'categories'));
+    return view('laporan.stok', compact('stok', 'categories', 'startDate', 'endDate'));
 }
 
     public function transaksi()

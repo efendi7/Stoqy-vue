@@ -113,6 +113,14 @@
                     value="{{ old('sale_price', $product->sale_price) }}" step="100" min="0" required>
             </div>
 
+            <div>
+    <label for="initial_stock" class="block text-sm font-medium text-gray-800">Inisial Stok</label>
+    <input type="number" name="initial_stock" id="initial_stock" 
+        class="w-full mt-1 p-2 rounded-lg bg-opacity-50 border border-gray-300 text-gray-800 focus:ring-2 focus:ring-blue-500 transition-all" 
+        value="{{ old('initial_stock', $product->initial_stock ?? 0) }}" min="0" readonly required>
+</div>
+
+
             <!-- Stock -->
             <div>
                 <label for="stock" class="block text-sm font-medium text-gray-800">Stok</label>

@@ -54,26 +54,30 @@ class ProductController extends Controller
             'supplier_id' => 'nullable|exists:suppliers,id',
             'purchase_price' => 'nullable|numeric',
             'sale_price' => 'nullable|numeric',
-            'stock' => 'required|integer',
+            'stock' => 'required|integer|min:0',
             'minimum_stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
     
         try {
-            // Proses upload gambar
+            // Proses upload gambar jika ada
             if ($request->hasFile('image')) {
-                // Menggunakan disk 'public' untuk menyimpan file ke public/storage/product_images
                 $validatedData['image'] = $request->file('image')->store('product_images', 'public');
             }
     
+            // Set initial_stock sama dengan stock
+            $validatedData['initial_stock'] = $validatedData['stock'];
+    
             // Gunakan service untuk membuat produk
             $this->productService->createProduct($validatedData);
+    
             return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
         } catch (\Exception $e) {
             \Log::error('Error creating product: ' . $e->getMessage(), ['request' => $request->all()]);
             return redirect()->route('products.index')->with('error', 'Gagal menambahkan produk.');
         }
     }
+    
 
     public function edit(Product $product)
     {
