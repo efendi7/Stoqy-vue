@@ -153,6 +153,30 @@
     });
 </script>
 
+@if(auth()->user()->role === 'admin')
+    <div class="flex flex-wrap gap-4 mb-6">
+        <!-- Tombol Tambah Produk -->
+        <a href="{{ route('products.create') }}" class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-all">
+            + Tambah Produk
+        </a>
+
+        <!-- Tombol Lihat Kategori -->
+        <a href="{{ route('categories.index') }}" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-all">
+            📂 Lihat Kategori Produk
+        </a>
+
+        <!-- Tombol Lihat Atribut Produk -->
+        <a href="{{ route('product_attributes.index') }}" class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-all">
+            🔖 Lihat Atribut Produk
+        </a>
+
+        <!-- Tombol Import/Export Produk -->
+        <a href="{{ route('products.import-export.index') }}" class="bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 transition-all">
+            📥📤 Import/Export Produk
+        </a>
+    </div>
+@endif
+
 
     {{-- Tabel Produk --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">

@@ -4,7 +4,8 @@
 
 @section('content')
 <div class="container mx-auto px-4 min-h-screen bg-cover bg-center mt-16">
-    <h1 class="text-3xl font-extrabold my-6 text-gray-700 text-center">Laporan Stok Barang</h1>
+<h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Laporan Stok Barang</h1>
+
 
     {{-- Notifikasi Kesalahan --}}
     @if ($errors->any())
@@ -34,9 +35,10 @@
     </form>
 
     {{-- Tabel Stok Barang --}}
-    <div class="overflow-x-auto rounded-lg shadow bg-white">
-        <table class="min-w-full bg-white rounded-lg shadow">
-            <thead class="bg-gray-800 text-white">
+    <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
+        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
+            <thead class="bg-gray-800 bg-opacity-70 text-white">
+
                 <tr>
                     <th class="py-3 px-4 text-left">Produk</th>
                     <th class="py-3 px-4 text-left">Kategori</th>

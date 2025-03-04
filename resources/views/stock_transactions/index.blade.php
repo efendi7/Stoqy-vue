@@ -96,7 +96,7 @@
                     </td>
                     <td class="py-3 px-4">{{ \Carbon\Carbon::parse($transaction->transaction_date)->format('d-m-Y') }}</td>
                     <td class="py-3 px-4">
-                        @if($userRole === 'warehouse_manager' || $userRole === 'admin')
+                        @if($userRole === 'warehouse_manager')
                             <a href="{{ route('stock_transactions.edit', $transaction->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 transition-all mb-1 inline-block">Edit</a>
                             <form action="{{ route('stock_transactions.destroy', $transaction->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus transaksi ini?')">
                                 @csrf

@@ -140,4 +140,25 @@ class StockTransactionService
 
         $product->save();
     }
+
+    public function updateStatus(Request $request, $id)
+{
+    $userRole = $this->userService->getUserRole(auth()->id());
+    if ($userRole !== 'warehouse_manager') {
+        return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengubah status transaksi.');
+    }
+
+    $request->validate(['status' => 'required|in:Pending,Diterima,Ditolak']);
+
+    $transaction = $this->stockTransactionService->getStockTransactionById($id);
+    if (!$transaction) {
+        return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
+    }
+
+    // Hapus logika update stok di sini, karena sudah dikelola oleh service
+    return $this->stockTransactionService->updateTransactionStatus($id, $request->status)
+        ? redirect()->route('stock_transactions.index')->with('success', 'Status transaksi berhasil diubah!')
+        : redirect()->route('stock_transactions.index')->with('error', 'Gagal mengubah status transaksi.');
+}
+
 }
