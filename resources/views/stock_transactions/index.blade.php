@@ -3,8 +3,9 @@
 @section('content')
 <div class="container mx-auto px-4 min-h-screen bg-cover bg-center mt-16">
     <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Daftar Transaksi Stok</h1>
+    
     {{-- Flash Message Sukses --}}
-@if(session('success'))
+    @if(session('success'))
     <div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">  
         <div class="flex items-center space-x-2">
             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,12 +25,14 @@
             }
         }, 4000);
     </script>
-@endif
+    @endif
 
     {{-- Form Pencarian --}}
     <form method="GET" action="{{ route('stock_transactions.index') }}" class="mb-6 flex gap-4">
-        <input type="text" name="search" placeholder="Cari berdasarkan produk atau jenis" class="border border-gray-300 rounded-lg py-2 px-4 w-full text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" value="{{ request('search') }}">
-        <button type="submit" class="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition-all">Cari</button>
+        <input type="text" id="search" name="search" placeholder="Cari berdasarkan produk atau jenis" 
+               class="border border-gray-300 rounded-lg py-2 px-4 w-full text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+               value="{{ request('search') }}">
+        <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all">Cari</button>
     </form>
 
     <div class="flex justify-between items-center mb-6">
@@ -58,10 +61,10 @@
             </thead>
             <tbody class="divide-y divide-gray-700">
                 @forelse($transactions as $transaction)
-                <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
-                    <td class="py-3 px-4">{{ $transaction->product->name ?? 'Produk Tidak Ditemukan' }}</td>
-                    <td class="py-3 px-4">{{ $transaction->user->name ?? 'User Tidak Ditemukan' }}</td>
-                    <td class="py-3 px-4">
+                <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all product-row">
+                    <td class="py-3 px-4 product-name">{{ $transaction->product->name ?? 'Produk Tidak Ditemukan' }}</td>
+                    <td class="py-3 px-4 product-user">{{ $transaction->user->name ?? 'User Tidak Ditemukan' }}</td>
+                    <td class="py-3 px-4 product-category">
                         <span class="px-2 py-1 rounded {{ $transaction->type == 'Masuk' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                             {{ $transaction->type }}
                         </span>
@@ -72,18 +75,16 @@
                             <form action="{{ route('stock_transactions.update-status', $transaction->id) }}" method="POST" class="inline">
                                 @csrf
                                 <select name="status" onchange="this.form.submit()" 
-    class="border border-gray-300 rounded-lg px-2 py-1 text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-    style="
-        @if($transaction->status == 'Pending') background-color: #fef3c7; color: #b45309; @endif
-        @if($transaction->status == 'Diterima') background-color: #d1fae5; color: #065f46; @endif
-        @if($transaction->status == 'Ditolak') background-color: #fee2e2; color: #991b1b; @endif
-    ">
-    
-    <option value="Pending" @if($transaction->status == 'Pending') selected @endif>Pending</option>
-    <option value="Diterima" @if($transaction->status == 'Diterima') selected @endif>Diterima</option>
-    <option value="Ditolak" @if($transaction->status == 'Ditolak') selected @endif>Ditolak</option>
-</select>
-
+                                class="border border-gray-300 rounded-lg px-2 py-1 text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                style="
+                                    @if($transaction->status == 'Pending') background-color: #fef3c7; color: #b45309; @endif
+                                    @if($transaction->status == 'Diterima') background-color: #d1fae5; color: #065f46; @endif
+                                    @if($transaction->status == 'Ditolak') background-color: #fee2e2; color: #991b1b; @endif
+                                ">
+                                    <option value="Pending" @if($transaction->status == 'Pending') selected @endif>Pending</option>
+                                    <option value="Diterima" @if($transaction->status == 'Diterima') selected @endif>Diterima</option>
+                                    <option value="Ditolak" @if($transaction->status == 'Ditolak') selected @endif>Ditolak</option>
+                                </select>
                             </form>
                         @else
                             <span class="px-2 py-1 rounded
@@ -121,4 +122,44 @@
         {{ $transactions->appends(request()->input())->links('vendor.pagination.custom') }}
     </div>
 </div>
+
+<script>
+    // Fungsi untuk pencarian langsung
+    document.querySelector('#search').addEventListener('input', function() {
+        const searchQuery = this.value.toLowerCase(); // Ambil nilai input pencarian
+        const rows = document.querySelectorAll('.product-row'); // Ambil semua baris produk
+        rows.forEach(row => {
+            const nameCell = row.querySelector('.product-name'); // Nama Produk
+            const userCell = row.querySelector('.product-user'); // Nama User
+            const categoryCell = row.querySelector('.product-category'); // Jenis Transaksi
+
+            const name = nameCell ? nameCell.textContent.toLowerCase() : '';
+            const user = userCell ? userCell.textContent.toLowerCase() : '';
+            const category = categoryCell ? categoryCell.textContent.toLowerCase() : '';
+
+            // Reset highlight sebelum pengecekan
+            nameCell.innerHTML = nameCell.textContent; 
+            userCell.innerHTML = userCell.textContent;
+            categoryCell.innerHTML = categoryCell.textContent;
+
+            // Cek apakah nama produk, user, atau jenis sesuai dengan query pencarian
+            if (name.includes(searchQuery) || user.includes(searchQuery) || category.includes(searchQuery)) {
+                row.style.display = ''; // Tampilkan baris yang sesuai
+                // Soroti teks yang cocok dengan background kuning
+                if (name.includes(searchQuery)) {
+                    nameCell.innerHTML = name.replace(new RegExp(searchQuery, 'gi'), match => `<mark class="bg-yellow-300">${match}</mark>`);
+                }
+                if (user.includes(searchQuery)) {
+                    userCell.innerHTML = user.replace(new RegExp(searchQuery, 'gi'), match => `<mark class="bg-yellow-300">${match}</mark>`);
+                }
+                if (category.includes(searchQuery)) {
+                    categoryCell.innerHTML = category.replace(new RegExp(searchQuery, 'gi'), match => `<mark class="bg-yellow-300">${match}</mark>`);
+                }
+            } else {
+                row.style.display = 'none'; // Sembunyikan baris yang tidak cocok
+            }
+        });
+    });
+</script>
+
 @endsection

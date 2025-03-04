@@ -5,72 +5,154 @@
     <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Daftar Produk</h1>
 
     {{-- Flash Message Sukses --}}
-@if(session('success'))
-<div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
-    <div class="flex items-center space-x-2">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-        <span>{{ session('success') }}</span>
-    </div>
-    <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
-</div>
-@endif
-
-{{-- Flash Message Error --}}
-@if(session('error'))
-<div id="flash-error" class="max-w-lg mx-auto bg-red-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
-    <div class="flex items-center space-x-2">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-        <span>{{ session('error') }}</span>
-    </div>
-    <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
-</div>
-@endif
-
-<script>
-    // Flash message otomatis hilang setelah 5 detik
-    setTimeout(function() {
-        const successMessage = document.getElementById('flash-success');
-        const errorMessage = document.getElementById('flash-error');
-        
-        if (successMessage) {
-            successMessage.remove();
-        }
-        if (errorMessage) {
-            errorMessage.remove();
-        }
-    }, 5000); // 5000 ms = 5 detik
-</script>
-
-
-    {{-- Form Pencarian --}}
-    <form method="GET" action="{{ route('products.index') }}" class="mb-6 flex gap-4">
-        <input type="text" name="search" placeholder="Cari berdasarkan nama, SKU, atau kategori" class="border border-gray-300 rounded-lg py-2 px-4 w-full text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" oninput="filterProducts()">
-        <button type="button" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all">Cari</button>
-    </form>
-
-    {{-- Notifikasi Kesalahan --}}
-    @if ($errors->any())
-    <div class="bg-red-600 border border-red-400 text-white px-4 py-3 rounded-lg relative mb-6" role="alert">
-        <strong class="font-bold">Ada kesalahan!</strong>
-        <ul>
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
+    @if(session('success'))
+    <div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
+        <div class="flex items-center space-x-2">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>{{ session('success') }}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
     </div>
     @endif
 
-    {{-- Tombol Tambah, Lihat Kategori, Lihat Atribut, Import, dan Export --}}
-    <div class="flex flex-wrap gap-3 mb-6">
-        <a href="{{ route('products.create') }}" class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition-all">Tambah Produk</a>
-        <a href="{{ route('categories.index') }}" class="bg-purple-500 text-white py-2 px-6 rounded-lg hover:bg-purple-600 transition-all">Lihat Kategori Produk</a>
-        <a href="{{ route('product_attributes.index') }}" class="bg-purple-500 text-white py-2 px-6 rounded-lg hover:bg-purple-600 transition-all">Lihat Atribut Produk</a>
-        <a href="{{ route('products.import-export.index') }}" class="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition-all">Import/Export</a>
+    {{-- Flash Message Error --}}
+    @if(session('error'))
+    <div id="flash-error" class="max-w-lg mx-auto bg-red-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
+        <div class="flex items-center space-x-2">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ session('error') }}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
     </div>
+    @endif
+
+    {{-- Form Pencarian --}}
+<form method="GET" action="{{ route('products.index') }}" class="mb-6 flex gap-4">
+    <input 
+        type="text" 
+        id="search" 
+        name="search" 
+        placeholder="Cari berdasarkan nama, SKU, atau kategori" 
+        class="w-full border border-gray-300 rounded-lg py-2 px-4 text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+    >
+    <button 
+        type="submit" 
+        class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all"
+    >
+        Cari
+    </button>
+</form>
+
+
+
+    <script>
+        // Flash message otomatis hilang setelah 5 detik
+        setTimeout(function() {
+            const successMessage = document.getElementById('flash-success');
+            const errorMessage = document.getElementById('flash-error');
+
+            if (successMessage) {
+                successMessage.remove();
+            }
+            if (errorMessage) {
+                errorMessage.remove();
+            }
+        }, 5000); // 5000 ms = 5 detik
+
+        document.addEventListener("DOMContentLoaded", function () {
+    // Fungsi untuk toggle dropdown dan menangani posisi
+    function toggleDropdown(event, dropdown) {
+        event.stopPropagation(); // Mencegah event bubbling agar dropdown tidak langsung tertutup
+
+        // Tutup semua dropdown lain sebelum membuka yang baru
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            if (menu !== dropdown) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Toggle class hidden
+        dropdown.classList.toggle('hidden');
+
+        // Cek apakah dropdown melebihi batas bawah layar
+        let rect = dropdown.getBoundingClientRect();
+        let windowHeight = window.innerHeight;
+
+        if (rect.bottom > windowHeight) {
+            dropdown.classList.add("top-auto", "bottom-full", "mb-2");
+            dropdown.classList.remove("mt-2");
+        } else {
+            dropdown.classList.remove("top-auto", "bottom-full", "mb-2");
+            dropdown.classList.add("mt-2");
+        }
+    }
+
+    // Tambahkan event listener ke semua tombol dropdown
+    document.querySelectorAll(".btn-dropdown, .dropdown-button").forEach(button => {
+        button.addEventListener("click", function (event) {
+            let dropdown = this.nextElementSibling; // Ambil elemen dropdown terkait
+
+            if (dropdown) {
+                toggleDropdown(event, dropdown);
+            }
+        });
+    });
+
+    // Event listener global untuk menutup dropdown jika klik di luar
+    document.addEventListener("click", function (event) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            if (!menu.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+    });
+});
+
+    </script>
+
+<script>
+    // Fungsi untuk pencarian langsung
+    document.querySelector('#search').addEventListener('input', function() {
+        const searchQuery = this.value.toLowerCase(); // Ambil nilai input pencarian
+        const rows = document.querySelectorAll('.product-row'); // Ambil semua baris produk
+        rows.forEach(row => {
+            const nameCell = row.querySelector('.product-name');
+            const skuCell = row.querySelector('.product-sku');
+            const categoryCell = row.querySelector('.product-category');
+
+            const name = nameCell.textContent.toLowerCase();
+            const sku = skuCell.textContent.toLowerCase();
+            const category = categoryCell.textContent.toLowerCase();
+
+            // Reset highlight sebelum pengecekan
+            nameCell.innerHTML = nameCell.textContent; 
+            skuCell.innerHTML = skuCell.textContent;
+            categoryCell.innerHTML = categoryCell.textContent;
+
+            // Cek apakah nama, SKU atau kategori sesuai dengan query pencarian
+            if (name.includes(searchQuery) || sku.includes(searchQuery) || category.includes(searchQuery)) {
+                row.style.display = ''; // Tampilkan baris yang sesuai
+                // Soroti teks yang cocok dengan background kuning
+                if (name.includes(searchQuery)) {
+                    nameCell.innerHTML = name.replace(new RegExp(searchQuery, 'gi'), match => `<mark class="bg-yellow-300">${match}</mark>`);
+                }
+                if (sku.includes(searchQuery)) {
+                    skuCell.innerHTML = sku.replace(new RegExp(searchQuery, 'gi'), match => `<mark class="bg-yellow-300">${match}</mark>`);
+                }
+                if (category.includes(searchQuery)) {
+                    categoryCell.innerHTML = category.replace(new RegExp(searchQuery, 'gi'), match => `<mark class="bg-yellow-300">${match}</mark>`);
+                }
+            } else {
+                row.style.display = 'none'; // Sembunyikan baris yang tidak cocok
+            }
+        });
+    });
+</script>
+
 
     {{-- Tabel Produk --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
@@ -131,22 +213,31 @@
                     </td>
 
                     <td class="py-3 px-4 text-center">
-                        <div class="relative inline-block text-left">
-                            <button onclick="toggleDropdown({{ $product->id }})" class="bg-gray-500 text-white py-1 px-4 rounded-lg hover:bg-gray-600 focus:outline-none" id="menu-button-{{ $product->id }}" aria-expanded="false" aria-haspopup="true">
-                                Aksi
-                            </button>
-                            <div class="hidden origin-top-right absolute right-0 bottom-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10" id="menu-items-{{ $product->id }}" role="menu" aria-orientation="vertical" aria-labelledby="menu-button-{{ $product->id }}">
-                                <div class="py-1" role="none">
-                                    <a href="{{ route('products.show', $product->id) }}" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem">Detail</a>
-                                    <a href="{{ route('products.edit', $product->id) }}" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem">Edit</a>
-                                    <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 block px-4 py-2 text-sm" role="menuitem">Hapus</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+                    @if(auth()->user()->role === 'warehouse_manager')
+    <!-- Tombol Detail untuk warehouse_manager -->
+    <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 transition-all">
+        Detail
+    </a>
+@elseif(auth()->user()->role === 'admin')
+    <!-- Dropdown untuk Admin -->
+    <div class="relative inline-block text-left">
+        <button data-product-id="{{ $product->id }}" class="btn-dropdown bg-gray-500 text-white py-1 px-4 rounded-lg hover:bg-gray-600 focus:outline-none">
+    Aksi
+</button>
+<div id="menu-items-{{ $product->id }}" class="hidden dropdown-menu origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+    <div class="py-1">
+        <a href="{{ route('products.show', $product->id) }}" class="text-gray-700 block px-4 py-2 text-sm">Detail</a>
+        <a href="{{ route('products.edit', $product->id) }}" class="text-gray-700 block px-4 py-2 text-sm">Edit</a>
+        <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="text-red-600 block px-4 py-2 text-sm w-full text-left">Hapus</button>
+        </form>
+    </div>
+</div>
+
+    </div>
+@endif
                     </td>
                 </tr>
                 @endforeach
@@ -159,97 +250,4 @@
         {{ $products->appends(request()->input())->links('vendor.pagination.custom') }}
     </div>
 </div>
-
-<script>
-     function toggleDropdown(productId) {
-        const menu = document.getElementById(`menu-items-${productId}`);
-        const isVisible = menu.classList.contains('hidden');
-        if (isVisible) {
-            menu.classList.remove('hidden');
-            menu.classList.add('block');
-        } else {
-            menu.classList.remove('block');
-            menu.classList.add('hidden');
-        }
-    }
-
-    // Tutup dropdown jika klik di luar dropdown atau tombol
-    document.addEventListener('click', function(event) {
-        const allDropdowns = document.querySelectorAll('.origin-top-right');
-        allDropdowns.forEach(function(menu) {
-            const button = menu.previousElementSibling; // Tombol aksi
-            if (!menu.contains(event.target) && !button.contains(event.target)) {
-                menu.classList.remove('block');
-                menu.classList.add('hidden');
-            }
-        });
-    });
-  document.querySelector('form').addEventListener('submit', function(event) {
-    const searchQuery = document.querySelector('input[name="search"]').value.trim();
-    
-    // Jika pencarian langsung tidak dilakukan (misalnya input kosong), baru lanjutkan pengiriman form
-    if (!searchQuery) {
-        return;
-    }
-
-    // Jika ada pencarian, jangan kirim form tetapi jalankan filter produk
-    event.preventDefault(); 
-    filterProducts();
-});
-
-// Fungsi pencarian langsung saat mengetik
-document.querySelector('input[name="search"]').addEventListener('input', function() {
-    filterProducts();  // Panggil fungsi filter produk saat input diubah
-});
-
-
-function filterProducts() {
-    const searchQuery = document.querySelector('input[name="search"]').value.toLowerCase();
-    const rows = document.querySelectorAll('.product-row');  // Ambil semua baris produk
-    let found = false; // Variabel untuk memeriksa apakah ada hasil yang cocok
-
-    rows.forEach(row => {
-        const nameCell = row.querySelector('.product-name');
-        const skuCell = row.querySelector('.product-sku');
-        const categoryCell = row.querySelector('.product-category');
-
-        const name = nameCell.textContent.toLowerCase();
-        const sku = skuCell.textContent.toLowerCase();
-        const category = categoryCell.textContent.toLowerCase();
-
-        // Reset styling (highlight) setiap kali pengecekan
-        nameCell.innerHTML = nameCell.textContent; 
-        skuCell.innerHTML = skuCell.textContent;
-        categoryCell.innerHTML = categoryCell.textContent;
-
-        // Cek jika pencarian cocok dengan nama, SKU, atau kategori
-        if (name.includes(searchQuery) || sku.includes(searchQuery) || category.includes(searchQuery)) {
-            row.style.display = '';  // Tampilkan baris produk
-            found = true;  // Menandakan ada hasil yang cocok
-
-            // Menyoroti teks yang cocok
-            if (name.includes(searchQuery)) {
-                nameCell.innerHTML = name.replace(new RegExp(searchQuery, 'gi'), match => `<mark>${match}</mark>`);
-            }
-            if (sku.includes(searchQuery)) {
-                skuCell.innerHTML = sku.replace(new RegExp(searchQuery, 'gi'), match => `<mark>${match}</mark>`);
-            }
-            if (category.includes(searchQuery)) {
-                categoryCell.innerHTML = category.replace(new RegExp(searchQuery, 'gi'), match => `<mark>${match}</mark>`);
-            }
-        } else {
-            row.style.display = 'none';  // Sembunyikan baris produk yang tidak cocok
-        }
-    });
-
-    // Jika tidak ada hasil yang cocok, sembunyikan tabel dan beri notifikasi
-    const noResultsMessage = document.querySelector('#no-results-message');
-    if (!found) {
-        noResultsMessage.style.display = 'block';
-    } else {
-        noResultsMessage.style.display = 'none';
-    }
-}
-
-</script>
 @endsection

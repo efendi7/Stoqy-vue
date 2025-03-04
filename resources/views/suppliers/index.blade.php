@@ -36,10 +36,12 @@
         </div>
     @endif
 
-    {{-- Tombol Tambah Supplier --}}
-    <div class="flex flex-wrap gap-3 mb-6">
-        <a href="{{ route('suppliers.create') }}" class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition-all">Tambah Supplier</a>
-    </div>
+    {{-- Tombol Tambah Supplier hanya untuk admin --}}
+    @if(auth()->user()->role !== 'warehouse_manager' && auth()->user()->role !== 'warehouse_staff')
+        <div class="flex flex-wrap gap-3 mb-6">
+            <a href="{{ route('suppliers.create') }}" class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition-all">Tambah Supplier</a>
+        </div>
+    @endif
 
     {{-- Tabel Supplier --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
@@ -62,12 +64,17 @@
                         <td class="py-3 px-4">{{ $supplier->email ?? 'N/A' }}</td>
                         <td class="py-3 px-4 text-center">
                             <div class="inline-flex gap-2">
-                                <a href="{{ route('suppliers.edit', $supplier->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 transition-all">Edit</a>
-                                <form action="{{ route('suppliers.destroy', $supplier->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus supplier {{ $supplier->name }}?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 transition-all">Hapus</button>
-                                </form>
+                                {{-- Tampilkan hanya untuk Admin atau role lainnya yang bukan warehouse_manager dan warehouse_staff --}}
+                                @if(auth()->user()->role !== 'warehouse_manager' && auth()->user()->role !== 'warehouse_staff')
+                                    <a href="{{ route('suppliers.edit', $supplier->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 transition-all">Edit</a>
+                                    <form action="{{ route('suppliers.destroy', $supplier->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus supplier {{ $supplier->name }}?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 transition-all">Hapus</button>
+                                    </form>
+                                @else
+                                    <span class="text-gray-500">Tidak ada akses</span>
+                                @endif
                             </div>
                         </td>
                     </tr>
