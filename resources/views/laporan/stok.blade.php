@@ -20,7 +20,7 @@
     @endif
 
     {{-- Filter Form --}}
-    <form method="GET" action="{{ route('laporan.stok') }}" class="mb-6 flex flex-wrap gap-4 bg-white p-4 rounded-lg shadow">
+    <form method="GET" action="{{ route('laporan.stok.filter') }}" class="mb-6 flex flex-wrap gap-4 bg-white p-4 rounded-lg shadow">
         <select name="category" class="border p-2 rounded-lg">
             <option value="">Semua Kategori</option>
             @foreach($categories as $category)
