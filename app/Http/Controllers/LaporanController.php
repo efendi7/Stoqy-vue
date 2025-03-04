@@ -13,21 +13,27 @@ class LaporanController extends Controller
 {
     public function stokFilter(Request $request)
     {
+        // Set tanggal default: dari satu bulan yang lalu hingga hari ini
+        $startDate = $request->input('start_date', now()->subMonth()->toDateString());
+        $endDate = $request->input('end_date', now()->toDateString());
+        
         $query = Product::select(
             'products.id', 
             'products.name', 
             'products.category_id',
-            'products.initial_stock',
+            'products.initial_stock', 
+            'products.stock',
+            DB::raw('COALESCE(products.initial_stock, 0) as stok_awal'),
             DB::raw('COALESCE(transaksi.total_masuk, 0) as barang_masuk'),
             DB::raw('COALESCE(transaksi.total_keluar, 0) as barang_keluar'),
-            DB::raw('COALESCE(products.stock, 0) + COALESCE(transaksi.total_masuk, 0) - COALESCE(transaksi.total_keluar, 0) as stok_akhir')
+            DB::raw('(COALESCE(products.initial_stock, 0) + COALESCE(transaksi.total_masuk, 0) - COALESCE(transaksi.total_keluar, 0)) as stok_akhir')
         )
         ->with('category')
         ->leftJoin(DB::raw('(SELECT product_id, 
             SUM(CASE WHEN type = "Masuk" AND status = "Diterima" THEN quantity ELSE 0 END) as total_masuk,
             SUM(CASE WHEN type = "Keluar" AND status = "Diterima" THEN quantity ELSE 0 END) as total_keluar
             FROM stock_transactions GROUP BY product_id) as transaksi'), 'products.id', '=', 'transaksi.product_id');
-    
+        
         // **Filter berdasarkan kategori**
         if ($request->has('category') && $request->category != '') {
             $query->where('products.category_id', $request->category);
@@ -44,7 +50,7 @@ class LaporanController extends Controller
         $stok = $query->paginate(10);
         $categories = Category::all();
     
-        return view('laporan.stok', compact('stok', 'categories'));
+        return view('laporan.stok', compact('stok', 'categories', 'startDate', 'endDate'));
     }
     
 public function exportStok()
@@ -65,7 +71,7 @@ public function stok(Request $request)
         'products.name', 
         'products.category_id',
         'products.initial_stock',
-        DB::raw('0
+        DB::raw('products.initial_stock
             + (
                 SELECT COALESCE(SUM(CASE WHEN type = "Masuk" AND status = "Diterima" THEN quantity ELSE 0 END),0)
                 FROM stock_transactions
@@ -80,7 +86,7 @@ public function stok(Request $request)
             ) as stok_awal'),
         DB::raw('COALESCE(transaksi.total_masuk, 0) as barang_masuk'),
         DB::raw('COALESCE(transaksi.total_keluar, 0) as barang_keluar'),
-        DB::raw('(0
+        DB::raw('(products.initial_stock
             + (
                 SELECT COALESCE(SUM(CASE WHEN type = "Masuk" AND status = "Diterima" THEN quantity ELSE 0 END),0)
                 FROM stock_transactions
