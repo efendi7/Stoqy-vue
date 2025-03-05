@@ -1,59 +1,67 @@
-<?php
-namespace App\Http\Controllers;
+<?php 
 
-use Illuminate\Http\Request;
-use App\Models\Product;
-use App\Models\StockOpname;
+namespace App\Http\Controllers;  
 
+use Illuminate\Http\Request; 
+use App\Models\Product; 
+use App\Models\StockOpname;   
 
-class StockOpnameController extends Controller
-{
-    public function index()
-    {
-        // Ambil data produk untuk ditampilkan di halaman stock opname
-        $products = Product::all();
+class StockOpnameController extends Controller 
+{     
+    public function index()     
+    {         
+        $products = Product::with('stockOpname')->get();
         return view('stock_opname.index', compact('products'));
     }
+    
+       
 
     public function store(Request $request)
     {
+        // Validasi input
         $request->validate([
             'product_id' => 'required|exists:products,id',
+            'recorded_stock' => 'required|integer|min:0',
             'actual_stock' => 'required|integer|min:0',
+            'difference' => 'required|integer'
         ]);
     
-        $product = Product::findOrFail($request->product_id);
-        $difference = $request->actual_stock - $product->stock;
+        // Simpan audit stok
+        StockOpname::updateOrCreate(
+            ['product_id' => $request->product_id],
+            [
+                'recorded_stock' => $request->recorded_stock,
+                'actual_stock' => $request->actual_stock,
+                'difference' => $request->difference,
+                'updated_at' => now(),
+            ]
+        );
     
-        // Simpan hasil stock opname ke database
-        $stockOpname = StockOpname::create([
-            'product_id' => $product->id,
-            'actual_stock' => $request->actual_stock,
-            'difference' => $difference,
-        ]);
-    
-        if ($stockOpname) {
-            return redirect()->back()->with('success', 'Stock audit berhasil disimpan!');
-        } else {
-            return redirect()->back()->with('error', 'Gagal menyimpan stock audit.');
-        }
+        return redirect()->back()->with('success', 'Stock opname berhasil disimpan.');
     }
     
-    
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'actual_stock' => 'required|integer|min:0',
-        ]);
-    
+    // Metode untuk update stok tercatat sesuai dengan stok fisik
+    public function updateStockToActual(Request $request, $id)     
+    {         
+        $request->validate([             
+            'actual_stock' => 'required|integer|min:0',         
+        ]);              
+
         $product = Product::findOrFail($id);
         
+        // Simpan stock opname untuk audit
+        $difference = $request->actual_stock - $product->stock;
+        StockOpname::create([             
+            'product_id' => $product->id,             
+            'recorded_stock' => $product->stock, 
+            'actual_stock' => $request->actual_stock,             
+            'difference' => $difference,         
+        ]);
+
         // Update stok produk agar sesuai dengan stok fisik
         $product->stock = $request->actual_stock;
         $product->save();
-    
-        return redirect()->back()->with('success', 'Stok berhasil diperbarui!');
-    }
-    
-
+              
+        return redirect()->back()->with('success', 'Stok berhasil diperbarui ke stok fisik!');     
+    }       
 }

@@ -49,4 +49,10 @@ public function transactions()
 {
     return $this->hasMany(StockTransaction::class);
 }
+public function stockOpname()
+{
+    return $this->hasOne(StockOpname::class);
 }
+
+}
+

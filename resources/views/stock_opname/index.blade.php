@@ -38,35 +38,38 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-700">
-                @foreach ($products as $index => $product)
-                <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
-                    <td class="py-3 px-4">{{ $index + 1 }}</td>
-                    <td class="py-3 px-4">{{ $product->name }}</td>
-                    <td class="py-3 px-4" id="recorded_stock_{{ $product->id }}">{{ $product->stock }}</td>
-                    <td class="py-3 px-4">
-                        <input type="number" name="actual_stock" id="actual_stock_{{ $product->id }}" 
-                            class="border p-1 w-full"
-                            value="{{ $product->stock }}"
-                            min="0"
-                            oninput="calculateDifference({{ $product->id }})">
-                    </td>
-                    <td class="py-3 px-4" id="difference_{{ $product->id }}">0</td>
-                    <td class="py-3 px-4 flex gap-2">
-                        <form action="{{ route('stock_opname.update', $product->id) }}" method="POST">
-                            @csrf
-                            @method('PUT')
-                            <input type="hidden" name="actual_stock" id="hidden_stock_{{ $product->id }}" value="{{ $product->stock }}">
-                            <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">Update</button>
-                        </form>
-                        <form action="{{ route('stock_opname.store') }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="actual_stock" id="hidden_audit_{{ $product->id }}" value="{{ $product->stock }}">
-                            <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">Save Audit</button>
-                        </form>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
+    @foreach ($products as $index => $product)
+        @php
+            $stockOpname = $product->stockOpname; // Pastikan ada relasi di model Product
+            $actualStock = $stockOpname->actual_stock ?? $product->stock;
+            $difference = $stockOpname->difference ?? 0;
+        @endphp
+        <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
+            <td class="py-3 px-4">{{ $index + 1 }}</td>
+            <td class="py-3 px-4">{{ $product->name }}</td>
+            <td class="py-3 px-4" id="recorded_stock_{{ $product->id }}">{{ $product->stock }}</td>
+            <td class="py-3 px-4">
+                <input type="number" name="actual_stock" id="actual_stock_{{ $product->id }}" 
+                    class="border p-1 w-full"
+                    value="{{ $actualStock }}"
+                    min="0"
+                    oninput="calculateDifference({{ $product->id }})">
+            </td>
+            <td class="py-3 px-4" id="difference_{{ $product->id }}">{{ $difference }}</td>
+            <td class="py-3 px-4">
+                <form action="{{ route('stock_opname.store') }}" method="POST" onsubmit="return setAuditValues({{ $product->id }})">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <input type="hidden" name="recorded_stock" id="recorded_stock_hidden_{{ $product->id }}" value="{{ $product->stock }}">
+                    <input type="hidden" name="actual_stock" id="actual_stock_hidden_{{ $product->id }}" value="{{ $actualStock }}">
+                    <input type="hidden" name="difference" id="difference_hidden_{{ $product->id }}" value="{{ $difference }}">
+                    <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">Save Audit</button>
+                </form>
+            </td>
+        </tr>
+    @endforeach
+</tbody>
+
         </table>
     </div>
 </div>
@@ -77,9 +80,23 @@
         let actualStock = parseInt(document.getElementById(`actual_stock_${productId}`).value) || 0;
         let stockDifference = actualStock - recordedStock;
 
+        // Update difference display
         document.getElementById(`difference_${productId}`).innerText = stockDifference;
-        document.getElementById(`hidden_stock_${productId}`).value = actualStock; // Update hidden input
+
+        // Update hidden inputs for audit form
+        document.getElementById(`actual_stock_hidden_${productId}`).value = actualStock;
+        document.getElementById(`difference_hidden_${productId}`).value = stockDifference;
+    }
+
+    function setAuditValues(productId) {
+        let recordedStock = parseInt(document.getElementById(`recorded_stock_${productId}`).innerText);
+        let actualStock = parseInt(document.getElementById(`actual_stock_${productId}`).value) || 0;
+        let stockDifference = actualStock - recordedStock;
+
+        // Ensure hidden inputs are set correctly before form submission
+        document.getElementById(`recorded_stock_hidden_${productId}`).value = recordedStock;
+        document.getElementById(`actual_stock_hidden_${productId}`).value = actualStock;
+        document.getElementById(`difference_hidden_${productId}`).value = stockDifference;
     }
 </script>
-
 @endsection
