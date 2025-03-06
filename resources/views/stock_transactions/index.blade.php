@@ -76,19 +76,18 @@
             @if($transaction->status === 'Pending' && $transaction->type === 'Masuk')
                 <form action="{{ route('stock_transactions.confirm', $transaction->id) }}" method="POST">
                     @csrf
-                    @method('PUT')
                     <button type="submit">Confirm Incoming</button>
                 </form>
             @elseif($transaction->status === 'Pending' && $transaction->type === 'Keluar')
                 <form action="{{ route('stock_transactions.confirm', $transaction->id) }}" method="POST">
                     @csrf
-                    @method('PUT')
                     <button type="submit">Confirm Outgoing</button>
                 </form>
             @endif
         </div>
     @endforeach
 @endif
+
 
     {{-- Tabel Transaksi --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">

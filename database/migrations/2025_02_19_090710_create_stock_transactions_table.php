@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('type', ['Masuk', 'Keluar']);
             $table->integer('quantity');
             $table->date('date');
-            $table->enum('status', ['Pending', 'Diterima', 'Ditolak', 'Dikeluarkan']);
+            $table->enum('status', ['Pending','Confirmed', 'Diterima', 'Ditolak', 'Dikeluarkan']);
             $table->text('notes')->nullable();
             $table->timestamps();
     

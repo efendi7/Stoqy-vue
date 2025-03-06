@@ -163,7 +163,7 @@ class StockTransactionController extends Controller
         return redirect()->route('stock_transactions.index')->with('success', 'Stock opname berhasil diperbarui!');
     }
 
-
+    // Add the confirm method here
     public function confirm(Request $request, $id)
     {
         $userRole = $this->userService->getUserRole(auth()->id());
@@ -176,36 +176,35 @@ class StockTransactionController extends Controller
             return redirect()->route('stock_transactions.index')->with('error', 'Transaksi stok tidak ditemukan.');
         }
     
-        // Update the status of the transaction to 'Confirmed'
+        // Ensure the status value being set is allowed in the database
         $transaction->status = 'Confirmed';
         $transaction->save();
     
         return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dikonfirmasi!');
     }
     
+
     public function updateStatus(Request $request, $id)
-{
-    $userRole = $this->userService->getUserRole(auth()->id());
-    if ($userRole !== 'warehouse_manager') {
-        return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengubah status transaksi.');
+    {
+        $userRole = $this->userService->getUserRole(auth()->id());
+        if ($userRole !== 'warehouse_manager') {
+            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengubah status transaksi.');
+        }
+        
+        $request->validate(['status' => 'required|in:Pending,Diterima,Ditolak']);
+        
+        $transaction = $this->stockTransactionService->getStockTransactionById($id);
+        if (!$transaction) {
+            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
+        }
+    
+        if ($transaction->status !== 'Confirmed') {
+            $message = $transaction->type === 'Masuk' ? 'Barang masuk belum diperiksa oleh staff.' : 'Barang keluar belum disiapkan oleh staff.';
+            return redirect()->route('stock_transactions.index')->with('error', $message);
+        }
+        
+        return $this->stockTransactionService->updateTransactionStatus($id, $request->status)
+            ? redirect()->route('stock_transactions.index')->with('success', 'Status transaksi berhasil diubah!')
+            : redirect()->route('stock_transactions.index')->with('error', 'Gagal mengubah status transaksi.');
     }
-    
-    $request->validate(['status' => 'required|in:Pending,Diterima,Ditolak']);
-    
-    $transaction = $this->stockTransactionService->getStockTransactionById($id);
-    if (!$transaction) {
-        return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
-    }
-
-    if ($transaction->status !== 'Confirmed') {
-        $message = $transaction->type === 'Masuk' ? 'Barang masuk belum diperiksa oleh staff.' : 'Barang keluar belum disiapkan oleh staff.';
-        return redirect()->route('stock_transactions.index')->with('error', $message);
-    }
-    
-    return $this->stockTransactionService->updateTransactionStatus($id, $request->status)
-        ? redirect()->route('stock_transactions.index')->with('success', 'Status transaksi berhasil diubah!')
-        : redirect()->route('stock_transactions.index')->with('error', 'Gagal mengubah status transaksi.');
-}
-
-    
 }

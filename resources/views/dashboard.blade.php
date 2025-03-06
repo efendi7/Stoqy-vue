@@ -227,72 +227,73 @@
     @endif
 
     @if(auth()->user()->role === 'warehouse_manager')
-        <!-- Pending Transactions Section - Warehouse Manager -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- Pending Incoming Transactions -->
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-gray-600 text-sm font-medium mb-4">Transaksi Masuk Pending</h3>
-                <div class="divide-y divide-gray-200">
-                    @forelse($pendingIncomingTransactions ?? [] as $transaction)
-                    <div class="py-3">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="text-sm font-medium text-gray-700">{{ $transaction->reference_number }}</p>
-                                <p class="text-xs text-gray-500">{{ $transaction->created_at->format('d M Y H:i') }}</p>
-                            </div>
-                            <a href="{{ route('transactions.incoming.show', $transaction->id) }}" 
-                               class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
-                               Periksa
-                            </a>
+    <!-- Pending Transactions Section - Warehouse Manager -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Pending Incoming Transactions -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-gray-600 text-sm font-medium mb-4">Transaksi Masuk Pending</h3>
+            <div class="divide-y divide-gray-200">
+                @forelse($pendingIncomingTransactions ?? [] as $transaction)
+                <div class="py-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-medium text-gray-700">{{ $transaction->reference_number }}</p>
+                            <p class="text-xs text-gray-500">{{ $transaction->created_at->format('d M Y H:i') }}</p>
                         </div>
-                        <p class="text-xs text-gray-600 mt-1">Supplier: {{ $transaction->supplier->name }}</p>
+                        <a href="{{ route('transactions.incoming.show', $transaction->id) }}" 
+                           class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
+                           Periksa
+                        </a>
                     </div>
-                    @empty
-                    <p class="text-sm text-gray-500 italic">Tidak ada transaksi masuk pending</p>
-                    @endforelse
+                    <p class="text-xs text-gray-600 mt-1">Supplier: {{ $transaction->supplier->name }}</p>
                 </div>
-                @if(isset($pendingIncomingTransactions) && count($pendingIncomingTransactions) > 5)
-                <div class="mt-4 text-center">
-                    <a href="{{ route('transactions.incoming.index', ['status' => 'pending']) }}" 
-                       class="text-sm text-blue-600 hover:underline">
-                       Lihat Semua
-                    </a>
-                </div>
-                @endif
+                @empty
+                <p class="text-sm text-gray-500 italic">Tidak ada transaksi masuk pending</p>
+                @endforelse
             </div>
-
-            <!-- Pending Outgoing Transactions -->
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-gray-600 text-sm font-medium mb-4">Transaksi Keluar Pending</h3>
-                <div class="divide-y divide-gray-200">
-                    @forelse($pendingOutgoingTransactions ?? [] as $transaction)
-                    <div class="py-3">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="text-sm font-medium text-gray-700">{{ $transaction->reference_number }}</p>
-                                <p class="text-xs text-gray-500">{{ $transaction->created_at->format('d M Y H:i') }}</p>
-                            </div>
-                            <a href="{{ route('transactions.outgoing.show', $transaction->id) }}" 
-                               class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
-                               Periksa
-                            </a>
-                        </div>
-                        <p class="text-xs text-gray-600 mt-1">Tujuan: {{ $transaction->destination }}</p>
-                    </div>
-                    @empty
-                    <p class="text-sm text-gray-500 italic">Tidak ada transaksi keluar pending</p>
-                    @endforelse
-                </div>
-                @if(isset($pendingOutgoingTransactions) && count($pendingOutgoingTransactions) > 5)
-                <div class="mt-4 text-center">
-                    <a href="{{ route('transactions.outgoing.index', ['status' => 'pending']) }}" 
-                       class="text-sm text-blue-600 hover:underline">
-                       Lihat Semua
-                    </a>
-                </div>
-                @endif
+            @if(isset($pendingIncomingTransactions) && count($pendingIncomingTransactions) > 5)
+            <div class="mt-4 text-center">
+                <a href="{{ route('transactions.incoming.index', ['status' => 'pending']) }}" 
+                   class="text-sm text-blue-600 hover:underline">
+                   Lihat Semua
+                </a>
             </div>
+            @endif
         </div>
+
+        <!-- Pending Outgoing Transactions -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-gray-600 text-sm font-medium mb-4">Transaksi Keluar Pending</h3>
+            <div class="divide-y divide-gray-200">
+                @forelse($pendingOutgoingTransactions ?? [] as $transaction)
+                <div class="py-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-medium text-gray-700">{{ $transaction->reference_number }}</p>
+                            <p class="text-xs text-gray-500">{{ $transaction->created_at->format('d M Y H:i') }}</p>
+                        </div>
+                        <a href="{{ route('transactions.outgoing.show', $transaction->id) }}" 
+                           class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
+                           Periksa
+                        </a>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1">Tujuan: {{ $transaction->destination }}</p>
+                </div>
+                @empty
+                <p class="text-sm text-gray-500 italic">Tidak ada transaksi keluar pending</p>
+                @endforelse
+            </div>
+            @if(isset($pendingOutgoingTransactions) && count($pendingOutgoingTransactions) > 5)
+            <div class="mt-4 text-center">
+                <a href="{{ route('transactions.outgoing.index', ['status' => 'pending']) }}" 
+                   class="text-sm text-blue-600 hover:underline">
+                   Lihat Semua
+                </a>
+            </div>
+            @endif
+        </div>
+    </div>
+@endif
 
         <!-- Low Stock Items - Warehouse Manager -->
         <div class="bg-white p-6 rounded-lg shadow-md mb-8">
@@ -342,7 +343,7 @@
                     Lihat Semua
                 </a>
             </div>
-            @endif
+          
         </div>
     @endif
 
