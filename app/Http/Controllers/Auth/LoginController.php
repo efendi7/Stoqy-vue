@@ -25,32 +25,18 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        // Debugging: Check user in the database
-        $user = User::where('email', $request->email)->first();
-        if ($user) {
-            \Log::info('User found: ' . $user->email);
-            \Log::info('Stored password hash: ' . $user->password);
-
-            // Manual password check
-            if (Hash::check($request->input('password'), $user->password)) {
-                \Log::info('Manual password check successful for email: ' . $request->input('email'));
-                Auth::login($user);
-                return redirect()->intended('dashboard')->with('success', 'Login berhasil');
-            } else {
-                \Log::info('Manual password check failed for email: ' . $request->input('email'));
-            }
-        } else {
-            \Log::info('User not found with email: ' . $request->email);
-        }
-
         // Attempt to login the user
         if (Auth::attempt($request->only('email', 'password'))) {
             \Log::info('Login attempt successful for email: ' . $request->input('email'));
+            
+            // Update is_logged_in status
+            Auth::user()->update(['is_logged_in' => true]);
+
             return redirect()->intended('dashboard')->with('success', 'Login berhasil');
         } else {
             \Log::info('Login attempt failed for email: ' . $request->input('email'));
             \Log::info('Provided password: ' . $request->input('password'));
-            \Log::info('Stored password hash for email ' . $request->input('email') . ' is: ' . optional($user)->password);
+            \Log::info('Stored password hash for email ' . $request->input('email') . ' is: ' . optional(User::where('email', $request->email)->first())->password);
         }
 
         // Return back with error if login fails
@@ -60,6 +46,12 @@ class LoginController extends Controller
     // Handle logout
     public function logout(Request $request)
     {
+        // Update is_logged_in status
+        $user = Auth::user();
+        if ($user) {
+            $user->update(['is_logged_in' => false]);
+        }
+
         Auth::logout();
         
         $request->session()->invalidate(); // Menghapus sesi lama
