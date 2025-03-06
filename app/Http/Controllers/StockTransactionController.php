@@ -31,10 +31,15 @@ class StockTransactionController extends Controller
 
     public function create()
     {
+        $userRole = $this->userService->getUserRole(auth()->id());
+        if ($userRole !== 'warehouse_manager') {
+            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk membuat transaksi stok.');
+        }
+
         return view('stock_transactions.create', [
             'products' => Product::all(),
             'users' => User::all(),
-            'userRole' => $this->userService->getUserRole(auth()->id()),
+            'userRole' => $userRole,
         ]);
     }
 
@@ -42,7 +47,7 @@ class StockTransactionController extends Controller
     {
         $userRole = $this->userService->getUserRole(auth()->id());
     
-        if (!in_array($userRole, ['warehouse_staff', 'warehouse_manager'])) {
+        if ($userRole !== 'warehouse_manager') {
             return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk membuat transaksi stok.');
         }
     
@@ -66,48 +71,46 @@ class StockTransactionController extends Controller
     }
 
     public function edit($id)
-{
-    $userRole = $this->userService->getUserRole(auth()->id());
+    {
+        $userRole = $this->userService->getUserRole(auth()->id());
 
-    // Hanya Warehouse Manager yang boleh mengedit transaksi
-    if ($userRole !== 'warehouse_manager') {
-        return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengedit transaksi stok.');
+        // Hanya Warehouse Manager yang boleh mengedit transaksi
+        if ($userRole !== 'warehouse_manager') {
+            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengedit transaksi stok.');
+        }
+
+        $transaction = $this->stockTransactionService->getStockTransactionById($id);
+        if (!$transaction) {
+            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi stok tidak ditemukan.');
+        }
+
+        return view('stock_transactions.edit', [
+            'transaction' => $transaction,
+            'products' => Product::all(),
+            'users' => User::all(),
+            'userRole' => $userRole,
+        ]);
     }
 
-    $transaction = $this->stockTransactionService->getStockTransactionById($id);
-    if (!$transaction) {
-        return redirect()->route('stock_transactions.index')->with('error', 'Transaksi stok tidak ditemukan.');
+    public function update(Request $request, $id)
+    {
+        $userRole = $this->userService->getUserRole(auth()->id());
+        if ($userRole !== 'warehouse_manager') {
+            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk memperbarui transaksi stok.');
+        }
+
+        $validatedData = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'user_id' => 'required|exists:users,id',
+            'type' => 'required|in:Masuk,Keluar',
+            'quantity' => 'required|integer|min:1',
+            'transaction_date' => 'required|date',
+        ]);
+
+        return $this->stockTransactionService->updateStockTransaction($id, $validatedData)
+            ? redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil diperbarui!')
+            : redirect()->route('stock_transactions.index')->with('error', 'Gagal memperbarui transaksi stok. Periksa data atau stok yang tersedia.');
     }
-
-    return view('stock_transactions.edit', [
-        'transaction' => $transaction,
-        'products' => Product::all(),
-        'users' => User::all(),
-        'userRole' => $userRole,
-    ]);
-}
-
-
-public function update(Request $request, $id)
-{
-    $userRole = $this->userService->getUserRole(auth()->id());
-    if ($userRole !== 'warehouse_manager') {
-        return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk memperbarui transaksi stok.');
-    }
-
-    $validatedData = $request->validate([
-        'product_id' => 'required|exists:products,id',
-        'user_id' => 'required|exists:users,id',
-        'type' => 'required|in:Masuk,Keluar',
-        'quantity' => 'required|integer|min:1',
-        'transaction_date' => 'required|date',
-    ]);
-
-    return $this->stockTransactionService->updateStockTransaction($id, $validatedData)
-        ? redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil diperbarui!')
-        : redirect()->route('stock_transactions.index')->with('error', 'Gagal memperbarui transaksi stok. Periksa data atau stok yang tersedia.');
-}
-
 
     public function destroy($id)
     {
@@ -140,7 +143,6 @@ public function update(Request $request, $id)
             ? redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dihapus dan stok dikembalikan!')
             : redirect()->route('stock_transactions.index')->with('error', 'Gagal menghapus transaksi stok.');
     }
-    
 
     public function stockOpname(Request $request)
     {
@@ -160,23 +162,50 @@ public function update(Request $request, $id)
 
         return redirect()->route('stock_transactions.index')->with('success', 'Stock opname berhasil diperbarui!');
     }
-    public function updateStatus(Request $request, $id)
+
+
+    public function confirm(Request $request, $id)
     {
         $userRole = $this->userService->getUserRole(auth()->id());
-        if ($userRole !== 'warehouse_manager') {
-            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengubah status transaksi.');
+        if ($userRole !== 'warehouse_staff') {
+            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengonfirmasi transaksi stok.');
         }
-        
-        $request->validate(['status' => 'required|in:Pending,Diterima,Ditolak']);
-        
+    
         $transaction = $this->stockTransactionService->getStockTransactionById($id);
         if (!$transaction) {
-            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
+            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi stok tidak ditemukan.');
         }
-        
-        return $this->stockTransactionService->updateTransactionStatus($id, $request->status)
-            ? redirect()->route('stock_transactions.index')->with('success', 'Status transaksi berhasil diubah!')
-            : redirect()->route('stock_transactions.index')->with('error', 'Gagal mengubah status transaksi.');
+    
+        // Update the status of the transaction to 'Confirmed'
+        $transaction->status = 'Confirmed';
+        $transaction->save();
+    
+        return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dikonfirmasi!');
     }
+    
+    public function updateStatus(Request $request, $id)
+{
+    $userRole = $this->userService->getUserRole(auth()->id());
+    if ($userRole !== 'warehouse_manager') {
+        return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengubah status transaksi.');
+    }
+    
+    $request->validate(['status' => 'required|in:Pending,Diterima,Ditolak']);
+    
+    $transaction = $this->stockTransactionService->getStockTransactionById($id);
+    if (!$transaction) {
+        return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
+    }
+
+    if ($transaction->status !== 'Confirmed') {
+        $message = $transaction->type === 'Masuk' ? 'Barang masuk belum diperiksa oleh staff.' : 'Barang keluar belum disiapkan oleh staff.';
+        return redirect()->route('stock_transactions.index')->with('error', $message);
+    }
+    
+    return $this->stockTransactionService->updateTransactionStatus($id, $request->status)
+        ? redirect()->route('stock_transactions.index')->with('success', 'Status transaksi berhasil diubah!')
+        : redirect()->route('stock_transactions.index')->with('error', 'Gagal mengubah status transaksi.');
+}
+
     
 }

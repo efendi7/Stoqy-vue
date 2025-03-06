@@ -27,6 +27,30 @@
     </script>
     @endif
 
+    @if (session('success'))
+    <div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
+        <div class="flex items-center space-x-2">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>{{ session('success') }}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+    </div>
+@endif
+
+@if (session('error'))
+    <div id="flash-error" class="max-w-lg mx-auto bg-red-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
+        <div class="flex items-center space-x-2">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ session('error') }}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+    </div>
+@endif
+
     {{-- Form Pencarian --}}
     <form method="GET" action="{{ route('stock_transactions.index') }}" class="mb-6 flex gap-4">
         <input type="text" id="search" name="search" placeholder="Cari berdasarkan produk atau jenis" 
@@ -44,6 +68,27 @@
             </a>
         @endif
     </div>
+
+    @if($userRole === 'warehouse_staff')
+    @foreach($transactions as $transaction)
+        <div>
+            <p>{{ $transaction->product->name }} - {{ $transaction->quantity }} - {{ $transaction->status }}</p>
+            @if($transaction->status === 'Pending' && $transaction->type === 'Masuk')
+                <form action="{{ route('stock_transactions.confirm', $transaction->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <button type="submit">Confirm Incoming</button>
+                </form>
+            @elseif($transaction->status === 'Pending' && $transaction->type === 'Keluar')
+                <form action="{{ route('stock_transactions.confirm', $transaction->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <button type="submit">Confirm Outgoing</button>
+                </form>
+            @endif
+        </div>
+    @endforeach
+@endif
 
     {{-- Tabel Transaksi --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
