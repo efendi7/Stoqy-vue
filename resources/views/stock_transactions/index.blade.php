@@ -70,7 +70,7 @@
 
         <div class="space-y-1">
     <!-- Keterangan Pending -->
-    <div class="text-sm font-semibold text-yellow-700">Status: Pending</div>
+    <div class="text-sm font-semibold text-yellow-700">Keterangan: Pending</div>
 
     <div class="flex items-center space-x-2">
         <span class="w-4 h-4 bg-white border border-gray-400 inline-block"></span>
