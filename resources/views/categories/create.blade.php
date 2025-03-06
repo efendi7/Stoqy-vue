@@ -1,31 +1,59 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Kategori Baru</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-cover bg-center">
+    <div class="bg-white bg-opacity-70 p-6 rounded-2xl shadow-xl w-full max-w-md animate-fadeIn">
+        <h1 class="text-xl font-bold text-gray-800 text-center mb-6">Tambah Kategori Baru</h1>
+        
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-@section('content')
-<div class="container mx-auto px-4">
-    <h1 class="text-2xl font-bold my-4">Tambah Kategori Baru</h1>
-    
-    @if ($errors->any())
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <strong class="font-bold">Ada kesalahan!</strong>
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-    
-    <form action="{{ route('categories.store') }}" method="POST">
-        @csrf
-        <div class="mb-4">
-            <label for="name" class="block text-sm font-medium text-gray-700">Nama Kategori</label>
-            <input type="text" name="name" class="mt-1 block w-full border border-gray-300 rounded-md p-2" id="name" value="{{ old('name') }}" required>
-        </div>
-        <div class="mb-4">
-            <label for="description" class="block text-sm font-medium text-gray-700">Deskripsi</label>
-            <textarea name="description" class="mt-1 block w-full border border-gray-300 rounded-md p-2" id="description">{{ old('description') }}</textarea>
-        </div>
-        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Simpan</button>
-    </form>
-</div>
-@endsection
+        <form action="{{ route('categories.store') }}" method="POST" class="space-y-4">
+            @csrf
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-800">Nama Kategori</label>
+                <input type="text" name="name" id="name" 
+                    class="w-full mt-1 p-2 rounded-lg border border-gray-300 text-gray-800 focus:ring-2 focus:ring-blue-500 transition-all" 
+                    value="{{ old('name') }}" required>
+            </div>
+            
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-800">Deskripsi</label>
+                <textarea name="description" id="description" 
+                    class="w-full mt-1 p-2 rounded-lg border border-gray-300 text-gray-800 focus:ring-2 focus:ring-blue-500 transition-all">{{ old('description') }}</textarea>
+            </div>
+            
+            <button type="submit" 
+                class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105">Simpan</button>
+        </form>
+    </div>
+
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.8s ease-out;
+        }
+    </style>
+</body>
+</html>

@@ -243,22 +243,24 @@
         Detail
     </a>
 @elseif(auth()->user()->role === 'admin')
-    <!-- Dropdown untuk Admin -->
-    <div class="relative inline-block text-left">
-        <button data-product-id="{{ $product->id }}" class="btn-dropdown bg-gray-500 text-white py-1 px-4 rounded-lg hover:bg-gray-600 focus:outline-none">
-    Aksi
-</button>
-<div id="menu-items-{{ $product->id }}" class="hidden dropdown-menu origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-    <div class="py-1">
-        <a href="{{ route('products.show', $product->id) }}" class="text-gray-700 block px-4 py-2 text-sm">Detail</a>
-        <a href="{{ route('products.edit', $product->id) }}" class="text-gray-700 block px-4 py-2 text-sm">Edit</a>
-        <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="text-red-600 block px-4 py-2 text-sm w-full text-left">Hapus</button>
-        </form>
-    </div>
+<div class="flex space-x-2">
+    <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 focus:outline-none text-sm">
+        Detail
+    </a>
+    
+    <a href="{{ route('products.edit', $product->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 focus:outline-none text-sm">
+        Edit
+    </a>
+    
+    <form action="{{ route('products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 focus:outline-none text-sm">
+            Hapus
+        </button>
+    </form>
 </div>
+
 
     </div>
 @endif
