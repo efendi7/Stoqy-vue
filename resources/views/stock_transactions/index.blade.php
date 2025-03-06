@@ -67,7 +67,25 @@
                 Tambah Transaksi
             </a>
         @endif
+
+        <div class="space-y-1">
+    <!-- Keterangan Pending -->
+    <div class="text-sm font-semibold text-yellow-700">Status: Pending</div>
+
+    <div class="flex items-center space-x-2">
+        <span class="w-4 h-4 bg-white border border-gray-400 inline-block"></span>
+        <span class="text-sm text-gray-600">Stok telah dikonfirmasi masuk/keluar oleh staff</span>
     </div>
+    
+    <div class="flex items-center space-x-2">
+        <span class="w-4 h-4 bg-yellow-400 border border-gray-400 inline-block"></span>
+        <span class="text-sm text-gray-600">Menunggu konfirmasi barang telah diperiksa staff</span>
+    </div>
+</div>
+
+    </div>
+
+    
 
     @if($userRole === 'warehouse_staff')
     @foreach($transactions as $transaction)
