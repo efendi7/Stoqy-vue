@@ -106,42 +106,41 @@ class DashboardController extends Controller
             'endDate' => $endDate->format('Y-m-d')
         ];
     
-        // Warehouse Manager specific metrics and tasks
         if ($user->role === 'warehouse_manager') {
-            // Today's transactions counts
             $todayIncomingTransactions = StockTransaction::where('type', 'Masuk')
+                ->where('status', 'Diterima') // Pastikan hanya transaksi yang diterima
                 ->whereDate('transaction_date', Carbon::today())
                 ->count();
-    
+        
             $todayOutgoingTransactions = StockTransaction::where('type', 'Keluar')
+                ->where('status', 'Diterima') // Pastikan hanya transaksi yang diterima
                 ->whereDate('transaction_date', Carbon::today())
                 ->count();
-    
+        
             // Pending transactions
             $pendingIncomingTasks = StockTransaction::where('type', 'Masuk')
                 ->where('status', 'Pending')
                 ->latest()
                 ->limit(5)
                 ->get();
-    
+        
             $pendingOutgoingTasks = StockTransaction::where('type', 'Keluar')
                 ->where('status', 'Pending')
                 ->latest()
                 ->limit(5)
                 ->get();
-    
+        
             // Add warehouse manager specific data to view
             $viewData['todayIncomingTransactions'] = $todayIncomingTransactions;
             $viewData['todayOutgoingTransactions'] = $todayOutgoingTransactions;
             $viewData['pendingIncomingTasks'] = $pendingIncomingTasks;
+           
             $viewData['pendingOutgoingTasks'] = $pendingOutgoingTasks;
         }
-    
+        
         if ($user->role === 'admin') {
             $viewData['adminMetrics'] = $adminMetrics;
         }
-    
+        
         return view('dashboard', $viewData);
-    }
-    
-}
+    }}     

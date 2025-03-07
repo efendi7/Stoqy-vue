@@ -64,6 +64,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('stock_transactions', StockTransactionController::class);
     Route::patch('/stock_transactions/{id}/update_status', [StockTransactionController::class, 'updateStatus'])->name('stock_transactions.update_status');
 Route::post('/stock_transactions/{id}/confirm', [StockTransactionController::class, 'confirm'])->name('stock_transactions.confirm');
+Route::get('/transactions/outgoing/{transaction}', 'TransactionController@showOutgoing')->name('transactions.outgoing.show');
 
   
     Route::resource('stock_opname', StockOpnameController::class)->only(['index', 'store']);

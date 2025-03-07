@@ -13,7 +13,7 @@
 
     @vite('resources/css/app.css')
 </head>
-<body>
+<body class="bg-gradient-to-b from-white to-neutral-200">
     
     <div id="app">
         @include('partials.navbar')

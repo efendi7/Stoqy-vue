@@ -19,6 +19,10 @@ class StockTransaction extends Model
         'notes',
         'transaction_date' // Pastikan menggunakan snake_case
     ];
+
+    protected $attributes = [
+        'status' => 'Pending' // Default status transaksi
+    ];
     
     protected $dates = [
         'transaction_date',

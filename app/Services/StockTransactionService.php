@@ -114,6 +114,14 @@ class StockTransactionService
         }
     }
 
+    public function getStockTransactionsByDateAndStatus($date, $status)
+{
+    return StockTransaction::whereDate('transaction_date', $date)
+        ->where('status', $status)
+        ->get();
+}
+
+
     /**
      * Process or revert stock updates based on transaction type.
      */

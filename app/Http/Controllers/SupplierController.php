@@ -62,7 +62,8 @@ class SupplierController extends Controller
             'email' => 'required|string|email|max:255',
         ]);
 
-        $this->supplierService->updateSupplier($supplier->id, $request->all());
+        $this->supplierService->updateSupplier($supplier->id, $request->except(['_token', '_method']));
+
 
         return redirect()->route('suppliers.index')
             ->with('success', 'Supplier berhasil diperbarui!');

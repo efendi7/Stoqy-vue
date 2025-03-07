@@ -44,16 +44,20 @@ class CategoryController extends Controller
     }
 
     public function update(Request $request, Category $category)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',  // Validasi deskripsi
-        ]);
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',  // Validasi deskripsi
+    ]);
 
-        $this->categoryService->updateCategory($category->id, $request->all());
+    // Hanya kirim field yang diperlukan
+    $data = $request->except(['_token', '_method']);
 
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui!');
-    }
+    $this->categoryService->updateCategory($category->id, $data);
+
+    return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui!');
+}
+
 
     public function destroy(Category $category)
     {

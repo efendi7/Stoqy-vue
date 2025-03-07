@@ -229,11 +229,13 @@
     @if(auth()->user()->role === 'warehouse_manager')
     <!-- Pending Transactions Section - Warehouse Manager -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+
         <!-- Pending Incoming Transactions -->
         <div class="bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-gray-600 text-sm font-medium mb-4">Transaksi Masuk Pending</h3>
             <div class="divide-y divide-gray-200">
-                @forelse($pendingIncomingTransactions ?? [] as $transaction)
+                @forelse($pendingIncomingTasks ?? [] as $transaction)
                 <div class="py-3">
                     <div class="flex justify-between items-center">
                         <div>
@@ -251,7 +253,7 @@
                 <p class="text-sm text-gray-500 italic">Tidak ada transaksi masuk pending</p>
                 @endforelse
             </div>
-            @if(isset($pendingIncomingTransactions) && count($pendingIncomingTransactions) > 5)
+            @if(isset($pendingIncomingTasks) && count($pendingIncomingTasks) > 5)
             <div class="mt-4 text-center">
                 <a href="{{ route('transactions.incoming.index', ['status' => 'pending']) }}" 
                    class="text-sm text-blue-600 hover:underline">
@@ -265,7 +267,7 @@
         <div class="bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-gray-600 text-sm font-medium mb-4">Transaksi Keluar Pending</h3>
             <div class="divide-y divide-gray-200">
-                @forelse($pendingOutgoingTransactions ?? [] as $transaction)
+                @forelse($pendingOutgoingTasks ?? [] as $transaction)
                 <div class="py-3">
                     <div class="flex justify-between items-center">
                         <div>
@@ -283,7 +285,7 @@
                 <p class="text-sm text-gray-500 italic">Tidak ada transaksi keluar pending</p>
                 @endforelse
             </div>
-            @if(isset($pendingOutgoingTransactions) && count($pendingOutgoingTransactions) > 5)
+            @if(isset($pendingOutgoingTasks) && count($pendingOutgoingTasks) > 5)
             <div class="mt-4 text-center">
                 <a href="{{ route('transactions.outgoing.index', ['status' => 'pending']) }}" 
                    class="text-sm text-blue-600 hover:underline">

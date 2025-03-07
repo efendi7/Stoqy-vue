@@ -6,6 +6,7 @@ use App\Services\UserService;
 use App\Services\StockTransactionService;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\StockTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -22,12 +23,26 @@ class StockTransactionController extends Controller
 
     public function index()
     {
-        $transactions = $this->stockTransactionService->getAllStockTransactionsPaginated(10);
-        $userRole = $this->userService->getUserRole(auth()->id());
-        $products = Product::all();
-        
-        return view('stock_transactions.index', compact('transactions', 'userRole', 'products'));
+        $user = auth()->user();
+        $userRole = $user->role;
+    
+        // Menampilkan semua transaksi tanpa memfilter status
+        $transactions = StockTransaction::latest('transaction_date')->paginate(10);
+    
+        return view('stock_transactions.index', compact('transactions', 'userRole'));
     }
+
+    public function dashboard()
+    {
+        $transactions = StockTransaction::where('status', 'Diterima')
+            ->latest('transaction_date')
+            ->paginate(10);
+    
+        return view('dashboard.index', compact('transactions'));
+    }
+
+    
+
 
     public function create()
     {
