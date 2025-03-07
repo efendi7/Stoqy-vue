@@ -37,6 +37,12 @@ class UserController extends Controller
                      : redirect()->back()->with('error', 'Gagal menambahkan user.');
     }
 
+    public function create()
+{
+    return view('users.create');
+}
+
+
     public function edit($id)
 {
     $user = User::findOrFail($id);

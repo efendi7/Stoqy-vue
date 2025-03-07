@@ -26,11 +26,25 @@ class StockTransactionController extends Controller
         $user = auth()->user();
         $userRole = $user->role;
     
+        $pendingTransactions = StockTransaction::where('status', 'Pending')
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
+    
+    $confirmedTransactions = StockTransaction::whereIn('status', ['Confirmed', 'Diterima', 'Ditolak'])
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
+    
+    
         // Menampilkan semua transaksi tanpa memfilter status
         $transactions = StockTransaction::latest('transaction_date')->paginate(10);
     
-        return view('stock_transactions.index', compact('transactions', 'userRole'));
+        return view('stock_transactions.index', compact(
+            'transactions', 'userRole', 'pendingTransactions', 'confirmedTransactions'
+        ));
     }
+    
 
     public function dashboard()
     {
@@ -74,6 +88,7 @@ class StockTransactionController extends Controller
             'type' => 'required|in:Masuk,Keluar',
             'quantity' => 'required|integer|min:1',
             'transaction_date' => 'nullable|date',
+            'notes' => 'nullable|string'
         ]);
     
         $validatedData['status'] = 'Pending';
@@ -120,6 +135,7 @@ class StockTransactionController extends Controller
             'type' => 'required|in:Masuk,Keluar',
             'quantity' => 'required|integer|min:1',
             'transaction_date' => 'required|date',
+            'notes' => 'nullable|string'
         ]);
 
         return $this->stockTransactionService->updateStockTransaction($id, $validatedData)
@@ -133,31 +149,36 @@ class StockTransactionController extends Controller
         
         // Hanya Warehouse Manager yang boleh menghapus transaksi
         if ($userRole !== 'warehouse_manager') {
-            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk menghapus transaksi stok.');
+            return redirect()->route('stock_transactions.index')
+                ->with('error', 'Anda tidak memiliki izin untuk menghapus transaksi stok.');
         }
     
         $transaction = $this->stockTransactionService->getStockTransactionById($id);
         if (!$transaction) {
-            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
+            return redirect()->route('stock_transactions.index')
+                ->with('error', 'Transaksi tidak ditemukan.');
         }
     
         // Jika transaksi sudah disetujui, kembalikan stok sebelum dihapus
         if ($transaction->status === 'Diterima') {
-            $product = Product::find($transaction->product_id);
+            $product = $this->productService->getProductById($transaction->product_id); // Gunakan service
     
-            if ($transaction->type === 'Masuk') {
-                $product->stock -= $transaction->quantity;
-            } elseif ($transaction->type === 'Keluar') {
-                $product->stock += $transaction->quantity;
+            if ($product) {
+                if ($transaction->type === 'Masuk') {
+                    $product->stock = max(0, $product->stock - $transaction->quantity);
+                } elseif ($transaction->type === 'Keluar') {
+                    $product->stock += $transaction->quantity;
+                }
+    
+                $this->productService->updateProductStock($product->id, $product->stock); // Update lewat service
             }
-    
-            $product->save();
         }
     
         return $this->stockTransactionService->deleteStockTransaction($id)
             ? redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dihapus dan stok dikembalikan!')
             : redirect()->route('stock_transactions.index')->with('error', 'Gagal menghapus transaksi stok.');
     }
+    
 
     public function stockOpname(Request $request)
     {
@@ -222,4 +243,23 @@ class StockTransactionController extends Controller
             ? redirect()->route('stock_transactions.index')->with('success', 'Status transaksi berhasil diubah!')
             : redirect()->route('stock_transactions.index')->with('error', 'Gagal mengubah status transaksi.');
     }
+
+    public function pending()
+{
+    $pendingTransactions = StockTransaction::where('status', 'Pending')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10); // Pakai pagination
+
+    return view('stock_transactions.pending', compact('pendingTransactions'));
+}
+
+public function confirmed()
+{
+    $confirmedTransactions = StockTransaction::whereIn('status', ['Confirmed', 'Diterima', 'Ditolak'])
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+
+    return view('stock_transactions.confirmed', compact('confirmedTransactions'));
+}
+
 }

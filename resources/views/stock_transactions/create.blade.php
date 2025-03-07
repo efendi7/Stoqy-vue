@@ -82,6 +82,15 @@
                 @enderror
             </div>
 
+            {{-- Catatan --}}
+            <div>
+                <label for="notes" class="block text-sm font-medium text-gray-800">Catatan</label>
+                <textarea name="notes" id="notes" class="w-full mt-1 p-2 rounded-lg border border-gray-300 text-gray-800 focus:ring-2 focus:ring-blue-500 transition-all">{{ old('notes') }}</textarea>
+                @error('notes')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
             {{-- Tombol Simpan --}}
             <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105">
                 Simpan Transaksi

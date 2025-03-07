@@ -4,40 +4,30 @@
 <div class="container mx-auto px-4 min-h-screen bg-cover bg-center mt-16">
     <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Daftar Transaksi Stok</h1>
     
+    
     {{-- Flash Message Sukses --}}
-    @if(session('success'))
-    <div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">  
-        <div class="flex items-center space-x-2">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            <span>{{ session('success') }}</span>
-        </div>
-        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+@if(session('success'))
+<div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">  
+    <div class="flex items-center space-x-2">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span>{{ session('success') }}</span>
     </div>
+    <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+</div>
 
-    <script>
-        setTimeout(() => {
-            let flashSuccess = document.getElementById('flash-success');
-            if (flashSuccess) {
-                flashSuccess.style.opacity = '0';
-                setTimeout(() => flashSuccess.remove(), 500);
-            }
-        }, 4000);
-    </script>
-    @endif
-
-    @if (session('success'))
-    <div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
-        <div class="flex items-center space-x-2">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            <span>{{ session('success') }}</span>
-        </div>
-        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
-    </div>
+<script>
+    setTimeout(() => {
+        let flashSuccess = document.getElementById('flash-success');
+        if (flashSuccess) {
+            flashSuccess.style.opacity = '0';
+            setTimeout(() => flashSuccess.remove(), 500);
+        }
+    }, 4000);
+</script>
 @endif
+
 
 @if (session('error'))
     <div id="flash-error" class="max-w-lg mx-auto bg-red-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
@@ -59,123 +49,204 @@
         <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all">Cari</button>
     </form>
 
-    <div class="flex justify-between items-center mb-6">
-        {{-- Tombol Tambah Transaksi hanya untuk Warehouse Staff & Warehouse Manager --}}
-        @if(in_array(auth()->user()->role, ['warehouse_staff', 'warehouse_manager']))
-            <a href="{{ route('stock_transactions.create') }}" 
+    <div class="flex justify-between items-start mb-6">
+    @if(auth()->user()->role === 'warehouse_manager')
+        <a href="{{ route('stock_transactions.create') }}" 
             class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition-all">
-                Tambah Transaksi
-            </a>
-        @endif
+            Tambah Transaksi
+        </a>
+    @endif
 
-        <div class="space-y-1">
-    <!-- Keterangan Pending -->
-    <div class="text-sm font-semibold text-yellow-700">Keterangan: Pending</div>
+    @if(auth()->user()->role === 'warehouse_manager')
+        <div class="space-y-2 bg-white shadow-md p-4 rounded-lg border border-gray-200">
+            <div class="text-sm font-semibold text-yellow-700">Keterangan: Pending</div>
 
-    <div class="flex items-center space-x-2">
-        <span class="w-4 h-4 bg-white border border-gray-400 inline-block"></span>
-        <span class="text-sm text-gray-600">Stok telah dikonfirmasi masuk/keluar oleh staff</span>
-    </div>
-    
-    <div class="flex items-center space-x-2">
-        <span class="w-4 h-4 bg-yellow-400 border border-gray-400 inline-block"></span>
-        <span class="text-sm text-gray-600">Menunggu konfirmasi barang telah diperiksa staff</span>
-    </div>
+            <div class="flex items-center space-x-2">
+                <span class="w-4 h-4 bg-white border border-gray-400 inline-block rounded"></span>
+                <span class="text-sm text-gray-600">Stok telah dikonfirmasi masuk/keluar oleh staff</span>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <span class="w-4 h-4 bg-yellow-400 border border-gray-400 inline-block rounded"></span>
+                <span class="text-sm text-gray-600">Menunggu konfirmasi barang telah diperiksa staff</span>
+            </div>
+        </div>
+    @endif
 </div>
 
-    </div>
-
-    
-
-    @if($userRole === 'warehouse_staff')
-    @foreach($transactions as $transaction)
+@if($userRole === 'warehouse_staff')
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+        {{-- Kolom Transaksi yang Sudah Dikonfirmasi --}}
         <div>
-            <p>{{ $transaction->product->name }} - {{ $transaction->quantity }} - {{ $transaction->status }}</p>
-            @if($transaction->status === 'Pending' && $transaction->type === 'Masuk')
-                <form action="{{ route('stock_transactions.confirm', $transaction->id) }}" method="POST">
-                    @csrf
-                    <button type="submit">Confirm Incoming</button>
-                </form>
-            @elseif($transaction->status === 'Pending' && $transaction->type === 'Keluar')
-                <form action="{{ route('stock_transactions.confirm', $transaction->id) }}" method="POST">
-                    @csrf
-                    <button type="submit">Confirm Outgoing</button>
-                </form>
+            <h2 class="text-2xl font-bold text-gray-800 border-b-4 border-green-500 pb-2 mb-4">
+                ✅ Transaksi yang Sudah Dikonfirmasi
+            </h2>
+
+            @if(isset($confirmedTransactions) && $confirmedTransactions->isNotEmpty())
+                <div class="space-y-4">
+                    @foreach($confirmedTransactions as $transaction)
+                        <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-700">{{ $transaction->product->name }}</h3>
+                            <p class="text-sm text-gray-500">Kuantitas: <span class="font-medium">{{ $transaction->quantity }}</span></p>
+                            <p class="text-sm text-gray-500">
+                                Status:
+                                <span @class([
+                                    'font-medium px-3 py-1 rounded-md text-xs',
+                                    'bg-blue-100 text-blue-600' => $transaction->status === 'Confirmed',
+                                    'bg-green-100 text-green-600' => $transaction->status === 'Diterima',
+                                    'bg-red-100 text-red-600' => $transaction->status === 'Ditolak',
+                                ])>
+                                    {{ $transaction->status }}
+                                </span>
+                            </p>
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- Tombol Lihat Semua --}}
+                @if(request()->show_all !== 'confirmed')
+                <a href="{{ route('stock-transactions.confirmed') }}" 
+   class="block text-center text-blue-500 font-medium mt-4">
+   Lihat Semua Dikonfirmasi
+</a>
+                @endif
+            @else
+                <p class="text-gray-500 border border-gray-300 p-5 rounded-md mt-4">Belum ada transaksi yang dikonfirmasi.</p>
             @endif
         </div>
-    @endforeach
+
+        {{-- Kolom Transaksi yang Masih Pending --}}
+<div>
+    <h2 class="text-2xl font-bold text-gray-800 border-b-4 border-yellow-500 pb-2 mb-4">
+        📌 Transaksi yang Masih Pending
+    </h2>
+
+    @if(isset($pendingTransactions) && $pendingTransactions->isNotEmpty())
+        <div class="space-y-4">
+            @foreach($pendingTransactions as $transaction)
+                <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700">{{ $transaction->product->name }}</h3>
+                        <p class="text-sm text-gray-500">Kuantitas: <span class="font-medium">{{ $transaction->quantity }}</span></p>
+                        <p class="text-sm">
+                            Status:
+                            <span @class([
+                                'px-3 py-1 rounded-md text-xs font-semibold',
+                                'bg-yellow-100 text-yellow-800' => $transaction->status === 'Pending',
+                            ])>
+                                {{ $transaction->status }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <form action="{{ route('stock_transactions.confirm', $transaction->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" 
+                            @class([
+                                'px-5 py-2 text-white font-medium rounded-md',
+                                'bg-blue-500 hover:bg-blue-600' => $transaction->type === 'Masuk',
+                                'bg-orange-500 hover:bg-orange-600' => $transaction->type === 'Keluar',
+                            ])>
+                            {{ $transaction->type === 'Masuk' ? 'Konfirmasi Masuk' : 'Konfirmasi Keluar' }}
+                        </button>
+                    </form>
+                </div>
+            @endforeach
+        </div>
+   
+
+
+                {{-- Tombol Lihat Semua --}}
+                @if(request()->show_all !== 'pending')
+                {{-- Untuk Transaksi Pending --}}
+<a href="{{ route('stock-transactions.pending') }}" 
+   class="block text-center text-blue-500 font-medium mt-4">
+   Lihat Semua Pending
+</a>
+                @endif
+            @else
+                <p class="text-gray-500 border border-gray-300 p-5 rounded-md mt-4">Tidak ada transaksi pending saat ini.</p>
+            @endif
+        </div>
+    </div>
 @endif
 
 
+
     {{-- Tabel Transaksi --}}
-    <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
+    <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50 mt-6 space-y-4">
         <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
-            <thead class="bg-gray-800 bg-opacity-70 text-white">
-                <tr>
-                    <th class="py-3 px-4 text-left">Produk</th>
-                    <th class="py-3 px-4 text-left">User</th>
-                    <th class="py-3 px-4 text-left">Jenis</th>
-                    <th class="py-3 px-4 text-left">Kuantitas</th>
-                    <th class="py-3 px-4 text-left">Status</th>
-                    <th class="py-3 px-4 text-left">Tanggal Transaksi</th>
-                    <th class="py-3 px-4 text-left">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-700">
-                @forelse($transactions as $transaction)
-                <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all product-row">
-                    <td class="py-3 px-4 product-name">{{ $transaction->product->name ?? 'Produk Tidak Ditemukan' }}</td>
-                    <td class="py-3 px-4 product-user">{{ $transaction->user->name ?? 'User Tidak Ditemukan' }}</td>
-                    <td class="py-3 px-4 product-category">
-                        <span class="px-2 py-1 rounded {{ $transaction->type == 'Masuk' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            {{ $transaction->type }}
-                        </span>
-                    </td>
-                    <td class="py-3 px-4">{{ $transaction->quantity }}</td>
-                    <td class="py-3 px-4">
-                        @if($userRole === 'warehouse_manager')
-                            <form action="{{ route('stock_transactions.update-status', $transaction->id) }}" method="POST" class="inline">
-                                @csrf
-                                <select name="status" onchange="this.form.submit()" 
-                                class="border border-gray-300 rounded-lg px-2 py-1 text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                                style="
-                                    @if($transaction->status == 'Pending') background-color: #fef3c7; color: #b45309; @endif
-                                    @if($transaction->status == 'Diterima') background-color: #d1fae5; color: #065f46; @endif
-                                    @if($transaction->status == 'Ditolak') background-color: #fee2e2; color: #991b1b; @endif
-                                ">
-                                    <option value="Pending" @if($transaction->status == 'Pending') selected @endif>Pending</option>
-                                    <option value="Diterima" @if($transaction->status == 'Diterima') selected @endif>Diterima</option>
-                                    <option value="Ditolak" @if($transaction->status == 'Ditolak') selected @endif>Ditolak</option>
-                                </select>
-                            </form>
-                        @else
-                            <span class="px-2 py-1 rounded
-                                {{ $transaction->status == 'Pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                   ($transaction->status == 'Diterima' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') }}">
-                                {{ $transaction->status }}
-                            </span>
-                        @endif
-                    </td>
-                    <td class="py-3 px-4">{{ \Carbon\Carbon::parse($transaction->transaction_date)->format('d-m-Y') }}</td>
-                    <td class="py-3 px-4">
-                        @if($userRole === 'warehouse_manager')
-                            <a href="{{ route('stock_transactions.edit', $transaction->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 transition-all mb-1 inline-block">Edit</a>
-                            <form action="{{ route('stock_transactions.destroy', $transaction->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus transaksi ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 transition-all">Hapus</button>
-                            </form>
-                        @else
-                            <span class="text-gray-500">Tidak ada akses</span>
-                        @endif
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="7" class="text-center py-4">Tidak ada transaksi stok.</td>
-                </tr>
-                @endforelse
-            </tbody>
+        <thead class="bg-gray-800 bg-opacity-70 text-white">
+    <tr>
+        <th class="py-3 px-4 text-left">Produk</th>
+        <th class="py-3 px-4 text-left">User</th>
+        <th class="py-3 px-4 text-left">Jenis</th>
+        <th class="py-3 px-4 text-left">Kuantitas</th>
+        <th class="py-3 px-4 text-left">Status</th>
+        <th class="py-3 px-4 text-left">Catatan</th>
+        <th class="py-3 px-4 text-left">Tanggal Transaksi</th>
+        <th class="py-3 px-4 text-left">Aksi</th>
+    </tr>
+</thead>
+<tbody class="divide-y divide-gray-700">
+    @forelse($transactions as $transaction)
+    <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all product-row">
+        <td class="py-3 px-4 product-name">{{ $transaction->product->name ?? 'Produk Tidak Ditemukan' }}</td>
+        <td class="py-3 px-4 product-user">{{ $transaction->user->name ?? 'User Tidak Ditemukan' }}</td>
+        <td class="py-3 px-4 product-category">
+            <span class="px-2 py-1 rounded {{ $transaction->type == 'Masuk' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                {{ $transaction->type }}
+            </span>
+        </td>
+        <td class="py-3 px-4">{{ $transaction->quantity }}</td>
+        <td class="py-3 px-4">
+            @if($userRole === 'warehouse_manager')
+                <form action="{{ route('stock_transactions.update-status', $transaction->id) }}" method="POST" class="inline">
+                    @csrf
+                    <select name="status" onchange="this.form.submit()" 
+                    class="border border-gray-300 rounded-lg px-2 py-1 text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    style="
+                        @if($transaction->status == 'Pending') background-color: #fef3c7; color: #b45309; @endif
+                        @if($transaction->status == 'Diterima') background-color: #d1fae5; color: #065f46; @endif
+                        @if($transaction->status == 'Ditolak') background-color: #fee2e2; color: #991b1b; @endif
+                    ">
+                        <option value="Pending" @if($transaction->status == 'Pending') selected @endif>Pending</option>
+                        <option value="Diterima" @if($transaction->status == 'Diterima') selected @endif>Diterima</option>
+                        <option value="Ditolak" @if($transaction->status == 'Ditolak') selected @endif>Ditolak</option>
+                    </select>
+                </form>
+            @else
+            <span class="px-2 py-1 rounded
+    {{ $transaction->status == 'Pending' ? 'bg-yellow-100 text-yellow-800' : 
+       ($transaction->status == 'Diterima' ? 'bg-green-100 text-green-800' : 
+       ($transaction->status == 'Confirmed' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800')) }}">
+    {{ $transaction->status }}
+</span>
+
+            @endif
+        </td>
+        <td class="py-3 px-4">{{ $transaction->notes ?? '' }}</td> <!-- New notes column -->
+        <td class="py-3 px-4">{{ \Carbon\Carbon::parse($transaction->transaction_date)->format('d-m-Y') }}</td>
+        <td class="py-3 px-4">
+            @if($userRole === 'warehouse_manager')
+                <a href="{{ route('stock_transactions.edit', $transaction->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 transition-all mb-1 inline-block">Edit</a>
+                <form action="{{ route('stock_transactions.destroy', $transaction->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus transaksi ini?')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 transition-all">Hapus</button>
+                </form>
+            @else
+                <span class="text-gray-500">Tidak ada akses</span>
+            @endif
+        </td>
+    </tr>
+    @empty
+    <tr>
+        <td colspan="8" class="text-center py-4">Tidak ada transaksi stok.</td>
+    </tr>
+    @endforelse
+</tbody>
+
         </table>
     </div>
 

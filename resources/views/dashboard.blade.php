@@ -240,14 +240,13 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-sm font-medium text-gray-700">{{ $transaction->reference_number }}</p>
-                            <p class="text-xs text-gray-500">{{ $transaction->created_at->format('d M Y H:i') }}</p>
+                            <p class="text-xs text-gray-500">{{ $transaction->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }}</p>
+                            <p class="text-xs text-gray-700 font-semibold">Produk: {{ $transaction->product->name ?? 'Tidak Diketahui' }}</p>
+
                         </div>
-                        <a href="{{ route('transactions.incoming.show', $transaction->id) }}" 
-                           class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
-                           Periksa
-                        </a>
+                        
                     </div>
-                    <p class="text-xs text-gray-600 mt-1">Supplier: {{ $transaction->supplier->name }}</p>
+                    
                 </div>
                 @empty
                 <p class="text-sm text-gray-500 italic">Tidak ada transaksi masuk pending</p>
@@ -272,15 +271,15 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-sm font-medium text-gray-700">{{ $transaction->reference_number }}</p>
-                            <p class="text-xs text-gray-500">{{ $transaction->created_at->format('d M Y H:i') }}</p>
+                            <p class="text-xs text-gray-500">{{ $transaction->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }}</p>
+                            <p class="text-xs text-gray-700 font-semibold">
+    Produk: {{ $transaction->product->name ?? 'Tidak Diketahui' }}
+</p>
+
+
+
                         </div>
-                        <a href="{{ route('transactions.outgoing.show', $transaction->id) }}" 
-                           class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
-                           Periksa
-                        </a>
                     </div>
-                    <p class="text-xs text-gray-600 mt-1">Tujuan: {{ $transaction->destination }}</p>
-                </div>
                 @empty
                 <p class="text-sm text-gray-500 italic">Tidak ada transaksi keluar pending</p>
                 @endforelse
@@ -297,58 +296,7 @@
     </div>
 @endif
 
-        <!-- Low Stock Items - Warehouse Manager -->
-        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h3 class="text-gray-600 text-sm font-medium mb-4">Barang Stok Rendah</h3>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead>
-                        <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Produk</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min. Stok</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($lowStockItemsList ?? [] as $item)
-                        <tr>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">{{ $item->code }}</td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">{{ $item->name }}</td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">{{ $item->stock }}</td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">{{ $item->minimum_stock }}</td>
-                            <td class="px-4 py-2 whitespace-nowrap">
-                                @if($item->stock == 0)
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                    Habis
-                                </span>
-                                @else
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                    Rendah
-                                </span>
-                                @endif
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="px-4 py-2 text-sm text-gray-500 italic text-center">Tidak ada barang dengan stok rendah</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            @if(isset($lowStockItemsList) && count($lowStockItemsList) > 10)
-            <div class="mt-4 text-center">
-                <a href="{{ route('products.low-stock') }}" 
-                    class="text-sm text-blue-600 hover:underline">
-                    Lihat Semua
-                </a>
-            </div>
-          
-        </div>
-    @endif
-
+        
     @if(auth()->user()->role === 'admin')
         <!-- Charts Section - Admin Only -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
