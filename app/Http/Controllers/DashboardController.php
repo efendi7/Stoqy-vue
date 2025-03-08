@@ -38,8 +38,8 @@ class DashboardController extends Controller
         $totalProducts = Product::count();
         $lowStockItems = Product::whereColumn('stock', '<', 'minimum_stock')->count();
         $availableStock = Product::whereColumn('stock', '>', 'minimum_stock')->count();
-        $outOfStock = Product::where('stock', '=', 0)->count(); // Stok habis
-        $activeUsers = User::where('is_logged_in', true)->count(); // Menghitung pengguna yang sedang login saat ini
+        $outOfStock = Product::where('stock', '=', 0)->count();
+        $activeUsers = User::where('is_logged_in', true)->count();
     
         // Define admin metrics
         $adminMetrics = [
@@ -60,7 +60,6 @@ class DashboardController extends Controller
             $formattedDate = $date->format('Y-m-d');
             $displayDate = $date->format('d M');
     
-            // Hitung transaksi masuk dan keluar per hari
             $incomingCount = StockTransaction::whereDate('transaction_date', $formattedDate)
                 ->where('type', 'Masuk')
                 ->count();
@@ -69,19 +68,16 @@ class DashboardController extends Controller
                 ->where('type', 'Keluar')
                 ->count();
     
-            // Simpan data ke array
             $transactionLabels[] = $displayDate;
             $incomingTransactionData[] = $incomingCount;
             $outgoingTransactionData[] = $outgoingCount;
             $combinedTransactionData[] = $incomingCount + $outgoingCount;
         }
     
-        // Get data for top 10 products by stock
         $topProducts = Product::orderByDesc('stock')->limit(10)->get(['name', 'stock']);
         $stockLabels = $topProducts->pluck('name')->toArray();
         $stockData = $topProducts->pluck('stock')->toArray();
     
-        // Get recent activities
         $recentActivities = ActivityLog::with('user')->latest()->limit(10)->get();
     
         $viewData = [
@@ -106,44 +102,29 @@ class DashboardController extends Controller
             'endDate' => $endDate->format('Y-m-d')
         ];
     
-        if ($user->role === 'warehouse_manager') {
-            $todayIncomingTransactions = StockTransaction::where('type', 'Masuk')
-                ->where('status', 'Diterima') // Pastikan hanya transaksi yang diterima
-                ->whereDate('transaction_date', Carbon::today())
-                ->count();
-        
-            $todayOutgoingTransactions = StockTransaction::where('type', 'Keluar')
-                ->where('status', 'Diterima') // Pastikan hanya transaksi yang diterima
-                ->whereDate('transaction_date', Carbon::today())
-                ->count();
-        
-            // Jika user adalah warehouse_manager atau warehouse_staff
-if ($user->role === 'warehouse_manager' || $user->role === 'warehouse_staff') {
-    $pendingIncomingTasks = StockTransaction::where('type', 'Masuk')
-        ->where('status', 'Pending')
-        
-        ->latest()
-        ->limit(5)
-        ->get();
+        if ($user->role === 'warehouse_manager' || $user->role === 'warehouse_staff') {
+            $incomingTaskStaff = StockTransaction::where('type', 'Masuk')->where('status', 'Pending')->latest()->get();
+            $outgoingTaskStaff = StockTransaction::where('type', 'Keluar')->where('status', 'Pending')->latest()->get();
+            $completeTaskStaff = StockTransaction::where('status', 'Diterima')->latest()->get();
 
-    $pendingOutgoingTasks = StockTransaction::where('type', 'Keluar')
-        ->where('status', 'Pending')
-        
-        ->latest()
-        ->limit(5)
-        ->get();
-} else {
-    // Jika bukan warehouse_manager atau warehouse_staff, kosongkan data
-    $pendingIncomingTasks = collect();
-    $pendingOutgoingTasks = collect();
-}
-        
-            // Add warehouse manager specific data to view
-            $viewData['todayIncomingTransactions'] = $todayIncomingTransactions;
-            $viewData['todayOutgoingTransactions'] = $todayOutgoingTransactions;
+            $viewData['incomingTaskStaff'] = $incomingTaskStaff;
+            $viewData['outgoingTaskStaff'] = $outgoingTaskStaff;
+            $viewData['completeTaskStaff'] = $completeTaskStaff;
+
+            $pendingIncomingTasks = StockTransaction::where('type', 'Masuk')
+                ->where('status', 'Pending')->latest()->limit(5)->get();
+
+            $pendingOutgoingTasks = StockTransaction::where('type', 'Keluar')
+                ->where('status', 'Pending')->latest()->limit(5)->get();
+
             $viewData['pendingIncomingTasks'] = $pendingIncomingTasks;
-           
             $viewData['pendingOutgoingTasks'] = $pendingOutgoingTasks;
+        } else {
+            $viewData['incomingTaskStaff'] = collect();
+            $viewData['outgoingTaskStaff'] = collect();
+            $viewData['completeTaskStaff'] = collect();
+            $viewData['pendingIncomingTasks'] = collect();
+            $viewData['pendingOutgoingTasks'] = collect();
         }
         
         if ($user->role === 'admin') {
@@ -151,4 +132,5 @@ if ($user->role === 'warehouse_manager' || $user->role === 'warehouse_staff') {
         }
         
         return view('dashboard', $viewData);
-    }}     
+    }
+}

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class StockTransaction extends Model
 {
@@ -26,7 +27,7 @@ class StockTransaction extends Model
     ];
     
     protected $dates = [
-        'transaction_date',
+        'transaction_date' => 'datetime',
         // atribut lainnya
     ];
 

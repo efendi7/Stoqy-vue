@@ -48,12 +48,38 @@ class StockTransactionController extends Controller
 
     public function dashboard()
     {
+        $user = auth()->user();
+        
+        // Tugas baru untuk staff: Barang masuk pending
+        $incomingTaskStaff = StockTransaction::where('status', 'Pending')
+            ->where('type', 'Masuk')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
+        // Tugas baru untuk staff: Barang keluar pending
+        $outgoingTaskStaff = StockTransaction::where('status', 'Pending')
+            ->where('type', 'Keluar')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
+        // Tugas yang telah dikonfirmasi staff
+        $completeTaskStaff = StockTransaction::where('status', 'Confirmed')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
+        // Transaksi yang telah diterima
         $transactions = StockTransaction::where('status', 'Diterima')
             ->latest('transaction_date')
             ->paginate(10);
     
-        return view('dashboard.index', compact('transactions'));
+        return view('dashboard.index', compact(
+            'incomingTaskStaff', 
+            'outgoingTaskStaff', 
+            'completeTaskStaff', 
+            'transactions'
+        ));
     }
+    
 
     
 
