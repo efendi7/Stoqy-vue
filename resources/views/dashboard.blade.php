@@ -123,109 +123,130 @@
     @endif
 
     @if(auth()->user()->role === 'warehouse_staff')
-        <!-- Tugas Transaksi Masuk - Warehouse Staff -->
-        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h3 class="text-gray-600 font-medium mb-4">Barang Masuk Menunggu Diperiksa</h3>
-            <div class="divide-y divide-gray-200">
-                @forelse($pendingIncomingTasks ?? [] as $task)
-                <div class="py-4">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="font-medium text-gray-800">#{{ $task->reference_number }}</p>
-                            <p class="text-sm text-gray-600">Supplier: {{ $task->supplier->name }}</p>
-                            <p class="text-xs text-gray-500">Tanggal: {{ $task->transaction_date->format('d M Y') }}</p>
-                            <p class="text-xs text-gray-500">Dibuat: {{ $task->created_at->diffForHumans() }}</p>
+    <!-- Tugas Transaksi Masuk - Warehouse Staff -->
+    <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+        <h3 class="text-gray-700 text-sm font-medium mb-3">Barang Masuk Menunggu Proses</h3>
+        <div class="divide-y divide-gray-100">
+            @forelse($pendingIncomingTasks ?? [] as $task)
+            <div class="py-3">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center">
+                            <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+                            <p class="font-medium text-gray-700 text-sm">#{{ $task->reference_number }}</p>
                         </div>
-                        <div class="flex flex-col space-y-2">
-                            <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">Menunggu Pemeriksaan</span>
-                            <a href="{{ route('staff.transactions.incoming.show', $task->id) }}" 
-                               class="px-3 py-1 rounded text-white bg-blue-500 hover:bg-blue-600 text-xs text-center">
-                               Periksa Barang
-                            </a>
-                        </div>
+                        <p class="text-xs text-gray-600 mt-1">Supplier: {{ $task->supplier->name }}</p>
+                        <p class="text-xs text-gray-500">Tanggal: {{ $task->transaction_date->format('d M Y') }}</p>
                     </div>
-                    <div class="mt-2">
-                        <p class="text-xs text-gray-500 font-medium">Detail Produk:</p>
-                        <ul class="pl-4 mt-1 text-xs text-gray-600 list-disc">
-                            @foreach($task->items as $item)
-                            <li>{{ $item->product->name }} - {{ $item->quantity }} {{ $item->product->unit }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                    <a href="{{ route('staff.transactions.incoming.show', $task->id) }}" 
+                       class="px-3 py-1 rounded-full text-white bg-blue-500 hover:bg-blue-600 text-xs">
+                       Periksa
+                    </a>
                 </div>
-                @empty
-                <div class="text-center py-4">
-                    <p class="text-gray-500 italic">Tidak ada barang masuk yang perlu diperiksa saat ini</p>
+                <div class="mt-2 pl-4">
+                    <p class="text-xs text-gray-500">Produk: 
+                        <span class="text-xs text-gray-600">
+                            {{ $task->items->count() }} item
+                        </span>
+                    </p>
                 </div>
-                @endforelse
             </div>
-        </div>
-
-        <!-- Tugas Transaksi Keluar - Warehouse Staff -->
-        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h3 class="text-gray-600 font-medium mb-4">Barang Keluar Menunggu Disiapkan</h3>
-            <div class="divide-y divide-gray-200">
-                @forelse($pendingOutgoingTasks ?? [] as $task)
-                <div class="py-4">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="font-medium text-gray-800">#{{ $task->reference_number }}</p>
-                            <p class="text-sm text-gray-600">Tujuan: {{ $task->destination }}</p>
-                            <p class="text-xs text-gray-500">Tanggal: {{ $task->transaction_date->format('d M Y') }}</p>
-                            <p class="text-xs text-gray-500">Dibuat: {{ $task->created_at->diffForHumans() }}</p>
-                        </div>
-                        <div class="flex flex-col space-y-2">
-                            <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">Menunggu Persiapan</span>
-                            <a href="{{ route('staff.transactions.outgoing.show', $task->id) }}" 
-                               class="px-3 py-1 rounded text-white bg-blue-500 hover:bg-blue-600 text-xs text-center">
-                               Siapkan Barang
-                            </a>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <p class="text-xs text-gray-500 font-medium">Detail Produk:</p>
-                        <ul class="pl-4 mt-1 text-xs text-gray-600 list-disc">
-                            @foreach($task->items as $item)
-                            <li>{{ $item->product->name }} - {{ $item->quantity }} {{ $item->product->unit }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-                @empty
-                <div class="text-center py-4">
-                    <p class="text-gray-500 italic">Tidak ada barang keluar yang perlu disiapkan saat ini</p>
-                </div>
-                @endforelse
+            @empty
+            <div class="text-center py-3">
+                <p class="text-xs text-gray-500 italic">Tidak ada barang masuk yang perlu diperiksa</p>
             </div>
+            @endforelse
         </div>
+        @if(isset($pendingIncomingTasks) && count($pendingIncomingTasks) > 5)
+        <div class="mt-3 text-right">
+            <a href="{{ route('staff.transactions.incoming.index', ['status' => 'pending']) }}"
+                class="text-xs text-blue-600 hover:underline">
+                Lihat Semua
+            </a>
+        </div>
+        @endif
+    </div>
 
-        <!-- Transaksi Terbaru yang Sudah Diproses - Warehouse Staff -->
-        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h3 class="text-gray-600 font-medium mb-4">Transaksi Terbaru yang Telah Diproses</h3>
-            <div class="divide-y divide-gray-200">
-                @forelse($recentCompletedTasks ?? [] as $task)
-                <div class="py-3">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="font-medium text-gray-800">#{{ $task->reference_number }}</p>
-                            <p class="text-sm text-gray-600">
-                                {{ $task->type == 'incoming' ? 'Barang Masuk' : 'Barang Keluar' }} -
-                                {{ $task->type == 'incoming' ? $task->supplier->name : $task->destination }}
-                            </p>
-                            <p class="text-xs text-gray-500">Diproses: {{ $task->updated_at->diffForHumans() }}</p>
+    <!-- Tugas Transaksi Keluar - Warehouse Staff -->
+    <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+        <h3 class="text-gray-700 text-sm font-medium mb-3">Barang Keluar Menunggu Persiapan</h3>
+        <div class="divide-y divide-gray-100">
+            @forelse($pendingOutgoingTasks ?? [] as $task)
+            <div class="py-3">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center">
+                            <span class="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
+                            <p class="font-medium text-gray-700 text-sm">#{{ $task->reference_number }}</p>
                         </div>
-                        <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs">Selesai</span>
+                        <p class="text-xs text-gray-600 mt-1">Tujuan: {{ $task->destination }}</p>
+                        <p class="text-xs text-gray-500">Tanggal: {{ $task->transaction_date->format('d M Y') }}</p>
                     </div>
+                    <a href="{{ route('staff.transactions.outgoing.show', $task->id) }}" 
+                       class="px-3 py-1 rounded-full text-white bg-green-500 hover:bg-green-600 text-xs">
+                       Siapkan
+                    </a>
                 </div>
-                @empty
-                <div class="text-center py-4">
-                    <p class="text-gray-500 italic">Belum ada transaksi yang telah diproses</p>
+                <div class="mt-2 pl-4">
+                    <p class="text-xs text-gray-500">Produk: 
+                        <span class="text-xs text-gray-600">
+                            {{ $task->items->count() }} item
+                        </span>
+                    </p>
                 </div>
-                @endforelse
             </div>
+            @empty
+            <div class="text-center py-3">
+                <p class="text-xs text-gray-500 italic">Tidak ada barang keluar yang perlu disiapkan</p>
+            </div>
+            @endforelse
         </div>
-    @endif
+        @if(isset($pendingOutgoingTasks) && count($pendingOutgoingTasks) > 5)
+        <div class="mt-3 text-right">
+            <a href="{{ route('staff.transactions.outgoing.index', ['status' => 'pending']) }}"
+                class="text-xs text-blue-600 hover:underline">
+                Lihat Semua
+            </a>
+        </div>
+        @endif
+    </div>
 
+    <!-- Transaksi Terbaru yang Sudah Diproses - Warehouse Staff -->
+    <div class="bg-white p-4 rounded-lg shadow-sm">
+        <h3 class="text-gray-700 text-sm font-medium mb-3">Transaksi Terbaru yang Telah Diproses</h3>
+        <div class="divide-y divide-gray-100">
+            @forelse($recentCompletedTasks ?? [] as $task)
+            <div class="py-3">
+                <div class="flex justify-between items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center">
+                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            <p class="font-medium text-gray-700 text-sm">#{{ $task->reference_number }}</p>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1">
+                            {{ $task->type == 'incoming' ? 'Barang Masuk' : 'Barang Keluar' }} -
+                            {{ $task->type == 'incoming' ? $task->supplier->name : $task->destination }}
+                        </p>
+                    </div>
+                    <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-600 text-xs">Selesai</span>
+                </div>
+            </div>
+            @empty
+            <div class="text-center py-3">
+                <p class="text-xs text-gray-500 italic">Belum ada transaksi yang telah diproses</p>
+            </div>
+            @endforelse
+        </div>
+        @if(isset($recentCompletedTasks) && count($recentCompletedTasks) > 5)
+        <div class="mt-3 text-right">
+            <a href="{{ route('staff.transactions.index', ['status' => 'completed']) }}"
+                class="text-xs text-blue-600 hover:underline">
+                Lihat Semua
+            </a>
+        </div>
+        @endif
+    </div>
+@endif
     @if(auth()->user()->role === 'warehouse_manager')
     <!-- Pending Transactions Section - Warehouse Manager -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

@@ -36,7 +36,7 @@ class DashboardController extends Controller
     
         // Get key metrics
         $totalProducts = Product::count();
-        $lowStockItems = Product::whereColumn('stock', '<=', 'minimum_stock')->count();
+        $lowStockItems = Product::whereColumn('stock', '<', 'minimum_stock')->count();
         $availableStock = Product::whereColumn('stock', '>', 'minimum_stock')->count();
         $outOfStock = Product::where('stock', '=', 0)->count(); // Stok habis
         $activeUsers = User::where('is_logged_in', true)->count(); // Menghitung pengguna yang sedang login saat ini
@@ -117,18 +117,26 @@ class DashboardController extends Controller
                 ->whereDate('transaction_date', Carbon::today())
                 ->count();
         
-            // Pending transactions
-            $pendingIncomingTasks = StockTransaction::where('type', 'Masuk')
-                ->where('status', 'Pending')
-                ->latest()
-                ->limit(5)
-                ->get();
+            // Jika user adalah warehouse_manager atau warehouse_staff
+if ($user->role === 'warehouse_manager' || $user->role === 'warehouse_staff') {
+    $pendingIncomingTasks = StockTransaction::where('type', 'Masuk')
+        ->where('status', 'Pending')
         
-            $pendingOutgoingTasks = StockTransaction::where('type', 'Keluar')
-                ->where('status', 'Pending')
-                ->latest()
-                ->limit(5)
-                ->get();
+        ->latest()
+        ->limit(5)
+        ->get();
+
+    $pendingOutgoingTasks = StockTransaction::where('type', 'Keluar')
+        ->where('status', 'Pending')
+        
+        ->latest()
+        ->limit(5)
+        ->get();
+} else {
+    // Jika bukan warehouse_manager atau warehouse_staff, kosongkan data
+    $pendingIncomingTasks = collect();
+    $pendingOutgoingTasks = collect();
+}
         
             // Add warehouse manager specific data to view
             $viewData['todayIncomingTransactions'] = $todayIncomingTransactions;

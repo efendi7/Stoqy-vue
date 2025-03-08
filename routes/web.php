@@ -66,6 +66,9 @@ Route::middleware(['auth'])->group(function () {
 Route::post('/stock_transactions/{id}/confirm', [StockTransactionController::class, 'confirm'])->name('stock_transactions.confirm');
 
 Route::get('/transactions/outgoing/{transaction}', [StockTransactionController::class, 'showOutgoing'])->name('transactions.outgoing.show');
+Route::get('/staff/transactions/outgoing/{id}', [TransactionController::class, 'show'])
+    ->name('staff.transactions.outgoing.show');
+
 
 Route::get('/transactions/incoming/{transaction}', [StockTransactionController::class, 'show'])->name('transactions.incoming.show');
 

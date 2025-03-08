@@ -88,118 +88,112 @@
 </div>
 
 
-@if($userRole === 'warehouse_staff')
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-        {{-- Kolom Transaksi yang Sudah Dikonfirmasi --}}
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800 border-b-4 border-green-500 pb-2 mb-4">
-                ✅ Transaksi yang Sudah Dikonfirmasi
-            </h2>
+<div class="container mx-auto p-5 mt-6">
+    @if($userRole === 'warehouse_staff')
 
-            @if(isset($confirmedTransactions) && $confirmedTransactions->isNotEmpty())
-                <div class="space-y-4">
-                    @foreach($confirmedTransactions as $transaction)
-                        <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-700">{{ $transaction->product->name }}</h3>
-                            <p class="text-sm text-gray-500">Kuantitas: <span class="font-medium">{{ $transaction->quantity }}</span></p>
-                            <p class="text-sm text-gray-500">
-                                Status:
-                                <span @class([
-                                    'font-medium px-3 py-1 rounded-md text-xs',
-                                    'bg-blue-100 text-blue-600' => $transaction->status === 'Confirmed',
-                                    'bg-green-100 text-green-600' => $transaction->status === 'Diterima',
-                                    'bg-red-100 text-red-600' => $transaction->status === 'Ditolak',
-                                ])>
-                                    {{ $transaction->status }}
-                                </span>
-                            </p>
-                        </div>
-                    @endforeach
-                </div>
+        <div class="grid md:grid-cols-2 gap-6">
+            <!-- Kolom Transaksi yang Sudah Dikonfirmasi -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-600 border-b-4 border-green-500 pb-2 mb-4">
+                    ✅ Transaksi yang Sudah Dikonfirmasi
+                </h2>
 
-            {{-- Tombol Lihat Semua --}}
-@if(request()->show_all !== 'confirmed')
-    @if(auth()->user()->role === 'warehouse_staff')
-        <a href="{{ route('stock-transactions.confirmed') }}" 
-           class="block text-center text-blue-500 font-medium mt-4">
-           Lihat Semua Dikonfirmasi (Staff)
-        </a>
-    @elseif(auth()->user()->role === 'warehouse_manager')
-        <a href="{{ route('stock-transactions.confirmed') }}" 
-           class="block text-center text-green-500 font-medium mt-4">
-           Lihat Semua Transaksi yang Dikonfirmasi (Manager)
-        </a>
-    @endif
-@endif 
+                @if(isset($confirmedTransactions) && $confirmedTransactions->isNotEmpty())
+                    <div class="space-y-4">
+                        @foreach($confirmedTransactions as $transaction)
+                            <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-700">{{ $transaction->product->name }}</h3>
+                                <p class="text-sm text-gray-500">Kuantitas: <span class="font-medium">{{ $transaction->quantity }}</span></p>
+                                <p class="text-sm text-gray-500">
+                                    Status:
+                                    <span @class([
+                                        'font-medium px-3 py-1 rounded-md text-xs',
+                                        'bg-blue-100 text-blue-600' => $transaction->status === 'Confirmed',
+                                        'bg-green-100 text-green-600' => $transaction->status === 'Diterima',
+                                        'bg-red-100 text-red-600' => $transaction->status === 'Ditolak',
+                                    ])>
+                                        {{ $transaction->status }}
+                                    </span>
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    Catatan: <span class="font-medium">{{ $transaction->note ?? 'Tidak ada catatan' }}</span>
+                                </p>
+                            </div>
+                        @endforeach
+                    </div>
 
-            @else
-                <p class="text-gray-500 border border-gray-300 p-5 rounded-md mt-4">Belum ada transaksi yang dikonfirmasi.</p>
-            @endif
-        </div>
+                    <!-- Tombol Lihat Semua -->
+                    @if(request()->show_all !== 'confirmed')
+                        <a href="{{ route('stock-transactions.confirmed') }}" 
+                           class="block text-center text-blue-500 font-medium mt-4 hover:underline">
+                           🔍 Lihat Semua Transaksi Dikonfirmasi
+                        </a>
+                    @endif
 
-        {{-- Kolom Transaksi yang Masih Pending --}}
-<div>
-    <h2 class="text-2xl font-bold text-gray-800 border-b-4 border-yellow-500 pb-2 mb-4">
-        📌 Transaksi yang Masih Pending
-    </h2>
-
-    @if(isset($pendingTransactions) && $pendingTransactions->isNotEmpty())
-        <div class="space-y-4">
-            @foreach($pendingTransactions as $transaction)
-                <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200 flex justify-between items-center">
-                    <!-- Informasi Transaksi -->
-                    <div class="flex-1">
-                        <h3 class="text-lg font-semibold text-gray-700">{{ $transaction->product->name }}</h3>
-                        <p class="text-sm text-gray-500">Kuantitas: <span class="font-medium">{{ $transaction->quantity }}</span></p>
-                        <p class="text-sm text-gray-500">
-                            Status:
-                            <span @class([
-                                'px-3 py-1 rounded-md text-xs font-semibold',
-                                'bg-yellow-100 text-yellow-800' => $transaction->status === 'Pending',
-                            ])>
-                                {{ $transaction->status }}
-                            </span>
-                        </p>
-
-                       <!-- Input Catatan -->
-<form action="{{ route('stock_transactions.confirm', $transaction->id) }}" method="POST">
-    @csrf
-    <textarea name="note" rows="2" class="w-full border-gray-300 rounded-md p-2 text-sm focus:ring focus:ring-blue-200"
-        placeholder="Tambahkan catatan (misal: barang rusak, kurang, dll)">{{ $transaction->note ?? '' }}</textarea>
-
-    <!-- Tombol Konfirmasi -->
-    <button type="submit" 
-        @class([
-            'mt-2 px-5 py-2 text-white font-medium rounded-md',
-            'bg-blue-500 hover:bg-blue-600' => $transaction->type === 'Masuk',
-            'bg-orange-500 hover:bg-orange-600' => $transaction->type === 'Keluar',
-        ])>
-        {{ $transaction->type === 'Masuk' ? 'Konfirmasi Masuk' : 'Konfirmasi Keluar' }}
-    </button>
-</form>
-
-                </div>
-            @endforeach
-        </div>
-    
-
-   
-
-
-                {{-- Tombol Lihat Semua --}}
-                @if(request()->show_all !== 'pending')
-                {{-- Untuk Transaksi Pending --}}
-<a href="{{ route('stock-transactions.pending') }}" 
-   class="block text-center text-blue-500 font-medium mt-4">
-   Lihat Semua Pending
-</a>
+                @else
+                    <p class="text-gray-500 border border-gray-300 p-5 rounded-md mt-4">Belum ada transaksi yang dikonfirmasi.</p>
                 @endif
-            @else
-                <p class="text-gray-500 border border-gray-300 p-5 rounded-md mt-4">Tidak ada transaksi pending saat ini.</p>
-            @endif
+            </div>
+
+            <!-- Kolom Transaksi yang Masih Pending -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-600 border-b-4 border-yellow-500 pb-2 mb-4">
+                    📌 Transaksi yang Masih Pending
+                </h2>
+
+                @if(isset($pendingTransactions) && $pendingTransactions->isNotEmpty())
+                    <div class="space-y-4">
+                        @foreach($pendingTransactions as $transaction)
+                            <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200">
+                                <!-- Informasi Transaksi -->
+                                <h3 class="text-lg font-semibold text-gray-700">{{ $transaction->product->name }}</h3>
+                                <p class="text-sm text-gray-500">Kuantitas: <span class="font-medium">{{ $transaction->quantity }}</span></p>
+                                <p class="text-sm text-gray-500">
+                                    Status:
+                                    <span @class([
+                                        'px-3 py-1 rounded-md text-xs font-semibold',
+                                        'bg-yellow-100 text-yellow-800' => $transaction->status === 'Pending',
+                                    ])>
+                                        {{ $transaction->status }}
+                                    </span>
+                                </p>
+
+                                <!-- Input Catatan -->
+                                <form action="{{ route('stock_transactions.confirm', $transaction->id) }}" method="POST" class="mt-3">
+                                    @csrf
+                                    <textarea name="note" rows="2" class="w-full border-gray-300 rounded-md p-2 text-sm focus:ring focus:ring-blue-200 resize-none"
+                                        placeholder="Tambahkan catatan (misal: barang rusak, kurang, dll)">{{ $transaction->note ?? '' }}</textarea>
+
+                                    <!-- Tombol Konfirmasi -->
+                                    <button type="submit" 
+                                        @class([
+                                            'mt-2 px-5 py-2 text-white font-medium rounded-md w-full',
+                                            'bg-blue-500 hover:bg-blue-600' => $transaction->type === 'Masuk',
+                                            'bg-orange-500 hover:bg-orange-600' => $transaction->type === 'Keluar',
+                                        ])>
+                                        {{ $transaction->type === 'Masuk' ? 'Konfirmasi Masuk' : 'Konfirmasi Keluar' }}
+                                    </button>
+                                </form>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Tombol Lihat Semua Pending -->
+                    @if(request()->show_all !== 'pending')
+                        <a href="{{ route('stock-transactions.pending') }}" 
+                           class="block text-center text-blue-500 font-medium mt-4 hover:underline">
+                           🔍 Lihat Semua Transaksi Pending
+                        </a>
+                    @endif
+
+                @else
+                    <p class="text-gray-500 border border-gray-300 p-5 rounded-md mt-4">Tidak ada transaksi pending saat ini.</p>
+                @endif
+            </div>
         </div>
-    </div>
-@endif
+
+    @endif
+</div>
 
 
 
