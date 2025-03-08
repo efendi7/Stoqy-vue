@@ -51,28 +51,42 @@
 
     <div class="flex justify-between items-start mb-6">
     @if(auth()->user()->role === 'warehouse_manager')
-        <a href="{{ route('stock_transactions.create') }}" 
-            class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition-all">
-            Tambah Transaksi
-        </a>
-    @endif
+        <div class="space-y-3">
+            {{-- Tombol Tambah Transaksi --}}
+            <a href="{{ route('stock_transactions.create') }}" 
+                class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition-all">
+                Tambah Transaksi
+            </a>
 
-    @if(auth()->user()->role === 'warehouse_manager')
-        <div class="space-y-2 bg-white shadow-md p-4 rounded-lg border border-gray-200">
-            <div class="text-sm font-semibold text-yellow-700">Keterangan: Pending</div>
-
-            <div class="flex items-center space-x-2">
-                <span class="w-4 h-4 bg-white border border-gray-400 inline-block rounded"></span>
-                <span class="text-sm text-gray-600">Stok telah dikonfirmasi masuk/keluar oleh staff</span>
-            </div>
-
-            <div class="flex items-center space-x-2">
-                <span class="w-4 h-4 bg-yellow-400 border border-gray-400 inline-block rounded"></span>
-                <span class="text-sm text-gray-600">Menunggu konfirmasi barang telah diperiksa staff</span>
-            </div>
+            {{-- Tombol Lihat Semua Dikonfirmasi --}}
+            <a href="{{ route('stock-transactions.confirmed') }}" 
+                class="block text-center text-green-500 font-medium">
+                Lihat Semua Transaksi yang Dikonfirmasi
+            </a>
         </div>
     @endif
+
+    {{-- Keterangan dipindah ke kanan dan lebih kecil --}}
+    @if(auth()->user()->role === 'warehouse_manager')
+    <div class="bg-white shadow-md p-3 rounded-lg border border-gray-200 w-full max-w-lg text-xs">
+    <div class="font-semibold text-center text-yellow-700 mb-2">Keterangan: Pending</div>
+
+    <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-2">
+            <span class="w-4 h-4 bg-white border border-gray-400 inline-block rounded"></span>
+            <span class="text-gray-600">Stok telah dikonfirmasi oleh staff</span>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <span class="w-4 h-4 bg-yellow-400 border border-gray-400 inline-block rounded"></span>
+            <span class="text-gray-600">Menunggu konfirmasi pemeriksaan staff</span>
+        </div>
+    </div>
 </div>
+
+    @endif
+</div>
+
 
 @if($userRole === 'warehouse_staff')
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
@@ -103,13 +117,21 @@
                     @endforeach
                 </div>
 
-                {{-- Tombol Lihat Semua --}}
-                @if(request()->show_all !== 'confirmed')
-                <a href="{{ route('stock-transactions.confirmed') }}" 
-   class="block text-center text-blue-500 font-medium mt-4">
-   Lihat Semua Dikonfirmasi
-</a>
-                @endif
+            {{-- Tombol Lihat Semua --}}
+@if(request()->show_all !== 'confirmed')
+    @if(auth()->user()->role === 'warehouse_staff')
+        <a href="{{ route('stock-transactions.confirmed') }}" 
+           class="block text-center text-blue-500 font-medium mt-4">
+           Lihat Semua Dikonfirmasi (Staff)
+        </a>
+    @elseif(auth()->user()->role === 'warehouse_manager')
+        <a href="{{ route('stock-transactions.confirmed') }}" 
+           class="block text-center text-green-500 font-medium mt-4">
+           Lihat Semua Transaksi yang Dikonfirmasi (Manager)
+        </a>
+    @endif
+@endif 
+
             @else
                 <p class="text-gray-500 border border-gray-300 p-5 rounded-md mt-4">Belum ada transaksi yang dikonfirmasi.</p>
             @endif
@@ -125,10 +147,11 @@
         <div class="space-y-4">
             @foreach($pendingTransactions as $transaction)
                 <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200 flex justify-between items-center">
-                    <div>
+                    <!-- Informasi Transaksi -->
+                    <div class="flex-1">
                         <h3 class="text-lg font-semibold text-gray-700">{{ $transaction->product->name }}</h3>
                         <p class="text-sm text-gray-500">Kuantitas: <span class="font-medium">{{ $transaction->quantity }}</span></p>
-                        <p class="text-sm">
+                        <p class="text-sm text-gray-500">
                             Status:
                             <span @class([
                                 'px-3 py-1 rounded-md text-xs font-semibold',
@@ -137,22 +160,29 @@
                                 {{ $transaction->status }}
                             </span>
                         </p>
-                    </div>
 
-                    <form action="{{ route('stock_transactions.confirm', $transaction->id) }}" method="POST">
-                        @csrf
-                        <button type="submit" 
-                            @class([
-                                'px-5 py-2 text-white font-medium rounded-md',
-                                'bg-blue-500 hover:bg-blue-600' => $transaction->type === 'Masuk',
-                                'bg-orange-500 hover:bg-orange-600' => $transaction->type === 'Keluar',
-                            ])>
-                            {{ $transaction->type === 'Masuk' ? 'Konfirmasi Masuk' : 'Konfirmasi Keluar' }}
-                        </button>
-                    </form>
+                       <!-- Input Catatan -->
+<form action="{{ route('stock_transactions.confirm', $transaction->id) }}" method="POST">
+    @csrf
+    <textarea name="note" rows="2" class="w-full border-gray-300 rounded-md p-2 text-sm focus:ring focus:ring-blue-200"
+        placeholder="Tambahkan catatan (misal: barang rusak, kurang, dll)">{{ $transaction->note ?? '' }}</textarea>
+
+    <!-- Tombol Konfirmasi -->
+    <button type="submit" 
+        @class([
+            'mt-2 px-5 py-2 text-white font-medium rounded-md',
+            'bg-blue-500 hover:bg-blue-600' => $transaction->type === 'Masuk',
+            'bg-orange-500 hover:bg-orange-600' => $transaction->type === 'Keluar',
+        ])>
+        {{ $transaction->type === 'Masuk' ? 'Konfirmasi Masuk' : 'Konfirmasi Keluar' }}
+    </button>
+</form>
+
                 </div>
             @endforeach
         </div>
+    
+
    
 
 

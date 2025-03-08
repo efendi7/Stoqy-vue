@@ -73,6 +73,9 @@ Route::get('/stock-transactions/pending', [StockTransactionController::class, 'p
 Route::get('/stock-transactions/confirmed', [StockTransactionController::class, 'confirmed'])->name('stock-transactions.confirmed');
 
 
+Route::post('/stock_transactions/{id}/add_note', [StockTransactionController::class, 'addNote'])->name('stock_transactions.add_note');
+
+
   
     Route::resource('stock_opname', StockOpnameController::class)->only(['index', 'store']);
 

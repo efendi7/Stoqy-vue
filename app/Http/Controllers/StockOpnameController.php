@@ -64,4 +64,6 @@ class StockOpnameController extends Controller
               
         return redirect()->back()->with('success', 'Stok berhasil diperbarui ke stok fisik!');     
     }       
+
+    
 }

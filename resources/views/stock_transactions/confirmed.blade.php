@@ -6,23 +6,27 @@
 
     @if($confirmedTransactions->isNotEmpty())
         <div class="space-y-4">
-            @foreach($confirmedTransactions as $transaction)
-                <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-700">{{ $transaction->product->name }}</h3>
-                    <p class="text-sm text-gray-500">Kuantitas: <span class="font-medium">{{ $transaction->quantity }}</span></p>
-                    <p class="text-sm text-gray-500">
-                        Status:
-                        <span @class([
-                            'font-medium px-3 py-1 rounded-md text-xs',
-                            'bg-blue-100 text-blue-600' => $transaction->status === 'Confirmed',
-                            'bg-green-100 text-green-600' => $transaction->status === 'Diterima',
-                            'bg-red-100 text-red-600' => $transaction->status === 'Ditolak',
-                        ])>
-                            {{ $transaction->status }}
-                        </span>
-                    </p>
-                </div>
-            @endforeach
+        @foreach($confirmedTransactions as $transaction)
+    <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-700">{{ $transaction->product->name }}</h3>
+        <p class="text-sm text-gray-500">Kuantitas: <span class="font-medium">{{ $transaction->quantity }}</span></p>
+        <p class="text-sm text-gray-500">
+            Status:
+            <span @class([
+                'font-medium px-3 py-1 rounded-md text-xs',
+                'bg-blue-100 text-blue-600' => $transaction->status === 'Confirmed',
+                'bg-green-100 text-green-600' => $transaction->status === 'Diterima',
+                'bg-red-100 text-red-600' => $transaction->status === 'Ditolak',
+            ])>
+                {{ $transaction->status }}
+            </span>
+        </p>
+        <p class="text-sm text-gray-500">
+            Catatan: <span class="font-medium">{{ $transaction->note ?? 'Tidak ada catatan' }}</span>
+        </p>
+    </div>
+@endforeach
+
         </div>
         <div class="mt-4">
             {{ $confirmedTransactions->links() }} {{-- Pagination --}}

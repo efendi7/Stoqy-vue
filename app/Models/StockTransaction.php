@@ -17,7 +17,8 @@ class StockTransaction extends Model
         'minimum_stock',
         'status',
         'notes',
-        'transaction_date' // Pastikan menggunakan snake_case
+        'transaction_date',
+        'note' // Pastikan menggunakan snake_case
     ];
 
     protected $attributes = [

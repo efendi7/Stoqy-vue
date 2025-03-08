@@ -202,18 +202,27 @@ class StockTransactionController extends Controller
     // Add the confirm method here
     public function confirm(Request $request, $id)
     {
+        // Cek apakah pengguna adalah warehouse_staff
         $userRole = $this->userService->getUserRole(auth()->id());
         if ($userRole !== 'warehouse_staff') {
             return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengonfirmasi transaksi stok.');
         }
     
+        // Ambil data transaksi dari service
         $transaction = $this->stockTransactionService->getStockTransactionById($id);
         if (!$transaction) {
             return redirect()->route('stock_transactions.index')->with('error', 'Transaksi stok tidak ditemukan.');
         }
     
-        // Ensure the status value being set is allowed in the database
+        // Update status menjadi "Confirmed"
         $transaction->status = 'Confirmed';
+    
+        // Simpan catatan jika ada input dari request
+        if ($request->has('note')) {
+            $transaction->note = $request->note;
+        }
+    
+        // Simpan perubahan
         $transaction->save();
     
         return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dikonfirmasi!');
@@ -261,5 +270,34 @@ public function confirmed()
 
     return view('stock_transactions.confirmed', compact('confirmedTransactions'));
 }
+
+public function addNote(Request $request, $id) {
+    $transaction = StockTransaction::findOrFail($id);
+    $transaction->note = $request->note;
+    $transaction->save();
+
+    return back()->with('success', 'Catatan berhasil ditambahkan.');
+}
+public function show($id)
+{
+    $stockTransaction = StockTransaction::findOrFail($id);
+    return view('stock_transactions.show', compact('stockTransaction'));
+}
+
+public function confirmTransaction(Request $request, $id)
+{
+    $transaction = StockTransaction::findOrFail($id);
+    
+    // Pastikan jika ada catatan baru dari input, maka diperbarui
+    if ($request->has('note')) {
+        $transaction->note = $request->note;
+    }
+
+    $transaction->status = 'Confirmed'; // Atau sesuaikan status lain jika diperlukan
+    $transaction->save();
+
+    return back()->with('success', 'Transaksi berhasil dikonfirmasi!');
+}
+
 
 }
