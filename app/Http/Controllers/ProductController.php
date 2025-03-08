@@ -19,14 +19,48 @@ class ProductController extends Controller
         $this->userService = $userService;
     }
 
+    
+
     public function index(Request $request)
-    {
+    {   
+        // Tambahkan ini untuk melihat input dari form
+
+        $query = Product::query();
+    
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhereHas('category', function ($cat) use ($search) {
+                      $cat->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+    
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+    
+            $query->where(function ($q) use ($status) {
+                if ($status == 'Habis') {
+                    $q->where('stock', 0);
+                } elseif ($status == 'Warning') {
+                    $q->whereColumn('stock', '<', 'minimum_stock')->where('stock', '>', 0);
+                } elseif ($status == 'Tersedia') {
+                    $q->whereColumn('stock', '>=', 'minimum_stock');
+                }
+            });
+        }
+    
+        $products = $query->with(['category', 'supplier'])->paginate(10);
+        return view('products.index', compact('products'));
         $search = $request->input('search');  // Mengambil query parameter untuk pencarian
 
         // Mendapatkan produk berdasarkan pencarian (jika ada)
         $products = $this->productService->getAllProducts($search);
 
         $userRole = $this->userService->getUserRole(auth()->id());
+        dd($query->toSql(), $query->getBindings());
 
         return view('products.index', compact('products', 'userRole', 'search'));
     }

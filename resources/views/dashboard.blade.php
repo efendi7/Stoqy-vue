@@ -126,46 +126,54 @@
     <!-- Tugas Staff -->
     <div class="grid grid-cols-1 gap-6">
         <!-- Incoming Tasks -->
-        <div class="bg-white p-5 shadow-lg rounded-2xl border border-gray-200 hover:shadow-xl transition">
-            <div class="flex items-center gap-3 mb-3">
-                <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z"></path>
-                    <path d="M8 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-                <h2 class="text-lg font-semibold text-gray-800">Tugas Baru - Barang Masuk</h2>
-            </div>
-            <ul class="space-y-2">
-                @forelse ($incomingTaskStaff as $task)
-                    <li class="bg-gray-100 p-3 rounded-lg flex justify-between items-center">
-                        <span>📦 <strong>{{ $task->product->name }}</strong> ({{ $task->quantity }})</span>
-                        <p class="text-xs text-gray-500">{{ $task->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }}</p>
-                    </li>
-                @empty
-                    <p class="text-sm text-gray-500 text-center">Tidak ada tugas barang masuk saat ini.</p>
-                @endforelse
-            </ul>
-        </div>
+ <!-- Incoming Tasks -->
+<div class="bg-white p-5 shadow-md rounded-2xl border border-gray-200">
+    <div class="flex items-center gap-3 mb-3">
+        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z"></path>
+            <path d="M8 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <h2 class="text-lg font-semibold text-gray-800">Tugas Baru - Barang Masuk</h2>
+    </div>
+    <ul class="space-y-2">
+        @forelse ($incomingTaskStaff as $task)
+            <li class="bg-gray-100 p-3 rounded-lg flex justify-between items-center">
+                <div>
+                    <span>📦 <strong>{{ $task->product->name }}</strong> ({{ $task->quantity }})</span>
+                    <p class="text-sm text-yellow-600 font-semibold">⚠️ Perlu diperiksa</p>
+                </div>
+                <p class="text-xs text-gray-500">{{ $task->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }}</p>
+            </li>
+        @empty
+            <p class="text-sm text-gray-500 text-center">Tidak ada tugas barang masuk saat ini.</p>
+        @endforelse
+    </ul>
+</div>
 
-        <!-- Outgoing Tasks -->
-        <div class="bg-white p-5 shadow-lg rounded-2xl border border-gray-200 hover:shadow-xl transition">
-            <div class="flex items-center gap-3 mb-3">
-                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z"></path>
-                    <path d="M8 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-                <h2 class="text-lg font-semibold text-gray-800">Tugas Baru - Barang Keluar</h2>
-            </div>
-            <ul class="space-y-2">
-                @forelse ($outgoingTaskStaff as $task)
-                    <li class="bg-gray-100 p-3 rounded-lg flex justify-between items-center">
-                        <span>📤 <strong>{{ $task->product->name }}</strong> ({{ $task->quantity }})</span>
-                        <p class="text-xs text-gray-500">{{ $task->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }}</p>
-                    </li>
-                @empty
-                    <p class="text-sm text-gray-500 text-center">Tidak ada tugas barang keluar saat ini.</p>
-                @endforelse
-            </ul>
-        </div>
+<!-- Outgoing Tasks -->
+<div class="bg-white p-5 shadow-md rounded-2xl border border-gray-200">
+    <div class="flex items-center gap-3 mb-3">
+        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z"></path>
+            <path d="M8 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <h2 class="text-lg font-semibold text-gray-800">Tugas Baru - Barang Keluar</h2>
+    </div>
+    <ul class="space-y-2">
+        @forelse ($outgoingTaskStaff as $task)
+            <li class="bg-gray-100 p-3 rounded-lg flex justify-between items-center">
+                <div>
+                    <span>📤 <strong>{{ $task->product->name }}</strong> ({{ $task->quantity }})</span>
+                    <p class="text-sm text-yellow-600 font-semibold">⚠️ Perlu diperiksa</p>
+                </div>
+                <p class="text-xs text-gray-500">{{ $task->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }}</p>
+            </li>
+        @empty
+            <p class="text-sm text-gray-500 text-center">Tidak ada tugas barang keluar saat ini.</p>
+        @endforelse
+    </ul>
+</div>
+
 
         <!-- Completed Tasks -->
         <div class="bg-white p-5 shadow-lg rounded-2xl border border-gray-200 hover:shadow-xl transition">

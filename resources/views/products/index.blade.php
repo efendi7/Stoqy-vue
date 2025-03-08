@@ -36,9 +36,19 @@
         type="text" 
         id="search" 
         name="search" 
+        value="{{ request('search') }}"
         placeholder="Cari berdasarkan nama, SKU, atau kategori" 
         class="w-full border border-gray-300 rounded-lg py-2 px-4 text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
     >
+
+    {{-- Dropdown Filter Status --}}
+    <select name="status" class="border border-gray-300 rounded-lg py-2 px-4 bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+        <option value="">Semua Status</option>
+        <option value="Tersedia" {{ request('status') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
+        <option value="Warning" {{ request('status') == 'Warning' ? 'selected' : '' }}>Warning</option>
+        <option value="Habis" {{ request('status') == 'Habis' ? 'selected' : '' }}>Habis</option>
+    </select>
+
     <button 
         type="submit" 
         class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all"
