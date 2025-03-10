@@ -14,15 +14,28 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($aktivitas as $log)
-                <tr class="border text-gray-800">
-                    <td class="border p-2">{{ $log->name }}</td>
-                    <td class="border p-2">{{ $log->action }}</td>
-                    <td class="border p-2 text-center">{{ \Carbon\Carbon::parse($log->created_at)->format('d-m-Y H:i') }}</td>
-                </tr>
-                @endforeach
-            </tbody>
+    @foreach($aktivitas as $log)
+    <tr class="border text-gray-800">
+        <td class="border p-2 text-center">
+            {{ optional($log->user)->name ?? 'Tidak Diketahui' }}
+        </td>
+        <td class="border p-2">
+            {{ $log->action }}
+        </td>
+        <td class="border p-2 text-center">
+            {{ \Carbon\Carbon::parse($log->created_at)->format('d-m-Y H:i') }}
+        </td>
+    </tr>
+    @endforeach
+</tbody>
         </table>
+    </div>
+</div>
+
+             {{ $aktivitas->appends(request()->except('page'))->links() }}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

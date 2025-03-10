@@ -8,6 +8,7 @@ use App\Models\StockTransaction;
 use App\Models\User;
 use App\Models\Category;
 use DB;
+use App\Models\ActivityLog;
 
 class LaporanController extends Controller
 {
@@ -124,13 +125,11 @@ public function stok(Request $request)
     }
 
     public function aktivitas()
-    {
-        $aktivitas = DB::table('activity_logs')
-            ->join('users', 'activity_logs.user_id', '=', 'users.id')
-            ->select('users.name', 'activity_logs.action', 'activity_logs.created_at')
-            ->orderBy('activity_logs.created_at', 'desc')
-            ->get();
+{
+    $aktivitas = ActivityLog::with('user') // Pastikan ada relasi 'user' di model ActivityLog
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
 
-        return view('laporan.aktivitas', compact('aktivitas'));
-    }
+    return view('laporan.aktivitas', compact('aktivitas'));
+}
 }

@@ -143,10 +143,21 @@ class ProductController extends Controller
         ]);
     
         try {
-            // Proses upload gambar jika ada
+            // Simpan data lama sebelum update
+            $oldData = $product->toArray();
     
-            // Update produk dengan gambar baru jika ada
+            // Update produk
             $this->productService->updateProduct($product->id, $validatedData);
+    
+            // Simpan log aktivitas
+            \App\Models\ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => "Mengedit produk: {$product->name}",
+                'properties' => json_encode([
+                    'before' => $oldData,
+                    'after' => $validatedData,
+                ]),
+            ]);
     
             return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui!');
         } catch (\Exception $e) {
@@ -154,6 +165,7 @@ class ProductController extends Controller
             return redirect()->route('products.index')->with('error', 'Gagal memperbarui produk.');
         }
     }
+    
 
     public function destroy(Product $product)
     {
