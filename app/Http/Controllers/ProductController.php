@@ -19,12 +19,8 @@ class ProductController extends Controller
         $this->userService = $userService;
     }
 
-    
-
     public function index(Request $request)
     {   
-        // Tambahkan ini untuk melihat input dari form
-
         $query = Product::query();
     
         if ($request->filled('search')) {
@@ -53,15 +49,11 @@ class ProductController extends Controller
         }
     
         $products = $query->with(['category', 'supplier'])->paginate(10);
-        return view('products.index', compact('products'));
-        $search = $request->input('search');  // Mengambil query parameter untuk pencarian
-
-        // Mendapatkan produk berdasarkan pencarian (jika ada)
-        $products = $this->productService->getAllProducts($search);
-
         $userRole = $this->userService->getUserRole(auth()->id());
-        dd($query->toSql(), $query->getBindings());
-
+        
+        // Mengambil query parameter untuk pencarian
+        $search = $request->input('search');
+        
         return view('products.index', compact('products', 'userRole', 'search'));
     }
 
@@ -103,16 +95,25 @@ class ProductController extends Controller
             $validatedData['initial_stock'] = $validatedData['stock'];
     
             // Gunakan service untuk membuat produk
-            $this->productService->createProduct($validatedData);
+            $product = $this->productService->createProduct($validatedData);
+            
+            // Simpan log aktivitas
+            \App\Models\ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => "Menambahkan produk: {$product->name}",
+                'properties' => json_encode([
+                    'product_id' => $product->id,
+                    'data' => $validatedData,
+                ]),
+            ]);
     
             return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
         } catch (\Exception $e) {
             \Log::error('Error creating product: ' . $e->getMessage(), ['request' => $request->all()]);
-            return redirect()->route('products.index')->with('error', 'Gagal menambahkan produk.');
+            return redirect()->route('products.index')->with('error', 'Gagal menambahkan produk: ' . $e->getMessage());
         }
     }
     
-
     public function edit(Product $product)
     {
         $categories = $this->productService->getCategories();
@@ -124,11 +125,11 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $userRole = $this->userService->getUserRole(auth()->id());
-    
+
         if ($userRole !== 'admin') {
             return redirect()->route('products.index')->with('error', 'You do not have permission to update products.');
         }
-    
+
         // Validasi input
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
@@ -141,14 +142,14 @@ class ProductController extends Controller
             'minimum_stock' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-    
+
         try {
             // Simpan data lama sebelum update
             $oldData = $product->toArray();
-    
+
             // Update produk
             $this->productService->updateProduct($product->id, $validatedData);
-    
+
             // Simpan log aktivitas
             \App\Models\ActivityLog::create([
                 'user_id' => auth()->id(),
@@ -158,14 +159,13 @@ class ProductController extends Controller
                     'after' => $validatedData,
                 ]),
             ]);
-    
+
             return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui!');
         } catch (\Exception $e) {
             \Log::error('Error updating product: ' . $e->getMessage(), ['request' => $request->all(), 'product_id' => $product->id]);
-            return redirect()->route('products.index')->with('error', 'Gagal memperbarui produk.');
+            return redirect()->route('products.index')->with('error', 'Gagal memperbarui produk: ' . $e->getMessage());
         }
     }
-    
 
     public function destroy(Product $product)
     {
@@ -176,24 +176,36 @@ class ProductController extends Controller
         }
 
         try {
+            // Simpan data produk sebelum dihapus untuk log
+            $productData = $product->toArray();
+            
             // Hapus gambar produk jika ada
             if ($product->image && Storage::exists('public/' . $product->image)) {
                 Storage::delete('public/' . $product->image);
             }
 
+            // Simpan log aktivitas sebelum menghapus produk
+            \App\Models\ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => "Menghapus produk: {$product->name}",
+                'properties' => json_encode($productData),
+            ]);
+
             // Hapus produk
             $this->productService->deleteProduct($product->id);
+            
             return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
         } catch (\Exception $e) {
             \Log::error('Error deleting product: ' . $e->getMessage(), ['product_id' => $product->id]);
-            return redirect()->route('products.index')->with('error', 'Gagal menghapus produk.');
+            return redirect()->route('products.index')->with('error', 'Gagal menghapus produk: ' . $e->getMessage());
         }
     }
 
     public function show($id)
     {
         $product = $this->productService->getProductById($id);
-        return view('products.show', compact('product'));
+        $userRole = $this->userService->getUserRole(auth()->id());
+        return view('products.show', compact('product', 'userRole'));
     }
 
     public function export()
@@ -204,7 +216,12 @@ class ProductController extends Controller
     public function import(Request $request)
     {
         $request->validate(['file' => 'required|mimes:xlsx,csv']);
-        $this->productService->importProducts($request->file('file'));
-        return back()->with('success', 'Produk berhasil diimpor!');
+        try {
+            $this->productService->importProducts($request->file('file'));
+            return back()->with('success', 'Produk berhasil diimpor!');
+        } catch (\Exception $e) {
+            \Log::error('Error importing products: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengimpor produk: ' . $e->getMessage());
+        }
     }
 }
