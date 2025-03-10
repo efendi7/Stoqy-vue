@@ -95,6 +95,7 @@ Route::post('/stock_transactions/{id}/add_note', [StockTransactionController::cl
 
 
     // User activity routes
+    
     Route::get('/users/{user}/activity', [UserController::class, 'activity'])->name('users.activity');
     Route::get('/activity-logs', [UserController::class, 'allActivities'])->name('activity.logs')->middleware('role:admin');
 

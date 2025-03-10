@@ -188,99 +188,86 @@
 @endif
 
 
-    {{-- Tabel Produk --}}
-    <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
-        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
-            <thead class="bg-gray-800 bg-opacity-70 text-white">
-                <tr>
-                    <th class="py-3 px-4 text-left">Nama</th>
-                    <th class="py-3 px-4 text-left">Gambar</th>
-                    <th class="py-3 px-4 text-left">SKU</th>
-                    <th class="py-3 px-4 text-left">Kategori</th>
-                    <th class="py-3 px-4 text-left">Supplier</th>
-                    <th class="py-3 px-4 text-left">Harga Beli</th>
-                    <th class="py-3 px-4 text-left">Harga Jual</th>
-                    <th class="py-3 px-4 text-left">Stok</th>
-                    <th class="py-3 px-4 text-left">Stok Minimum</th>
-                    <th class="py-3 px-4 text-center">Status</th>
-                    <th class="py-3 px-4 text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-700" id="product-table-body">
-                @foreach($products as $product)
-                <tr class="product-row hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
-                    <td class="py-3 px-4 product-name">{{ $product->name ?? 'N/A' }}</td>
-                    <td class="text-center">
-                        @if($product->image)
-                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-8 w-8 object-cover mx-auto rounded">
-                        @else
-                        <img src="{{ asset('images/no-image.png') }}" alt="" class="h-8 w-8 object-cover mx-auto opacity-30">
-                        @endif
-                    </td>
-                    <td class="py-3 px-4 product-sku">{{ $product->sku ?? 'N/A' }}</td>
-                    <td class="py-3 px-4 product-category">{{ $product->category->name ?? 'N/A' }}</td>
-                    <td class="py-3 px-4">{{ $product->supplier->name ?? 'N/A' }}</td>
-                    <td class="py-3 px-4">{{ number_format($product->purchase_price, 0, ',', '.') }}</td>
-                    <td class="py-3 px-4">{{ number_format($product->sale_price, 0, ',', '.') }}</td>
-                    <td class="py-3 px-4">{{ $product->stock ?? 0 }}</td>
-                    <td class="py-3 px-4">{{ $product->minimum_stock ?? 0 }}</td>
-                    <td class="py-3 px-4 text-center">
-                        @php
-                        $statusMap = [
-                            'Habis' => 'border-red-500 font-semibold text-red-500',
-                            'Warning' => 'border-yellow-500 font-semibold text-yellow-500',
-                            'Tersedia' => 'border-green-500 font-semibold text-green-500',
-                        ];
+<div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
+    <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden border border-gray-300">
+        <thead class="bg-gray-800 bg-opacity-70 text-white">
+            <tr>
+                <th class="py-3 px-4 text-center border border-gray-300">Nama</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Gambar</th>
+                <th class="py-3 px-4 text-center border border-gray-300">SKU</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Kategori</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Supplier</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Harga Beli</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Harga Jual</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Stok</th>
+                <th class="py-3 px-4 border text-center border-gray-300">Stok Minimum</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Status</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Aksi</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-300">
+            @foreach($products as $product)
+            <tr class="product-row hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
+                <td class="py-3 px-4 product-name border border-gray-300 text-center">{{ $product->name ?? 'N/A' }}</td>
+                <td class="text-center border border-gray-300">
+                    @if($product->image)
+                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-8 w-8 object-cover mx-auto rounded">
+                    @else
+                    <img src="{{ asset('images/no-image.png') }}" alt="" class="h-8 w-8 object-cover mx-auto opacity-30">
+                    @endif
+                </td>
+                <td class="py-3 px-4 text-center product-sku border border-gray-300">{{ $product->sku ?? 'N/A' }}</td>
+                <td class="py-3 px-4 text-center product-category border border-gray-300">{{ $product->category->name ?? 'N/A' }}</td>
+                <td class="py-3 px-4 text-center border border-gray-300">{{ $product->supplier->name ?? 'N/A' }}</td>
+                <td class="py-3 px-4 border border-gray-300">{{ number_format($product->purchase_price, 0, ',', '.') }}</td>
+                <td class="py-3 px-4 border border-gray-300">{{ number_format($product->sale_price, 0, ',', '.') }}</td>
+                <td class="py-3 px-4 text-center border border-gray-300">{{ $product->stock ?? 0 }}</td>
+                <td class="py-3 px-4 text-center border border-gray-300">{{ $product->minimum_stock ?? 0 }}</td>
+                <td class="py-3 px-4 text-center border border-gray-300">
+                    @php
+                    $statusMap = [
+                        'Habis' => 'border-red-500 font-semibold text-red-500',
+                        'Warning' => 'border-yellow-500 font-semibold text-yellow-500',
+                        'Tersedia' => 'border-green-500 font-semibold text-green-500',
+                    ];
 
-                        if ($product->stock == 0) {
-                            $status = 'Habis';
-                        } elseif ($product->stock < $product->minimum_stock) {
-                            $status = 'Warning';
-                        } else {
-                            $status = 'Tersedia';
-                        }
-                        @endphp
+                    if ($product->stock == 0) {
+                        $status = 'Habis';
+                    } elseif ($product->stock < $product->minimum_stock) {
+                        $status = 'Warning';
+                    } else {
+                        $status = 'Tersedia';
+                    }
+                    @endphp
 
-                        <span class="px-3 py-1 rounded-lg border {{ $statusMap[$status] }}">
-                            {{ $status }}
-                        </span>
-                    </td>
-
-                    <td class="py-3 px-4 text-center">
+                    <span class="px-3 py-1 rounded-lg border {{ $statusMap[$status] }}">
+                        {{ $status }}
+                    </span>
+                </td>
+                <td class="py-3 px-4 text-center border border-gray-300">
+                    {{-- Aksi sesuai role --}}
                     @if(auth()->user()->role === 'warehouse_manager')
-    <!-- Tombol Detail untuk warehouse_manager -->
-    <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 transition-all">
-        Detail
-    </a>
-@elseif(auth()->user()->role === 'admin')
-    <div class="flex space-x-2">
-        <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 focus:outline-none text-sm">
-            Detail
-        </a>
+                        <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 transition-all">Detail</a>
+                    @elseif(auth()->user()->role === 'admin')
+                        <div class="flex space-x-2">
+                            <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 focus:outline-none text-sm">Detail</a>
+                            <a href="{{ route('products.edit', $product->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 focus:outline-none text-sm">Edit</a>
+                            <form action="{{ route('products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 focus:outline-none text-sm">Hapus</button>
+                            </form>
+                        </div>
+                    @elseif(auth()->user()->role === 'warehouse_staff')
+                        <span class="text-gray-500 text-sm italic">Aksi tidak tersedia</span>
+                    @endif
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 
-        <a href="{{ route('products.edit', $product->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 focus:outline-none text-sm">
-            Edit
-        </a>
-        
-        <form action="{{ route('products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 focus:outline-none text-sm">
-                Hapus
-            </button>
-        </form>
-    </div>
-@elseif(auth()->user()->role === 'warehouse_staff')
-    <!-- Tidak ada kolom aksi untuk warehouse_staff -->
-    <span class="text-gray-500 text-sm italic">Aksi tidak tersedia</span>
-@endif
-
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
 
     {{-- Pagination --}}
     <div class="mt-6 flex justify-center">

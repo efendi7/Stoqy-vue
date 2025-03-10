@@ -23,20 +23,20 @@
 
     {{-- Tabel Kategori --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
-        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
+        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden border border-gray-300">
             <thead class="bg-gray-800 bg-opacity-70 text-white">
                 <tr>
-                    <th class="py-3 px-4 text-left">Nama</th>
-                    <th class="py-3 px-4 text-left">Deskripsi</th>
-                    <th class="py-3 px-4 text-center">Aksi</th>
+                    <th class="py-3 px-4 text-left border border-gray-300">Nama</th>
+                    <th class="py-3 px-4 text-left border border-gray-300">Deskripsi</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-700">
+            <tbody class="divide-y divide-gray-300">
                 @foreach($categories as $category)
                     <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
-                        <td class="py-3 px-4">{{ $category->name ?? 'N/A' }}</td>
-                        <td class="py-3 px-4">{{ $category->description ?? 'N/A' }}</td>
-                        <td class="py-3 px-4 text-center">
+                        <td class="py-3 px-4 border border-gray-300">{{ $category->name ?? 'N/A' }}</td>
+                        <td class="py-3 px-4 border border-gray-300">{{ $category->description ?? 'N/A' }}</td>
+                        <td class="py-3 px-4 text-center border border-gray-300">
                             <div class="inline-flex gap-2">
                                 <a href="{{ route('categories.edit', $category->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 transition-all">Edit</a>
                                 <form action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus kategori {{ $category->name }} ini?')">

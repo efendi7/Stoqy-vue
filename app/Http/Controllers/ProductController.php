@@ -21,8 +21,9 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {   
-        $query = Product::query();
+        $query = Product::query()->with(['category', 'supplier']);
     
+        // Filter berdasarkan pencarian (jika ada)
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -34,6 +35,7 @@ class ProductController extends Controller
             });
         }
     
+        // Filter berdasarkan status
         if ($request->filled('status')) {
             $status = $request->input('status');
     
@@ -48,15 +50,13 @@ class ProductController extends Controller
             });
         }
     
-        $products = $query->with(['category', 'supplier'])->paginate(10);
+        // Ambil data produk dengan pagination dan simpan filter dalam URL
+        $products = $query->paginate(10)->appends(request()->query());
         $userRole = $this->userService->getUserRole(auth()->id());
-        
-        // Mengambil query parameter untuk pencarian
-        $search = $request->input('search');
-        
-        return view('products.index', compact('products', 'userRole', 'search'));
+    
+        return view('products.index', compact('products', 'userRole'));
     }
-
+    
     public function create()
     {
         $categories = $this->productService->getCategories();

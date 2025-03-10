@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Models\Category;
 use DB;
 use App\Models\ActivityLog;
+use Carbon\Carbon;
+
 
 class LaporanController extends Controller
 {
@@ -124,12 +126,25 @@ public function stok(Request $request)
         return view('laporan.transaksi', compact('transaksi'));
     }
 
-    public function aktivitas()
-{
-    $aktivitas = ActivityLog::with('user') // Pastikan ada relasi 'user' di model ActivityLog
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
-
-    return view('laporan.aktivitas', compact('aktivitas'));
-}
+    public function aktivitas(Request $request)
+    {
+        $query = ActivityLog::with('user'); // Pastikan ada relasi 'user' di model ActivityLog
+        
+        // Filter berdasarkan tanggal mulai jika ada
+        if ($request->filled('tanggal_mulai')) {
+            $tanggalMulai = Carbon::parse($request->tanggal_mulai)->startOfDay();
+            $query->where('created_at', '>=', $tanggalMulai);
+        }
+        
+        // Filter berdasarkan tanggal akhir jika ada
+        if ($request->filled('tanggal_akhir')) {
+            $tanggalAkhir = Carbon::parse($request->tanggal_akhir)->endOfDay();
+            $query->where('created_at', '<=', $tanggalAkhir);
+        }
+        
+        $aktivitas = $query->orderBy('created_at', 'desc')
+                           ->paginate(10);
+        
+        return view('laporan.aktivitas', compact('aktivitas'));
+    }
 }

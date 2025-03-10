@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use App\Models\User;
-
+use App\Models\ActivityLog;
 
 class UserController extends Controller
 {
@@ -72,4 +72,11 @@ class UserController extends Controller
         return $deleted ? redirect()->route('users.index')->with('success', 'User berhasil dihapus.') 
                         : redirect()->back()->with('error', 'Gagal menghapus user.');
     }
+
+    public function activity(User $user)
+{
+    $activities = ActivityLog::where('user_id', $user->id)->orderBy('created_at', 'desc')->paginate(10);
+    return view('users.activity', compact('user', 'activities'));
+}
+
 }

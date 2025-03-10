@@ -45,24 +45,24 @@
 
     {{-- Tabel Supplier --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
-        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
+        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden border border-gray-300">
             <thead class="bg-gray-800 bg-opacity-70 text-white">
                 <tr>
-                    <th class="py-3 px-4 text-left">Nama</th>
-                    <th class="py-3 px-4 text-left">Kontak</th>
-                    <th class="py-3 px-4 text-left">Alamat</th>
-                    <th class="py-3 px-4 text-left">Email</th>
-                    <th class="py-3 px-4 text-center">Aksi</th>
+                    <th class="py-3 px-4 text-left border border-gray-300">Nama</th>
+                    <th class="py-3 px-4 text-left border border-gray-300">Kontak</th>
+                    <th class="py-3 px-4 text-left border border-gray-300">Alamat</th>
+                    <th class="py-3 px-4 text-left border border-gray-300">Email</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-700" id="supplier-table-body">
+            <tbody class="divide-y divide-gray-300" id="supplier-table-body">
                 @foreach($suppliers as $supplier)
                     <tr class="supplier-row hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
-                        <td class="py-3 px-4 supplier-name">{{ $supplier->name ?? 'N/A' }}</td>
-                        <td class="py-3 px-4 supplier-contact">{{ $supplier->contact ?? 'N/A' }}</td>
-                        <td class="py-3 px-4">{{ $supplier->address ?? 'N/A' }}</td>
-                        <td class="py-3 px-4">{{ $supplier->email ?? 'N/A' }}</td>
-                        <td class="py-3 px-4 text-center">
+                        <td class="py-3 px-4 supplier-name border border-gray-300">{{ $supplier->name ?? 'N/A' }}</td>
+                        <td class="py-3 px-4 supplier-contact border border-gray-300">{{ $supplier->contact ?? 'N/A' }}</td>
+                        <td class="py-3 px-4 border border-gray-300">{{ $supplier->address ?? 'N/A' }}</td>
+                        <td class="py-3 px-4 border border-gray-300">{{ $supplier->email ?? 'N/A' }}</td>
+                        <td class="py-3 px-4 text-center border border-gray-300">
                             <div class="inline-flex gap-2">
                                 {{-- Tampilkan hanya untuk Admin atau role lainnya yang bukan warehouse_manager dan warehouse_staff --}}
                                 @if(auth()->user()->role !== 'warehouse_manager' && auth()->user()->role !== 'warehouse_staff')
@@ -123,3 +123,4 @@
 </script>
 
 @endsection
+s

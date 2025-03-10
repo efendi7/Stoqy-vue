@@ -26,50 +26,49 @@
     @endif
 
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
-        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
+        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden border border-gray-300">
             <thead class="bg-gray-800 bg-opacity-70 text-white">
                 <tr>
-                    <th class="py-3 px-4 text-left">No</th>
-                    <th class="py-3 px-4 text-left">Nama Produk</th>
-                    <th class="py-3 px-4 text-left">Stok Tercatat</th>
-                    <th class="py-3 px-4 text-left">Stok Fisik</th>
-                    <th class="py-3 px-4 text-left">Selisih</th>
-                    <th class="py-3 px-4 text-left">Aksi</th>
+                    <th class="py-3 text-center px-4 border border-gray-300">No</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Nama Produk</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Stok Tercatat</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Stok Fisik</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Selisih</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-700">
-    @foreach ($products as $index => $product)
-        @php
-            $stockOpname = $product->stockOpname; // Pastikan ada relasi di model Product
-            $actualStock = $stockOpname->actual_stock ?? $product->stock;
-            $difference = $stockOpname->difference ?? 0;
-        @endphp
-        <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
-            <td class="py-3 px-4">{{ $index + 1 }}</td>
-            <td class="py-3 px-4">{{ $product->name }}</td>
-            <td class="py-3 px-4" id="recorded_stock_{{ $product->id }}">{{ $product->stock }}</td>
-            <td class="py-3 px-4">
-                <input type="number" name="actual_stock" id="actual_stock_{{ $product->id }}" 
-                    class="border p-1 w-full"
-                    value="{{ $actualStock }}"
-                    min="0"
-                    oninput="calculateDifference({{ $product->id }})">
-            </td>
-            <td class="py-3 px-4" id="difference_{{ $product->id }}">{{ $difference }}</td>
-            <td class="py-3 px-4">
-                <form action="{{ route('stock_opname.store') }}" method="POST" onsubmit="return setAuditValues({{ $product->id }})">
-                    @csrf
-                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                    <input type="hidden" name="recorded_stock" id="recorded_stock_hidden_{{ $product->id }}" value="{{ $product->stock }}">
-                    <input type="hidden" name="actual_stock" id="actual_stock_hidden_{{ $product->id }}" value="{{ $actualStock }}">
-                    <input type="hidden" name="difference" id="difference_hidden_{{ $product->id }}" value="{{ $difference }}">
-                    <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">Save Audit</button>
-                </form>
-            </td>
-        </tr>
-    @endforeach
-</tbody>
-
+            <tbody class="divide-y divide-gray-300">
+                @foreach ($products as $index => $product)
+                    @php
+                        $stockOpname = $product->stockOpname; // Pastikan ada relasi di model Product
+                        $actualStock = $stockOpname->actual_stock ?? $product->stock;
+                        $difference = $stockOpname->difference ?? 0;
+                    @endphp
+                    <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
+                        <td class="py-3 px-4 border text-center border-gray-300">{{ $index + 1 }}</td>
+                        <td class="py-3 px-4 border text-left border-gray-300">{{ $product->name }}</td>
+                        <td class="py-3 px-4 border text-center border-gray-300" id="recorded_stock_{{ $product->id }}">{{ $product->stock }}</td>
+                        <td class="py-3 px-4 border text-center border-gray-300">
+                            <input type="number" name="actual_stock" id="actual_stock_{{ $product->id }}" 
+                                class="border text-center p-1 w-full"
+                                value="{{ $actualStock }}"
+                                min="0"
+                                oninput="calculateDifference({{ $product->id }})">
+                        </td>
+                        <td class="py-3 px-4 text-center border border-gray-300" id="difference_{{ $product->id }}">{{ $difference }}</td>
+                        <td class="py-3 px-4 text-center border border-gray-300">
+                            <form action="{{ route('stock_opname.store') }}" method="POST" onsubmit="return setAuditValues({{ $product->id }})">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <input type="hidden" name="recorded_stock" id="recorded_stock_hidden_{{ $product->id }}" value="{{ $product->stock }}">
+                                <input type="hidden" name="actual_stock" id="actual_stock_hidden_{{ $product->id }}" value="{{ $actualStock }}">
+                                <input type="hidden" name="difference" id="difference_hidden_{{ $product->id }}" value="{{ $difference }}">
+                                <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">Save Audit</button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
         </table>
     </div>
 </div>
