@@ -14,8 +14,8 @@ return new class extends Migration {
                 $table->string('sku');
                 $table->unsignedBigInteger('category_id');
                 $table->unsignedBigInteger('supplier_id')->nullable();
-                $table->decimal('purchase_price', 10, 2);
-                $table->decimal('sale_price', 10, 2);
+                $table->decimal('purchase_price', 15, 2);
+                $table->decimal('sale_price', 15, 2);
                 $table->integer('stock');
                 $table->integer('stock_minimum')->default(5);
                 $table->timestamps();
