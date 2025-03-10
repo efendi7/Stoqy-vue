@@ -253,27 +253,28 @@
         Detail
     </a>
 @elseif(auth()->user()->role === 'admin')
-<div class="flex space-x-2">
-    <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 focus:outline-none text-sm">
-        Detail
-    </a>
-    
-    <a href="{{ route('products.edit', $product->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 focus:outline-none text-sm">
-        Edit
-    </a>
-    
-    <form action="{{ route('products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 focus:outline-none text-sm">
-            Hapus
-        </button>
-    </form>
-</div>
+    <div class="flex space-x-2">
+        <a href="{{ route('products.show', $product->id) }}" class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 focus:outline-none text-sm">
+            Detail
+        </a>
 
-
+        <a href="{{ route('products.edit', $product->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 focus:outline-none text-sm">
+            Edit
+        </a>
+        
+        <form action="{{ route('products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 focus:outline-none text-sm">
+                Hapus
+            </button>
+        </form>
     </div>
+@elseif(auth()->user()->role === 'warehouse_staff')
+    <!-- Tidak ada kolom aksi untuk warehouse_staff -->
+    <span class="text-gray-500 text-sm italic">Aksi tidak tersedia</span>
 @endif
+
                     </td>
                 </tr>
                 @endforeach

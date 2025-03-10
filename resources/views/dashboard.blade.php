@@ -125,22 +125,22 @@
     @if(auth()->user()->role === 'warehouse_staff')
     <!-- Tugas Staff -->
     <div class="grid grid-cols-1 gap-6">
-        <!-- Incoming Tasks -->
- <!-- Incoming Tasks -->
+<!-- Incoming Tasks -->
 <div class="bg-white p-5 shadow-md rounded-2xl border border-gray-200">
     <div class="flex items-center gap-3 mb-3">
-        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z"></path>
-            <path d="M8 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-        <h2 class="text-lg font-semibold text-gray-800">Tugas Baru - Barang Masuk</h2>
+        <h2 class="text-lg font-semibold text-gray-600">📗 Tugas Baru - Barang Masuk</h2>
     </div>
     <ul class="space-y-2">
         @forelse ($incomingTaskStaff as $task)
             <li class="bg-gray-100 p-3 rounded-lg flex justify-between items-center">
                 <div>
-                    <span>📦 <strong>{{ $task->product->name }}</strong> ({{ $task->quantity }})</span>
-                    <p class="text-sm text-yellow-600 font-semibold">⚠️ Perlu diperiksa</p>
+                    <strong class="text-blue-600">{{ $task->product->name }}</strong> 
+                    <span class="text-white font-extrabold border bg-blue-600 px-1 rounded">{{ $task->quantity }}</span>
+                    <p class="text-sm text-yellow-600 font-semibold">
+                        <a href="{{ route('stock-transactions.pending', ['product_id' => $task->product->id]) }}" class="underline hover:text-yellow-700">
+                            ⚠️ Perlu diperiksa
+                        </a>
+                    </p>
                 </div>
                 <p class="text-xs text-gray-500">{{ $task->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }}</p>
             </li>
@@ -153,18 +153,19 @@
 <!-- Outgoing Tasks -->
 <div class="bg-white p-5 shadow-md rounded-2xl border border-gray-200">
     <div class="flex items-center gap-3 mb-3">
-        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z"></path>
-            <path d="M8 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-        <h2 class="text-lg font-semibold text-gray-800">Tugas Baru - Barang Keluar</h2>
+        <h2 class="text-lg font-semibold text-gray-600">📕 Tugas Baru - Barang Keluar</h2>
     </div>
     <ul class="space-y-2">
         @forelse ($outgoingTaskStaff as $task)
             <li class="bg-gray-100 p-3 rounded-lg flex justify-between items-center">
                 <div>
-                    <span>📤 <strong>{{ $task->product->name }}</strong> ({{ $task->quantity }})</span>
-                    <p class="text-sm text-yellow-600 font-semibold">⚠️ Perlu diperiksa</p>
+                    <strong class="text-red-900">{{ $task->product->name }}</strong> 
+                    <span class="text-white font-extrabold border bg-red-900 px-1 rounded">{{ $task->quantity }}</span>
+                    <p class="text-sm text-yellow-600 font-semibold">
+                        <a href="{{ route('stock-transactions.pending', ['product_id' => $task->product->id]) }}" class="underline hover:text-yellow-700">
+                            ⚠️ Perlu diperiksa
+                        </a>
+                    </p>
                 </div>
                 <p class="text-xs text-gray-500">{{ $task->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }}</p>
             </li>
@@ -174,27 +175,49 @@
     </ul>
 </div>
 
+<!-- Completed Tasks -->
+<div class="bg-white p-5 shadow-md rounded-2xl border border-gray-200 hover:shadow-xl transition">
+    <div class="flex items-center gap-3 mb-3">
+        <h2 class="text-lg font-semibold text-gray-600">🛂 Tugas yang Telah Diproses</h2>
+    </div>
+    <ul class="space-y-2">
+        @forelse ($completeTaskStaff as $task)
+            <li class="bg-gray-100 p-3 rounded-lg flex justify-between items-center">
+                <div>
+                    <strong class="text-gray-700">{{ $task->product->name }}</strong> 
+                    <span class="text-white font-extrabold border bg-gray-700 px-1 rounded">{{ $task->quantity }}</span>
+                    
+                    <!-- Status Task -->
+                    <span class="ml-2 text-xs font-semibold px-2 py-1 rounded-md
+                        {{ $task->status === 'Diterima' ? 'bg-green-100 text-green-700' : 
+                           ($task->status === 'Confirmed' ? 'bg-blue-100 text-blue-700' :
+                           ($task->status === 'Ditolak' ? 'bg-red-100 text-red-700' : 
+                           'bg-yellow-100 text-yellow-700')) }}">
+                        {{ $task->status === 'Confirmed' ? 'Menunggu Keputusan Manajer' : $task->status }}
+                    </span>
 
-        <!-- Completed Tasks -->
-        <div class="bg-white p-5 shadow-lg rounded-2xl border border-gray-200 hover:shadow-xl transition">
-            <div class="flex items-center gap-3 mb-3">
-                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z"></path>
-                    <path d="M8 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-                <h2 class="text-lg font-semibold text-gray-800">Tugas yang Telah Dikonfirmasi</h2>
-            </div>
-            <ul class="space-y-2">
-                @forelse ($completeTaskStaff as $task)
-                    <li class="bg-gray-100 p-3 rounded-lg flex justify-between items-center">
-                        <span>✅ <strong>{{ $task->product->name }}</strong> ({{ $task->quantity }})</span>
-                        <p class="text-xs text-gray-500">{{ $task->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }}</p>
-                    </li>
-                @empty
-                    <p class="text-sm text-gray-500 text-center">Tidak ada tugas yang telah dikonfirmasi saat ini.</p>
-                @endforelse
-            </ul>
-        </div>
+                    <!-- Link Periksa -->
+                    <p class="text-sm text-slate-600 font-semibold">
+                        <a href="{{ route('stock-transactions.confirmed', ['product_id' => $task->product->id]) }}" class="underline hover:text-yellow-700">
+                            🔍 Periksa
+                        </a>
+                    </p>
+                </div>
+
+                <p class="text-xs text-gray-500">
+                    {{ $task->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }}
+                </p>
+            </li>
+        @empty
+            <p class="text-sm text-gray-500 text-center">Tidak ada tugas yang telah diproses saat ini.</p>
+        @endforelse
+    </ul>
+</div>
+
+
+
+
+
     </div>
 @endif
 
@@ -419,8 +442,8 @@
                         {
                             label: 'Transaksi Masuk + Transaksi Keluar',
                             data: {!! json_encode($combinedTransactionData ?? []) !!},
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(128, 0, 128, 1)', // Warna ungu solid untuk garis
+                            backgroundColor: 'rgba(128, 0, 128, 0.2)', // Warna ungu transparan untuk area di bawah garis
                             borderWidth: 2,
                             fill: true
                         }
