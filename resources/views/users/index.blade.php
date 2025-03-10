@@ -32,7 +32,7 @@
 
     {{-- Flash Message Error Validation --}}
     @if ($errors->any())
-    <div class="max-w-lg mx-auto bg-red-600 text-white p-3 rounded-lg mb-6 shadow-lg backdrop-blur-md">
+    <div id="flash-errors" class="max-w-lg mx-auto bg-red-600 text-white p-3 rounded-lg mb-6 shadow-lg backdrop-blur-md">
         <div class="font-bold">Ada kesalahan!</div>
         <ul class="list-disc pl-5">
             @foreach ($errors->all() as $error)
@@ -49,22 +49,22 @@
 
     {{-- Tabel Pengguna --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
-        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
+        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden border border-gray-300">
             <thead class="bg-gray-800 bg-opacity-70 text-white">
                 <tr>
-                    <th class="py-3 px-4 text-left">Nama</th>
-                    <th class="py-3 px-4 text-left">Email</th>
-                    <th class="py-3 px-4 text-left">Role</th>
-                    <th class="py-3 px-4 text-center">Aksi</th>
+                    <th class="py-3 px-4 text-left border border-gray-300">Nama</th>
+                    <th class="py-3 px-4 text-left border border-gray-300">Email</th>
+                    <th class="py-3 px-4 text-left border border-gray-300">Role</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-700">
+            <tbody class="divide-y divide-gray-300">
                 @foreach ($users as $user)
                     <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
-                        <td class="py-3 px-4">{{ $user->name }}</td>
-                        <td class="py-3 px-4">{{ $user->email }}</td>
-                        <td class="py-3 px-4">{{ app(\App\Services\UserService::class)->getRoleLabel($user->role) }}</td>
-                        <td class="py-3 px-4 text-center">
+                        <td class="py-3 px-4 border border-gray-300">{{ $user->name }}</td>
+                        <td class="py-3 px-4 border border-gray-300">{{ $user->email }}</td>
+                        <td class="py-3 px-4 border border-gray-300 text-center">{{ app(\App\Services\UserService::class)->getRoleLabel($user->role) }}</td>
+                        <td class="py-3 px-4 text-center border border-gray-300">
                             <div class="inline-flex gap-2">
                                 <a href="{{ route('users.activity', $user->id) }}" class="bg-green-500 text-white py-1 px-4 rounded-lg hover:bg-green-600 transition-all">Aktivitas</a>
                                 <a href="{{ route('users.edit', $user->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 transition-all">Edit</a>
@@ -88,15 +88,15 @@
 </div>
 
 <script>
-    // Fungsi untuk membuat Flash Message hilang setelah 3 detik
+    // Fungsi untuk menghilangkan Flash Message setelah 3 detik
     setTimeout(() => {
         const flashSuccess = document.getElementById('flash-success');
         const flashError = document.getElementById('flash-error');
         const flashErrors = document.getElementById('flash-errors');
-        
+
         if (flashSuccess) {
             flashSuccess.style.opacity = '0';
-            setTimeout(() => flashSuccess.remove(), 500); // Hapus elemen setelah transisi selesai
+            setTimeout(() => flashSuccess.remove(), 500); // Hapus elemen setelah efek
         }
         if (flashError) {
             flashError.style.opacity = '0';
@@ -106,6 +106,6 @@
             flashErrors.style.opacity = '0';
             setTimeout(() => flashErrors.remove(), 500);
         }
-    }, 3000); // Hilang setelah 3 detik
+    }, 3000); // Hilang dalam 3 detik
 </script>
 @endsection

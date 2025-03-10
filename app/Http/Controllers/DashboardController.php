@@ -22,6 +22,7 @@ class DashboardController extends Controller
     
     public function index(Request $request)
     {
+        Carbon::setLocale('id'); // Mengatur locale Carbon ke bahasa Indonesia
         $user = auth()->user();
         
         // Total user & supplier
@@ -95,8 +96,13 @@ class DashboardController extends Controller
         // Produk dengan stok tertinggi
         $topProducts = Product::orderByDesc('stock')->limit(10)->get(['name', 'stock']);
         
-        // Aktivitas terbaru
-        $recentActivities = ActivityLog::with('user')->latest()->limit(10)->get();
+       // Aktivitas terbaru hanya untuk hari ini
+$recentActivities = ActivityLog::with('user')
+->whereDate('created_at', Carbon::today()) // Hanya aktivitas hari ini
+->latest()
+->limit(10)
+->paginate(10);
+
     
         // Data untuk tampilan
         $viewData = [

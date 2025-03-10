@@ -314,21 +314,46 @@
             </div>
         </div>
 
-        <!-- Recent Activities - Admin Only -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-gray-600 text-sm font-medium mb-4">Recent Activities</h3>
+<!-- Recent Activities - Admin Only -->
+@if($recentActivities->isNotEmpty())
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-gray-700 text-lg font-semibold mb-4">Aktivitas Hari Ini</h3>
+        <div class="border rounded-lg overflow-hidden">
+            <div class="bg-gray-100 text-gray-700 font-medium text-sm px-4 py-2 flex justify-between">
+                <span class="w-1/3">Aksi</span>
+                <span class="w-1/3 text-center">Waktu</span>
+                <span class="w-1/3 text-right">Pengguna</span>
+            </div>
             <div class="divide-y divide-gray-200">
-                @foreach($recentActivities ?? [] as $activity)
-                <div class="py-3 flex justify-between items-center">
-                    <div>
-                        <p class="text-sm font-medium text-gray-700">{{ $activity->description }}</p>
-                        <p class="text-xs text-gray-500">{{ $activity->created_at->diffForHumans() }}</p>
+                @foreach($recentActivities as $activity)
+                <div class="px-4 py-3 flex justify-between items-center text-sm">
+                    <div class="w-1/3">
+                        <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-600">
+                            {{ $activity->action ?? 'Tidak ada aksi' }}
+                        </span>
                     </div>
-                    <span class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">{{ $activity->user->name }}</span>
+                    <div class="w-1/3 text-center text-gray-500">
+                        {{ $activity->created_at->diffForHumans() }}
+                    </div>
+                    <div class="w-1/3 text-right">
+                        <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-600">
+                            {{ $activity->user->name }}
+                        </span>
+                    </div>
                 </div>
                 @endforeach
             </div>
         </div>
+    </div>
+@else
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-gray-700 text-lg font-semibold mb-4">Aktivitas Hari Ini</h3>
+        <p class="text-gray-500 text-sm text-center">Tidak ada aktivitas untuk hari ini.</p>
+    </div>
+@endif
+
+
+
     @endif
 </div>
 

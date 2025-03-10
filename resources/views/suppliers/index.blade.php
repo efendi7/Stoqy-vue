@@ -123,4 +123,3 @@
 </script>
 
 @endsection
-s

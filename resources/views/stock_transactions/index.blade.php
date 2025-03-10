@@ -197,82 +197,81 @@
 
 
 
-    {{-- Tabel Transaksi --}}
-    <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50 mt-6 space-y-4">
-        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
+{{-- Tabel Transaksi --}}
+<div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50 mt-6 space-y-4">
+    
+    <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden border border-gray-300">
         <thead class="bg-gray-800 bg-opacity-70 text-white">
-    <tr>
-        <th class="py-3 px-4 text-left">Produk</th>
-        <th class="py-3 px-4 text-left">User</th>
-        <th class="py-3 px-4 text-left">Jenis</th>
-        <th class="py-3 px-4 text-left">Kuantitas</th>
-        <th class="py-3 px-4 text-left">Status</th>
-        <th class="py-3 px-4 text-left">Catatan</th>
-        <th class="py-3 px-4 text-left">Tanggal Transaksi</th>
-        <th class="py-3 px-4 text-left">Aksi</th>
-    </tr>
-</thead>
-<tbody class="divide-y divide-gray-700">
-    @forelse($transactions as $transaction)
-    <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all product-row">
-        <td class="py-3 px-4 product-name">{{ $transaction->product->name ?? 'Produk Tidak Ditemukan' }}</td>
-        <td class="py-3 px-4 product-user">{{ $transaction->user->name ?? 'User Tidak Ditemukan' }}</td>
-        <td class="py-3 px-4 product-category">
-            <span class="px-2 py-1 rounded {{ $transaction->type == 'Masuk' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                {{ $transaction->type }}
-            </span>
-        </td>
-        <td class="py-3 px-4">{{ $transaction->quantity }}</td>
-        <td class="py-3 px-4">
-            @if($userRole === 'warehouse_manager')
-                <form action="{{ route('stock_transactions.update-status', $transaction->id) }}" method="POST" class="inline">
-                    @csrf
-                    <select name="status" onchange="this.form.submit()" 
-                    class="border border-gray-300 rounded-lg px-2 py-1 text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                    style="
-                        @if($transaction->status == 'Pending') background-color: #fef3c7; color: #b45309; @endif
-                        @if($transaction->status == 'Diterima') background-color: #d1fae5; color: #065f46; @endif
-                        @if($transaction->status == 'Ditolak') background-color: #fee2e2; color: #991b1b; @endif
-                    ">
-                        <option value="Pending" @if($transaction->status == 'Pending') selected @endif>Pending</option>
-                        <option value="Diterima" @if($transaction->status == 'Diterima') selected @endif>Diterima</option>
-                        <option value="Ditolak" @if($transaction->status == 'Ditolak') selected @endif>Ditolak</option>
-                    </select>
-                </form>
-            @else
-            <span class="px-2 py-1 rounded
-    {{ $transaction->status == 'Pending' ? 'bg-yellow-100 text-yellow-800' : 
-       ($transaction->status == 'Diterima' ? 'bg-green-100 text-green-800' : 
-       ($transaction->status == 'Confirmed' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800')) }}">
-    {{ $transaction->status }}
-</span>
-
-            @endif
-        </td>
-        <td class="py-3 px-4">{{ $transaction->notes ?? '' }}</td> <!-- New notes column -->
-        <td class="py-3 px-4">{{ \Carbon\Carbon::parse($transaction->transaction_date)->format('d-m-Y') }}</td>
-        <td class="py-3 px-4">
-            @if($userRole === 'warehouse_manager')
-                <a href="{{ route('stock_transactions.edit', $transaction->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 transition-all mb-1 inline-block">Edit</a>
-                <form action="{{ route('stock_transactions.destroy', $transaction->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus transaksi ini?')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 transition-all">Hapus</button>
-                </form>
-            @else
-                <span class="text-gray-500">Tidak ada akses</span>
-            @endif
-        </td>
-    </tr>
-    @empty
-    <tr>
-        <td colspan="8" class="text-center py-4">Tidak ada transaksi stok.</td>
-    </tr>
-    @endforelse
-</tbody>
-
-        </table>
-    </div>
+            <tr>
+                <th class="py-3 px-4 text-left border border-gray-300">Produk</th>
+                <th class="py-3 px-4 text-left border border-gray-300">User</th>
+                <th class="py-3 px-4 text-left border border-gray-300">Jenis</th>
+                <th class="py-3 px-4 text-left border border-gray-300">Kuantitas</th>
+                <th class="py-3 px-4 text-left border border-gray-300">Status</th>
+                <th class="py-3 px-4 text-left border border-gray-300">Catatan</th>
+                <th class="py-3 px-4 text-left border border-gray-300">Tanggal Transaksi</th>
+                <th class="py-3 px-4 text-left border border-gray-300">Aksi</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-300">
+            @forelse($transactions as $transaction)
+                <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all product-row">
+                    <td class="py-3 px-4 border border-gray-300 product-name">{{ $transaction->product->name ?? 'Produk Tidak Ditemukan' }}</td>
+                    <td class="py-3 px-4 border border-gray-300 product-user">{{ $transaction->user->name ?? 'User Tidak Ditemukan' }}</td>
+                    <td class="py-3 px-4 border border-gray-300 product-category">
+                        <span class="px-2 py-1 rounded {{ $transaction->type == 'Masuk' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                            {{ $transaction->type }}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 border border-gray-300">{{ $transaction->quantity }}</td>
+                    <td class="py-3 px-4 border border-gray-300">
+                        @if($userRole === 'warehouse_manager')
+                            <form action="{{ route('stock_transactions.update-status', $transaction->id) }}" method="POST" class="inline">
+                                @csrf
+                                <select name="status" onchange="this.form.submit()" 
+                                    class="border border-gray-300 rounded-lg px-2 py-1 text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                    style="
+                                        @if($transaction->status == 'Pending') background-color: #fef3c7; color: #b45309; @endif
+                                        @if($transaction->status == 'Diterima') background-color: #d1fae5; color: #065f46; @endif
+                                        @if($transaction->status == 'Ditolak') background-color: #fee2e2; color: #991b1b; @endif
+                                    ">
+                                    <option value="Pending" @if($transaction->status == 'Pending') selected @endif>Pending</option>
+                                    <option value="Diterima" @if($transaction->status == 'Diterima') selected @endif>Diterima</option>
+                                    <option value="Ditolak" @if($transaction->status == 'Ditolak') selected @endif>Ditolak</option>
+                                </select>
+                            </form>
+                        @else
+                            <span class="px-2 py-1 rounded 
+                                {{ $transaction->status == 'Pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                   ($transaction->status == 'Diterima' ? 'bg-green-100 text-green-800' : 
+                                   ($transaction->status == 'Confirmed' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800')) }}">
+                                {{ $transaction->status }}
+                            </span>
+                        @endif
+                    </td>
+                    <td class="py-3 px-4 border border-gray-300">{{ $transaction->notes ?? '' }}</td>
+                    <td class="py-3 px-4 border border-gray-300">{{ \Carbon\Carbon::parse($transaction->transaction_date)->format('d-m-Y') }}</td>
+                    <td class="py-3 px-4 border border-gray-300">
+                        @if($userRole === 'warehouse_manager')
+                            <a href="{{ route('stock_transactions.edit', $transaction->id) }}" class="bg-yellow-500 text-white py-1 px-4 rounded-lg hover:bg-yellow-600 transition-all mb-1 inline-block">Edit</a>
+                            <form action="{{ route('stock_transactions.destroy', $transaction->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus transaksi ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 transition-all">Hapus</button>
+                            </form>
+                        @else
+                            <span class="text-gray-500">Tidak ada akses</span>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="8" class="text-center py-4 border border-gray-300">Tidak ada transaksi stok.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
 
     {{-- Pagination --}}
     <div class="mt-6 flex justify-center">

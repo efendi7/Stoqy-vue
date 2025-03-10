@@ -74,9 +74,13 @@ class UserController extends Controller
     }
 
     public function activity(User $user)
-{
-    $activities = ActivityLog::where('user_id', $user->id)->orderBy('created_at', 'desc')->paginate(10);
-    return view('users.activity', compact('user', 'activities'));
-}
+    {
+        $activities = ActivityLog::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+    
+        return view('users.activity', compact('user', 'activities'));
+    }
+    
 
 }

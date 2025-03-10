@@ -6,7 +6,6 @@
 <div class="container mx-auto px-4 min-h-screen bg-cover bg-center mt-16">
 <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Laporan Stok Barang</h1>
 
-
     {{-- Notifikasi Kesalahan --}}
     @if ($errors->any())
         <div class="bg-red-600 border border-red-400 text-white px-4 py-3 rounded-lg relative mb-6" role="alert">
@@ -37,27 +36,26 @@
 
     {{-- Tabel Stok Barang --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
-        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
+        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden border border-gray-300">
             <thead class="bg-gray-800 bg-opacity-70 text-white">
-
                 <tr>
-                    <th class="py-3 px-4 text-left">Produk</th>
-                    <th class="py-3 px-4 text-left">Kategori</th>
-                    <th class="py-3 px-4 text-center">Stok Awal</th>
-                    <th class="py-3 px-4 text-center">Barang Masuk</th>
-                    <th class="py-3 px-4 text-center">Barang Keluar</th>
-                    <th class="py-3 px-4 text-center">Stok Akhir</th>
+                    <th class="py-3 px-4 text-left border border-gray-300">Produk</th>
+                    <th class="py-3 px-4 text-left border border-gray-300">Kategori</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Stok Awal</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Barang Masuk</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Barang Keluar</th>
+                    <th class="py-3 px-4 text-center border border-gray-300">Stok Akhir</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-300">
                 @foreach ($stok as $item)
                     <tr class="hover:bg-gray-100 transition">
-                        <td class="py-3 px-4">{{ $item->name }}</td>
-                        <td class="py-3 px-4">{{ $item->category->name }}</td>
-                        <td class="py-3 px-4 text-center">{{ $item->initial_stock}}</td>
-                        <td class="py-3 px-4 text-center">{{ $item->barang_masuk ?? 0 }}</td>  {{-- ✅ FIXED --}}
-                        <td class="py-3 px-4 text-center">{{ $item->barang_keluar ?? 0 }}</td>  {{-- ✅ FIXED --}}
-                        <td class="py-3 px-4 text-center font-semibold">{{ $item->stok_akhir }}</td>
+                        <td class="py-3 px-4 border border-gray-300">{{ $item->name }}</td>
+                        <td class="py-3 px-4 border border-gray-300">{{ $item->category->name }}</td>
+                        <td class="py-3 px-4 text-center border border-gray-300">{{ $item->initial_stock }}</td>
+                        <td class="py-3 px-4 text-center border border-gray-300">{{ $item->barang_masuk ?? 0 }}</td>
+                        <td class="py-3 px-4 text-center border border-gray-300">{{ $item->barang_keluar ?? 0 }}</td>
+                        <td class="py-3 px-4 text-center font-semibold border border-gray-300">{{ $item->stok_akhir }}</td>
                     </tr>
                 @endforeach
             </tbody>
