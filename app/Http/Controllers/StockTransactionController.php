@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ProductService;
 use App\Services\UserService;
 use App\Services\StockTransactionService;
 use App\Models\Product;
@@ -14,11 +15,13 @@ use App\Models\ActivityLog;
 
 class StockTransactionController extends Controller
 {
+    private $productService;
     protected $stockTransactionService;
     protected $userService;
 
-    public function __construct(StockTransactionService $stockTransactionService, UserService $userService)
+    public function __construct(ProductService $productService, StockTransactionService $stockTransactionService, UserService $userService)
     {
+        $this->productService = $productService;
         $this->stockTransactionService = $stockTransactionService;
         $this->userService = $userService;
     }

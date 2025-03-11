@@ -8,7 +8,7 @@ use App\Models\Category;
 use App\Models\Supplier;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-
+use App\Models\StockTransaction;
 class ProductRepository implements ProductRepositoryInterface
 {
     public function getAllProducts(): LengthAwarePaginator
@@ -38,9 +38,18 @@ class ProductRepository implements ProductRepositoryInterface
     }
 
     public function deleteProduct($id): bool
-    {
-        return Product::destroy($id) > 0;
+{
+    $product = Product::find($id);
+
+    if (!$product) {
+        return false;
     }
+
+    // Hapus semua transaksi yang terkait sebelum menghapus produk
+    StockTransaction::where('product_id', $id)->delete();
+
+    return $product->delete();
+}
 
     public function getCategories()
     {

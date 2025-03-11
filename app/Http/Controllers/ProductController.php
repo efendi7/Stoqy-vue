@@ -169,41 +169,30 @@ class ProductController extends Controller
         }
     }
 
-    public function destroy(Product $product)
+    public function destroy(StockTransaction $transaction)
     {
-        $userRole = $this->userService->getUserRole(auth()->id());
+        // Simpan data transaksi sebelum dihapus untuk log
+        $oldData = $transaction->toArray();
 
-        if ($userRole !== 'admin') {
-            return redirect()->route('products.index')->with('error', 'You do not have permission to delete products.');
-        }
+        // Jika transaksi sudah diterima, kembalikan stok produk
+        if ($transaction->status === 'Diterima') {
+            $product = $this->productService->getProductById($transaction->product_id);
 
-        try {
-            // Simpan data produk sebelum dihapus untuk log
-            $productData = $product->toArray();
-            
-            // Hapus gambar produk jika ada
-            if ($product->image && Storage::exists('public/' . $product->image)) {
-                Storage::delete('public/' . $product->image);
+            if ($product) {
+                if ($transaction->type === 'Masuk') {
+                    $product->stock = max(0, $product->stock - $transaction->quantity);
+                } elseif ($transaction->type === 'Keluar') {
+                    $product->stock += $transaction->quantity;
+                }
+
+                $this->productService->updateProductStock($product->id, $product->stock);
             }
-
-            // Simpan log aktivitas sebelum menghapus produk
-            \App\Models\ActivityLog::create([
-                'user_id' => auth()->id(),
-                'role' => auth()->user()->role, 
-                'action' => "Menghapus produk: {$product->name}",
-                'properties' => json_encode($productData),
-            ]);
-
-            // Hapus produk
-            $this->productService->deleteProduct($product->id);
-            
-            return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
-        } catch (\Exception $e) {
-            \Log::error('Error deleting product: ' . $e->getMessage(), ['product_id' => $product->id]);
-            return redirect()->route('products.index')->with('error', 'Gagal menghapus produk: ' . $e->getMessage());
         }
-    }
 
+        $transaction->delete();
+        return redirect()->route('stock_transactions.index')->with('success', 'Transaksi berhasil dihapus.');
+    }
+    
     public function show($id)
     {
         $product = $this->productService->getProductById($id);

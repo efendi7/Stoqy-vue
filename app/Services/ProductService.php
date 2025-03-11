@@ -46,6 +46,20 @@ class ProductService
 
         return $product;
     }
+    public function updateProductStock($productId, $newStock)
+{
+    $product = $this->productRepository->getProductById($productId);
+
+    if (!$product) {
+        \Log::error("ProductService: Produk dengan ID $productId tidak ditemukan.");
+        return false;
+    }
+
+    $updateData = ['stock' => $newStock];
+
+    return $this->productRepository->updateProduct($productId, $updateData);
+}
+
 
     public function updateProduct($id, array $data): bool
     {
