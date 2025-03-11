@@ -41,6 +41,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(ActivityLog::class);
     }
 
+    public function role()
+{
+    return $this->belongsTo(Role::class);
+}
+
     // Soft delete cascading
     protected static function boot()
     {

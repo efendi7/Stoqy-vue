@@ -63,7 +63,7 @@
                                 <input type="hidden" name="recorded_stock" id="recorded_stock_hidden_{{ $product->id }}" value="{{ $product->stock }}">
                                 <input type="hidden" name="actual_stock" id="actual_stock_hidden_{{ $product->id }}" value="{{ $actualStock }}">
                                 <input type="hidden" name="difference" id="difference_hidden_{{ $product->id }}" value="{{ $difference }}">
-                                <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">Save Audit</button>
+                                <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">Simpan</button>
                             </form>
                         </td>
                     </tr>

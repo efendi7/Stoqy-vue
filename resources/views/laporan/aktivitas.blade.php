@@ -18,55 +18,87 @@
         </div>
     @endif
 
-    {{-- Filter Form --}}
-    <form action="{{ route('laporan.aktivitas') }}" method="GET" class="mb-6 flex flex-wrap gap-4 bg-white p-4 rounded-lg shadow">
-        <div>
-            <label for="tanggal_mulai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
-            <input type="date" id="tanggal_mulai" name="tanggal_mulai" value="{{ request('tanggal_mulai') }}" 
-                   class="border p-2 rounded-lg w-full">
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+    <h3 class="text-gray-600 text-sm font-medium mb-4">Filter Periode</h3>
+    <form id="filterForm" action="{{ route('laporan.aktivitas') }}" method="GET" class="flex flex-wrap gap-4">
+        <div class="flex items-center">
+            <label for="tanggal_mulai" class="mr-2 text-sm">Dari</label>
+            <input type="date" id="tanggal_mulai" name="tanggal_mulai" value="{{ $startDate }}" 
+                   class="border rounded px-2 py-1 text-sm">
         </div>
 
-        <div>
-            <label for="tanggal_akhir" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
-            <input type="date" id="tanggal_akhir" name="tanggal_akhir" value="{{ request('tanggal_akhir') }}" 
-                   class="border p-2 rounded-lg w-full">
+        <div class="flex items-center">
+            <label for="tanggal_akhir" class="mr-2 text-sm">Sampai</label>
+            <input type="date" id="tanggal_akhir" name="tanggal_akhir" value="{{ $endDate }}" 
+                   class="border rounded px-2 py-1 text-sm">
         </div>
 
-        <div>
-            <button type="submit" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">Filter</button>
-            <a href="{{ route('laporan.aktivitas') }}" class="bg-gray-500 text-white px-6 py-2 rounded-lg ml-2 hover:bg-gray-600 transition">Reset</a>
+        <div class="flex gap-2">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Terapkan</button>
+            <button type="button" class="bg-gray-500 text-white px-4 py-1 rounded hover:bg-gray-600" onclick="resetToDefault()">Reset</button>
         </div>
     </form>
+</div>
+
+
 
     {{-- Tabel Aktivitas --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
-        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden">
-            <thead class="bg-gray-800 bg-opacity-70 text-white">
-                <tr>
-                    <th class="py-3 px-4 text-left">Nama Pengguna</th>
-                    <th class="py-3 px-4 text-left">Aksi</th>
-                    <th class="py-3 px-4 text-center">Waktu</th>
+    <table class="min-w-full border-collapse border border-gray-300">
+        <thead class="bg-gray-800 bg-opacity-70 text-white">
+            <tr>
+                <th class="py-3 px-4 border border-gray-300 text-left">Nama Pengguna</th>
+                <th class="py-3 px-4 border border-gray-300 text-left">Role</th>
+                <th class="py-3 px-4 border border-gray-300 text-left">Aksi</th>
+                <th class="py-3 px-4 border border-gray-300 text-center">Waktu</th>
+                <th class="py-3 px-4 border border-gray-300 text-center">Hapus</th> <!-- New column -->
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-300">
+            @forelse($aktivitas as $log)
+                <tr class="hover:bg-gray-100 transition">
+                    <td class="py-3 px-4 border border-gray-300">{{ optional($log->user)->name ?? 'Tidak Diketahui' }} </td>
+                    <td class="py-3 px-4 border border-gray-300">{{ optional($log->user)->role ?? 'Tanpa Role' }}</td>
+                    <td class="py-3 px-4 border border-gray-300">{{ $log->action }}</td>
+                    <td class="py-3 px-4 border border-gray-300 text-center">{{ \Carbon\Carbon::parse($log->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y H:i') }}</td>
                 </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-300">
-                @forelse($aktivitas as $log)
-                    <tr class="hover:bg-gray-100 transition">
-                        <td class="py-3 px-4">{{ optional($log->user)->name ?? 'Tidak Diketahui' }}</td>
-                        <td class="py-3 px-4">{{ $log->action }}</td>
-                        <td class="py-3 px-4 text-center">{{ \Carbon\Carbon::parse($log->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y H:i') }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="3" class="py-3 px-4 text-center text-gray-500">Tidak ada data aktivitas untuk ditampilkan</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+            @empty
+                <tr>
+                    <td colspan="3" class="py-3 px-4 border border-gray-300 text-center text-gray-500">
+                        Tidak ada data aktivitas untuk ditampilkan
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
 
     {{-- Pagination --}}
     <div class="mt-6 flex justify-center">
         {{ $aktivitas->appends(request()->input())->links('vendor.pagination.custom') }}
     </div>
 </div>
+<script>
+    function resetToDefault() {
+        // Get the form element
+        const form = document.getElementById('filterForm');
+
+        // Calculate today's date
+        const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        
+        // Calculate the date one month ago
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1); // Subtract one month
+        const lastMonth = oneMonthAgo.toISOString().split('T')[0];
+
+        // Set input values to defaults
+        form.tanggal_mulai.value = lastMonth;
+        form.tanggal_akhir.value = today;
+
+        // Optionally submit the form after resetting to defaults
+        form.submit();
+    }
+</script>
+
 @endsection

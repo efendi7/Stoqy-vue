@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Supplier;
 use App\Services\SupplierService;
 use Illuminate\Http\Request;
+use App\Models\ActivityLog;
 
 class SupplierController extends Controller
 {
@@ -35,12 +36,21 @@ class SupplierController extends Controller
             'email' => 'required|email|max:255', 
         ]);
 
-        // Simpan dan kembalikan objek Supplier
         $supplier = $this->supplierService->createSupplier($validated);
 
+        // Simpan log aktivitas
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role, 
+            'action' => "Menambahkan supplier: {$supplier->name}",
+            'properties' => json_encode([
+                'supplier_id' => $supplier->id,
+                'data' => $validated,
+            ]),
+        ]);
+
         return redirect()->route('suppliers.index')
-            ->with('success', 'Supplier berhasil ditambahkan!')
-            ->with('supplier', $supplier);
+            ->with('success', 'Supplier berhasil ditambahkan!');
     }
 
     public function edit(Supplier $supplier)
@@ -62,8 +72,22 @@ class SupplierController extends Controller
             'email' => 'required|string|email|max:255',
         ]);
 
-        $this->supplierService->updateSupplier($supplier->id, $request->except(['_token', '_method']));
+        // Simpan data lama sebelum update
+        $oldData = $supplier->toArray();
+        $data = $request->except(['_token', '_method']);
 
+        $this->supplierService->updateSupplier($supplier->id, $data);
+
+        // Simpan log aktivitas
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role, 
+            'action' => "Mengedit supplier: {$supplier->name}",
+            'properties' => json_encode([
+                'before' => $oldData,
+                'after' => $data,
+            ]),
+        ]);
 
         return redirect()->route('suppliers.index')
             ->with('success', 'Supplier berhasil diperbarui!');
@@ -71,7 +95,19 @@ class SupplierController extends Controller
 
     public function destroy(Supplier $supplier)
     {
+        // Simpan data supplier sebelum dihapus
+        $supplierData = $supplier->toArray();
+
         $this->supplierService->deleteSupplier($supplier->id);
+
+        // Simpan log aktivitas
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role, 
+            'action' => "Menghapus supplier: {$supplier->name}",
+            'properties' => json_encode($supplierData),
+        ]);
+
         return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil dihapus!');
     }
 }

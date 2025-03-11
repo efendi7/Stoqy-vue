@@ -100,6 +100,7 @@ class ProductController extends Controller
             // Simpan log aktivitas
             \App\Models\ActivityLog::create([
                 'user_id' => auth()->id(),
+                'role' => auth()->user()->role, 
                 'action' => "Menambahkan produk: {$product->name}",
                 'properties' => json_encode([
                     'product_id' => $product->id,
@@ -153,6 +154,7 @@ class ProductController extends Controller
             // Simpan log aktivitas
             \App\Models\ActivityLog::create([
                 'user_id' => auth()->id(),
+                'role' => auth()->user()->role, 
                 'action' => "Mengedit produk: {$product->name}",
                 'properties' => json_encode([
                     'before' => $oldData,
@@ -187,6 +189,7 @@ class ProductController extends Controller
             // Simpan log aktivitas sebelum menghapus produk
             \App\Models\ActivityLog::create([
                 'user_id' => auth()->id(),
+                'role' => auth()->user()->role, 
                 'action' => "Menghapus produk: {$product->name}",
                 'properties' => json_encode($productData),
             ]);

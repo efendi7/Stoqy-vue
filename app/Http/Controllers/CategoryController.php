@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Services\CategoryService;
 use Illuminate\Http\Request;
+use App\Models\ActivityLog;
 
 class CategoryController extends Controller
 {
@@ -30,10 +31,21 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',  // Validasi deskripsi
+            'description' => 'nullable|string',
         ]);
 
-        $this->categoryService->createCategory($request->all());
+        $category = $this->categoryService->createCategory($request->all());
+
+        // Simpan log aktivitas
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role, 
+            'action' => "Menambahkan kategori: {$category->name}",
+            'properties' => json_encode([
+                'category_id' => $category->id,
+                'data' => $request->all(),
+            ]),
+        ]);
 
         return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
     }
@@ -44,24 +56,47 @@ class CategoryController extends Controller
     }
 
     public function update(Request $request, Category $category)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',  // Validasi deskripsi
-    ]);
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
 
-    // Hanya kirim field yang diperlukan
-    $data = $request->except(['_token', '_method']);
+        // Simpan data lama sebelum update
+        $oldData = $category->toArray();
+        $data = $request->except(['_token', '_method']);
 
-    $this->categoryService->updateCategory($category->id, $data);
+        $this->categoryService->updateCategory($category->id, $data);
 
-    return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui!');
-}
+        // Simpan log aktivitas
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role, 
+            'action' => "Mengedit kategori: {$category->name}",
+            'properties' => json_encode([
+                'before' => $oldData,
+                'after' => $data,
+            ]),
+        ]);
 
+        return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui!');
+    }
 
     public function destroy(Category $category)
     {
+        // Simpan data kategori sebelum dihapus
+        $categoryData = $category->toArray();
+
         $this->categoryService->deleteCategory($category->id);
+
+        // Simpan log aktivitas
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role, 
+            'action' => "Menghapus kategori: {$category->name}",
+            'properties' => json_encode($categoryData),
+        ]);
+
         return redirect()->route('categories.index')->with('success', 'Kategori berhasil dihapus!');
     }
 }

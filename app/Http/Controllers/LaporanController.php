@@ -14,6 +14,7 @@ use Carbon\Carbon;
 
 class LaporanController extends Controller
 {
+    
     public function stokFilter(Request $request)
     {
         // Set tanggal default: dari satu bulan yang lalu hingga hari ini
@@ -127,24 +128,26 @@ public function stok(Request $request)
     }
 
     public function aktivitas(Request $request)
-    {
-        $query = ActivityLog::with('user'); // Pastikan ada relasi 'user' di model ActivityLog
-        
-        // Filter berdasarkan tanggal mulai jika ada
-        if ($request->filled('tanggal_mulai')) {
-            $tanggalMulai = Carbon::parse($request->tanggal_mulai)->startOfDay();
-            $query->where('created_at', '>=', $tanggalMulai);
-        }
-        
-        // Filter berdasarkan tanggal akhir jika ada
-        if ($request->filled('tanggal_akhir')) {
-            $tanggalAkhir = Carbon::parse($request->tanggal_akhir)->endOfDay();
-            $query->where('created_at', '<=', $tanggalAkhir);
-        }
-        
-        $aktivitas = $query->orderBy('created_at', 'desc')
-                           ->paginate(10);
-        
-        return view('laporan.aktivitas', compact('aktivitas'));
+{
+    // Default to one month ago and today
+    $startDate = $request->input('tanggal_mulai', now()->subMonth()->toDateString());
+    $endDate = $request->input('tanggal_akhir', now()->toDateString());
+
+    $query = ActivityLog::with('user'); // Make sure 'user' relationship exists in ActivityLog
+
+    // Apply filters if dates are provided
+    if ($startDate) {
+        $query->whereDate('created_at', '>=', $startDate);
     }
+    if ($endDate) {
+        $query->whereDate('created_at', '<=', $endDate);
+    }
+
+    // Fetch activity logs
+    $aktivitas = $query->orderBy('created_at', 'desc')->paginate(10);
+
+    // Pass data to the Blade view
+    return view('laporan.aktivitas', compact('aktivitas', 'startDate', 'endDate'));
+}
+
 }
