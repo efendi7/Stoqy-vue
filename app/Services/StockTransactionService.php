@@ -126,28 +126,43 @@ class StockTransactionService
      * Process or revert stock updates based on transaction type.
      */
     private function handleStockUpdate(StockTransaction $transaction, string $action)
-    {
-        $product = Product::find($transaction->product_id);
-        if (!$product) {
-            throw new \Exception('Product not found.');
-        }
-
-        if ($transaction->type === 'Masuk') {
-            $amount = $transaction->quantity;
-            if ($action === 'revert' && $product->stock < $amount) {
-                throw new \Exception('Not enough stock to revert.');
-            }
-            $product->stock += ($action === 'process') ? $amount : -$amount;
-        } else { // type 'Keluar'
-            $amount = $transaction->quantity;
-            if ($action === 'process' && $product->stock < $amount) {
-                throw new \Exception('Insufficient stock.');
-            }
-            $product->stock -= ($action === 'process') ? $amount : -$amount;
-        }
-
-        $product->save();
+{
+    $product = Product::find($transaction->product_id);
+    if (!$product) {
+        throw new \Exception('Product not found.');
     }
+
+    Log::info('Sebelum update stok', [
+        'product_id' => $product->id,
+        'stok_sekarang' => $product->stock,
+        'jumlah_transaksi' => $transaction->quantity,
+        'aksi' => $action
+    ]);
+
+    if ($transaction->type === 'Masuk') {
+        $amount = $transaction->quantity;
+        if ($action === 'revert' && $product->stock < $amount) {
+            Log::warning("Stock not enough to revert. Product ID: {$product->id}, Current Stock: {$product->stock}, Amount: {$amount}");
+            return; // Jangan throw error, cukup log dan lanjutkan penghapusan
+        }
+        
+        $product->stock += ($action === 'process') ? $amount : -$amount;
+    } else { // type 'Keluar'
+        $amount = $transaction->quantity;
+        if ($action === 'process' && $product->stock < $amount) {
+            throw new \Exception('Insufficient stock.');
+        }
+        $product->stock -= ($action === 'process') ? $amount : -$amount;
+    }
+
+    $product->save();
+
+    Log::info('Setelah update stok', [
+        'product_id' => $product->id,
+        'stok_baru' => $product->stock
+    ]);
+}
+
 
     public function updateStatus(Request $request, $id)
 {
