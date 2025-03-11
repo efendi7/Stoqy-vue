@@ -16,11 +16,12 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
+    // List all users
     public function index()
     {
         $users = $this->userService->getAllUsers();
 
-        // Log activity for viewing the user list
+        // Log activity for viewing user list
         ActivityLog::create([
             'user_id' => auth()->id(),
             'role' => auth()->user()->role,
@@ -31,6 +32,21 @@ class UserController extends Controller
         return view('users.index', compact('users'));
     }
 
+    // Show the create user form
+    public function create()
+    {
+        // Log activity for accessing create user form
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role,
+            'action' => 'Mengakses formulir tambah pengguna',
+            'properties' => null,
+        ]);
+
+        return view('users.create');
+    }
+
+    // Store a new user
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -52,26 +68,28 @@ class UserController extends Controller
             ]);
         }
 
-        return $user ? redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.') 
-                     : redirect()->back()->with('error', 'Gagal menambahkan user.');
+        return $user 
+            ? redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.')
+            : redirect()->back()->with('error', 'Gagal menambahkan user.');
     }
 
-    public function create()
-    {
-       
-
-        return view('users.create');
-    }
-
+    // Show the edit user form
     public function edit($id)
     {
         $user = User::findOrFail($id);
 
-      
+        // Log activity for accessing edit user form
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role,
+            'action' => "Mengakses formulir edit pengguna: {$user->name}",
+            'properties' => json_encode(['user_id' => $user->id]),
+        ]);
 
         return view('users.edit', compact('user'));
     }
 
+    // Update user details
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -97,10 +115,12 @@ class UserController extends Controller
             ]);
         }
 
-        return $user ? redirect()->route('users.index')->with('success', 'User berhasil diperbarui.') 
-                     : redirect()->back()->with('error', 'Gagal memperbarui user.');
+        return $user 
+            ? redirect()->route('users.index')->with('success', 'User berhasil diperbarui.')
+            : redirect()->back()->with('error', 'Gagal memperbarui user.');
     }
 
+    // Delete a user
     public function destroy($id)
     {
         $user = User::findOrFail($id);
@@ -117,17 +137,25 @@ class UserController extends Controller
             ]);
         }
 
-        return $deleted ? redirect()->route('users.index')->with('success', 'User berhasil dihapus.') 
-                        : redirect()->back()->with('error', 'Gagal menghapus user.');
+        return $deleted 
+            ? redirect()->route('users.index')->with('success', 'User berhasil dihapus.')
+            : redirect()->back()->with('error', 'Gagal menghapus user.');
     }
 
+    // View activity logs for a specific user
     public function activity(User $user)
     {
         $activities = ActivityLog::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        
+        // Log activity for viewing user activity logs
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role,
+            'action' => "Melihat aktivitas pengguna: {$user->name}",
+            'properties' => json_encode(['viewed_user_id' => $user->id]),
+        ]);
 
         return view('users.activity', compact('user', 'activities'));
     }
