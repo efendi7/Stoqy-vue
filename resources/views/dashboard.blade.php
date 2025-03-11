@@ -315,47 +315,47 @@
         </div>
 
 <!-- Recent Activities - Admin Only -->
-@if($recentActivities->isNotEmpty())
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h3 class="text-gray-700 text-lg font-semibold mb-4">Aktivitas Hari Ini</h3>
-        <div class="border rounded-lg overflow-hidden">
-            <div class="bg-gray-100 text-gray-700 font-medium text-sm px-4 py-2 flex justify-between">
-                <span class="w-1/3">Aksi</span>
-                <span class="w-1/3 text-center">Waktu</span>
-                <span class="w-1/3 text-right">Pengguna</span>
+<div id="activity-section" class="bg-white p-4 rounded-md shadow-md text-sm">
+    <h3 class="text-gray-700 font-semibold mb-3 text-base">Aktivitas Hari Ini</h3>
+    
+    @if($recentActivities->isNotEmpty())
+        <div class="border rounded-md overflow-hidden">
+            <div class="bg-gray-100 text-gray-700 font-medium px-3 py-2 flex text-xs">
+                <span class="w-2/5">Aksi</span>
+                <span class="w-1/4 text-center">Waktu</span>
+                <span class="w-1/3 text-right pr-3">Pengguna</span>
             </div>
             <div class="divide-y divide-gray-200">
                 @foreach($recentActivities as $activity)
-                <div class="px-4 py-3 flex justify-between items-center text-sm">
-                    <div class="w-1/3">
-                        <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-600">
-                            {{ $activity->action ?? 'Tidak ada aksi' }}
-                        </span>
+                    <div class="px-3 py-2 flex items-center text-xs">
+                        <div class="w-2/5 truncate">
+                            <span class="px-2 py-1 rounded bg-blue-100 text-blue-600">
+                                {{ $activity->action ?? 'Tidak ada aksi' }}
+                            </span>
+                        </div>
+                        <div class="w-1/4 text-center text-gray-500 truncate">
+                            {{ $activity->created_at->diffForHumans() }}
+                        </div>
+                        <div class="w-1/3 flex justify-end">
+                            <span class="px-2 py-1 rounded bg-gray-100 text-gray-600">
+                                {{ $activity->user->name }}
+                            </span>
+                        </div>
                     </div>
-                    <div class="w-1/3 text-center text-gray-500">
-                        {{ $activity->created_at->diffForHumans() }}
-                    </div>
-                    <div class="w-1/3 text-right">
-                        <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-600">
-                            {{ $activity->user->name }}
-                        </span>
-                    </div>
-                </div>
                 @endforeach
             </div>
         </div>
-    </div>
-@else
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h3 class="text-gray-700 text-lg font-semibold mb-4">Aktivitas Hari Ini</h3>
-        <p class="text-gray-500 text-sm text-center">Tidak ada aktivitas untuk hari ini.</p>
-    </div>
-@endif
-
-
-
+        
+        <!-- Pagination -->
+        <div class="mt-4 flex justify-center text-xs">
+            {{ $recentActivities->appends(request()->query())->links('vendor.pagination.custom') }}
+        </div>
+    @else
+        <p class="text-gray-500 text-center text-xs">Tidak ada aktivitas untuk hari ini.</p>
     @endif
 </div>
+
+@endif
 
 @if(auth()->user()->role === 'admin')
 @push('scripts')
@@ -510,6 +510,11 @@
     }
 </script>
 @endpush
+
+
+        
+
+
 @endif
 
 @endsection

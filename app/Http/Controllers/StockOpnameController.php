@@ -52,42 +52,5 @@ class StockOpnameController extends Controller
         return redirect()->back()->with('success', 'Stock opname berhasil disimpan.');
     }
 
-    public function updateStockToActual(Request $request, $id)     
-    {         
-        $request->validate([             
-            'actual_stock' => 'required|integer|min:0',         
-        ]);              
-
-        $product = Product::findOrFail($id);
-        
-        // Simpan stok sebelum perubahan
-        $oldStock = $product->stock;
-        $difference = $request->actual_stock - $oldStock;
-
-        StockOpname::create([             
-            'product_id' => $product->id,             
-            'recorded_stock' => $oldStock, 
-            'actual_stock' => $request->actual_stock,             
-            'difference' => $difference,         
-        ]);
-
-        // Update stok produk agar sesuai dengan stok fisik
-        $product->stock = $request->actual_stock;
-        $product->save();
-
-        // Simpan log aktivitas
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'role' => auth()->user()->role, 
-            'action' => "Memperbarui stok produk: {$product->name}",
-            'properties' => json_encode([
-                'product_name' => $product->name,
-                'old_stock' => $oldStock,
-                'new_stock' => $request->actual_stock,
-                'difference' => $difference,
-            ]),
-        ]);
-              
-        return redirect()->back()->with('success', 'Stok berhasil diperbarui ke stok fisik!');     
-    }       
+   
 }

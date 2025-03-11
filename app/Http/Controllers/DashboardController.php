@@ -100,7 +100,6 @@ class DashboardController extends Controller
 $recentActivities = ActivityLog::with('user')
 ->whereDate('created_at', Carbon::today()) // Hanya aktivitas hari ini
 ->latest()
-->limit(10)
 ->paginate(10);
 
     
