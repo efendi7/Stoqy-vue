@@ -223,7 +223,7 @@
                             {{ $transaction->type }}
                         </span>
                     </td>
-                    <td class="py-3 px-4 border border-gray-300">{{ $transaction->quantity }}</td>
+                    <td class="py-3 px-4 border border-gray-300 text-center">{{ $transaction->quantity }}</td>
                     <td class="py-3 px-4 border border-gray-300">
                         @if($userRole === 'warehouse_manager')
                             <form action="{{ route('stock_transactions.update-status', $transaction->id) }}" method="POST" class="inline">

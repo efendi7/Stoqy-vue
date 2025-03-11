@@ -15,6 +15,30 @@
             </ul>
         </div>
     @endif
+    {{-- Flash Message Sukses --}}
+    @if(session('success'))
+    <div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
+        <div class="flex items-center space-x-2">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>{{ session('success') }}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
+    </div>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            let flashMessage = document.getElementById("flash-success");
+            if (flashMessage) {
+                flashMessage.classList.add("opacity-0", "transition-opacity", "duration-500");
+                setTimeout(() => flashMessage.remove(), 500); // Hapus elemen setelah transisi selesai
+            }
+        }, 3000);
+    });
+</script>
+
+    @endif
 
     {{-- Tombol Tambah --}}
     <div class="flex flex-wrap gap-3 mb-6">

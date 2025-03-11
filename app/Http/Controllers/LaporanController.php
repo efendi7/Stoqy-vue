@@ -150,4 +150,12 @@ public function stok(Request $request)
     return view('laporan.aktivitas', compact('aktivitas', 'startDate', 'endDate'));
 }
 
+public function destroy($id)
+{
+    $log = ActivityLog::findOrFail($id);
+
+    $log->delete();
+    return redirect()->route('laporan.aktivitas')->with('success', 'Log aktivitas berhasil dihapus.');
+}
+
 }

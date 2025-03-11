@@ -66,34 +66,42 @@
                     </a>
                     @endif
 
-                    <!-- Dropdown Profil -->
-                    <div class="relative">
-                        <button id="user-menu-button" class="flex items-center space-x-2 bg-purple-800 px-3 py-1 rounded-lg hover:bg-purple-700 transition focus:outline-none hover:scale-105 duration-300">
-                            <img class="w-8 h-8 rounded-full object-cover" src="{{ asset('img/logofenn.png') }}" alt="user photo">
-                            <span class="text-white">{{ Auth::user()->name }}</span>
-                            <i class="fas fa-chevron-down text-gray-300"></i>
-                        </button>
+                   <!-- Dropdown Profil -->
+<div class="relative">
+    <button id="user-menu-button" class="flex items-center space-x-2 bg-purple-800 px-3 py-1 rounded-lg hover:bg-purple-700 transition focus:outline-none hover:scale-105 duration-300">
+        <img class="w-8 h-8 rounded-full object-cover" src="{{ asset('img/logofenn.png') }}" alt="user photo">
+        <span class="text-white">{{ Auth::user()->name }}</span>
+        <i class="fas fa-chevron-down text-gray-300"></i>
+    </button>
 
-                        <!-- Menu Dropdown Profil -->
-                        <div id="user-dropdown" class="absolute right-0 mt-2 w-56 bg-white shadow-lg rounded-md hidden transform scale-95 opacity-0 transition-all duration-300 origin-top-right">
-                            <ul class="py-2">
-                                <li><a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a></li>
+    <!-- Menu Dropdown Profil -->
+    <div id="user-dropdown" class="absolute right-0 mt-2 w-56 bg-white shadow-lg rounded-md hidden transform scale-95 opacity-0 transition-all duration-300 origin-top-right">
+        <div class="px-4 py-3 border-b">
+            <p class="text-sm font-semibold text-gray-800">{{ Auth::user()->name }}</p>
+            <p class="text-xs text-gray-600">{{ Auth::user()->email }}</p>
+            <p class="text-xs text-gray-500">
+                {{ ucfirst(app(\App\Services\UserService::class)->getRoleLabel(auth()->user()->role)) }}
+            </p>
+        </div>
+        <ul class="py-2">
+            <li><a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a></li>
 
-                                @if(auth()->user()->role === 'admin')
-                                <li>
-                                    <a href="{{ route('settings.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pengaturan</a>
-                                </li>
-                                @endif
+            @if(auth()->user()->role === 'admin')
+            <li>
+                <a href="{{ route('settings.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pengaturan</a>
+            </li>
+            @endif
 
-                                <li>
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+            <li>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</div>
+
                 @endauth
             </div>
         </div>

@@ -98,6 +98,7 @@ Route::post('/stock_transactions/{id}/add_note', [StockTransactionController::cl
     
     Route::get('/users/{user}/activity', [UserController::class, 'activity'])->name('users.activity');
     Route::get('/activity-logs', [UserController::class, 'allActivities'])->name('activity.logs')->middleware('role:admin');
+    Route::delete('/laporan/aktivitas/{id}', [LaporanController::class, 'destroy'])->name('laporan.aktivitas.hapus');
 
     // ✅ Tambahkan rute untuk pengaturan aplikasi
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
