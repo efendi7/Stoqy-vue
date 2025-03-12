@@ -32,4 +32,20 @@ class StockOpnameRepository implements StockOpnameRepositoryInterface
             ]
         );
     }
+    public function updateSystemStock($productId)
+{
+    $stockOpname = StockOpname::where('product_id', $productId)->first();
+
+    if ($stockOpname) {
+        $product = Product::find($productId);
+        if ($product) {
+            $product->stock = $stockOpname->actual_stock; // Update stok sesuai stok fisik
+            $product->save();
+
+            return true;
+        }
+    }
+    return false;
+}
+
 }

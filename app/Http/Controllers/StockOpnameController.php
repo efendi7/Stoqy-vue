@@ -35,4 +35,15 @@ class StockOpnameController extends Controller
 
         return redirect()->back()->with('success', 'Stock opname berhasil disimpan.');
     }
+    public function updateStock(Request $request, $productId)
+{
+    $success = $this->stockOpnameService->updateStockToActual($productId);
+
+    if ($success) {
+        return redirect()->back()->with('success', 'Stok berhasil diperbarui ke actual stock.');
+    }
+
+    return redirect()->back()->with('error', 'Gagal memperbarui stok.');
+}
+
 }

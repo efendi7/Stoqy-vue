@@ -81,6 +81,9 @@ Route::post('/stock_transactions/{id}/add_note', [StockTransactionController::cl
 
   
     Route::resource('stock_opname', StockOpnameController::class)->only(['index', 'store']);
+    Route::put('/stock_opname/update/{product_id}', [StockOpnameController::class, 'updateStock'])
+    ->name('stock_opname.updateStock');
+
 
     Route::post('/contact-submit', [ContactController::class, 'submit'])->name('contact.submit');
 

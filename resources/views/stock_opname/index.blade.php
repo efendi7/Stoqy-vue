@@ -65,6 +65,12 @@
                                 <input type="hidden" name="difference" id="difference_hidden_{{ $product->id }}" value="{{ $difference }}">
                                 <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">Simpan</button>
                             </form>
+                            <!-- Form Update ke Stok Fisik -->
+    <form action="{{ route('stock_opname.updateStock', $product->id) }}" method="POST" class="mt-2">
+        @csrf
+        @method('PUT')
+        <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">Update ke Stok Fisik</button>
+    </form>
                         </td>
                     </tr>
                 @endforeach

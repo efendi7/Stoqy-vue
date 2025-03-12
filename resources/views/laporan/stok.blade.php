@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 min-h-screen bg-cover bg-center mt-16">
-<h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Laporan Stok Barang</h1>
+    <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center">Laporan Stok Barang</h1>
 
     {{-- Notifikasi Kesalahan --}}
     @if ($errors->any())
@@ -44,7 +44,9 @@
                     <th class="py-3 px-4 text-center border border-gray-300">Stok Awal</th>
                     <th class="py-3 px-4 text-center border border-gray-300">Barang Masuk</th>
                     <th class="py-3 px-4 text-center border border-gray-300">Barang Keluar</th>
-                    <th class="py-3 px-4 text-center border border-gray-300">Stok Akhir</th>
+                    <th class="py-3 px-4 text-center border border-gray-300 bg-blue-100 text-blue-700">Stock Opname Masuk</th>
+                    <th class="py-3 px-4 text-center border border-gray-300 bg-red-100 text-red-700">Stock Opname Keluar</th>
+                    <th class="py-3 px-4 text-center border border-gray-300 font-bold">Stok Akhir</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-300">
@@ -52,9 +54,11 @@
                     <tr class="hover:bg-gray-100 transition">
                         <td class="py-3 px-4 border border-gray-300">{{ $item->name }}</td>
                         <td class="py-3 px-4 border border-gray-300">{{ $item->category->name }}</td>
-                        <td class="py-3 px-4 text-center border border-gray-300">{{ $item->initial_stock }}</td>
+                        <td class="py-3 px-4 text-center border border-gray-300">{{ $item->stok_awal }}</td>
                         <td class="py-3 px-4 text-center border border-gray-300">{{ $item->barang_masuk ?? 0 }}</td>
                         <td class="py-3 px-4 text-center border border-gray-300">{{ $item->barang_keluar ?? 0 }}</td>
+                        <td class="py-3 px-4 text-center border border-gray-300 bg-blue-50 text-blue-700">{{ $item->stock_opname_masuk ?? 0 }}</td>
+                        <td class="py-3 px-4 text-center border border-gray-300 bg-red-50 text-red-700">{{ $item->stock_opname_keluar ?? 0 }}</td>
                         <td class="py-3 px-4 text-center font-semibold border border-gray-300">{{ $item->stok_akhir }}</td>
                     </tr>
                 @endforeach

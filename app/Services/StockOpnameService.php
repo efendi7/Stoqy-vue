@@ -33,4 +33,9 @@ class StockOpnameService
 
         return $stockOpname;
     }
+    public function updateStockToActual($productId)
+{
+    return $this->stockOpnameRepository->updateSystemStock($productId);
+}
+
 }
