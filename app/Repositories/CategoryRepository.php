@@ -8,28 +8,35 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
+    // Ambil semua kategori dengan paginasi
     public function getAllCategories(): LengthAwarePaginator
     {
         return Category::paginate(10);
     }
 
-    public function getCategoryById($categoryId)
+    // Ambil kategori berdasarkan ID
+    public function getCategoryById($categoryId): Category
     {
         return Category::findOrFail($categoryId);
     }
 
-    public function createCategory(array $categoryDetails)
+    // Buat kategori baru
+    public function createCategory(array $categoryDetails): Category
     {
         return Category::create($categoryDetails);
     }
 
-    public function updateCategory($categoryId, array $newDetails)
+    // Update kategori berdasarkan ID
+    public function updateCategory($categoryId, array $newDetails): bool
     {
-        return Category::whereId($categoryId)->update($newDetails);
+        $category = Category::findOrFail($categoryId);
+        return $category->update($newDetails);
     }
 
-    public function deleteCategory($categoryId)
+    // Hapus kategori berdasarkan ID
+    public function deleteCategory($categoryId): bool
     {
-        return Category::destroy($categoryId);
+        $category = Category::findOrFail($categoryId);
+        return $category->delete();
     }
 }

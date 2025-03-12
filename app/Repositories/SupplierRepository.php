@@ -1,11 +1,9 @@
 <?php
-
 namespace App\Repositories;
 
-use App\Models\Supplier;
 use App\Interfaces\SupplierRepositoryInterface;
+use App\Models\Supplier;
 use Illuminate\Pagination\LengthAwarePaginator;
-
 
 class SupplierRepository implements SupplierRepositoryInterface
 {
@@ -14,23 +12,26 @@ class SupplierRepository implements SupplierRepositoryInterface
         return Supplier::paginate(10);
     }
 
-    public function getSupplierById($supplierId)
+    // Tambahkan tipe return ?Supplier
+    public function getSupplierById($supplierId): ?Supplier
     {
-        return Supplier::findOrFail($supplierId);
+        return Supplier::find($supplierId);
     }
 
-    public function createSupplier(array $supplierDetails)
+    public function createSupplier(array $supplierDetails): Supplier
     {
         return Supplier::create($supplierDetails);
     }
 
-    public function updateSupplier($supplierId, array $newDetails)
+    public function updateSupplier($supplierId, array $newDetails): bool
     {
-        return Supplier::whereId($supplierId)->update($newDetails);
+        $supplier = Supplier::findOrFail($supplierId);
+        return $supplier->update($newDetails);
     }
 
-    public function deleteSupplier($supplierId)
+    public function deleteSupplier($supplierId): bool
     {
-        return Supplier::destroy($supplierId);
+        $supplier = Supplier::findOrFail($supplierId);
+        return $supplier->delete();
     }
 }

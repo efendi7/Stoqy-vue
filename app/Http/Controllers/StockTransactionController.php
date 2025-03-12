@@ -297,25 +297,6 @@ public function destroy($id)
 }
 
 
-    public function stockOpname(Request $request)
-    {
-        $userRole = $this->userService->getUserRole(auth()->id());
-        if (!in_array($userRole, ['admin', 'warehouse_manager'])) {
-            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk melakukan stock opname.');
-        }
-
-        $validatedData = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'new_stock' => 'required|integer|min:0',
-        ]);
-
-        $product = Product::find($validatedData['product_id']);
-        $product->stock = $validatedData['new_stock'];
-        $product->save();
-
-        return redirect()->route('stock_transactions.index')->with('success', 'Stock opname berhasil diperbarui!');
-    }
-
     public function confirm(Request $request, $id)
     {
         // Check if the user has the warehouse_staff role

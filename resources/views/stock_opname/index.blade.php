@@ -26,58 +26,90 @@
     @endif
 
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
-        <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden border border-gray-300">
-            <thead class="bg-gray-800 bg-opacity-70 text-white">
-                <tr>
-                    <th class="py-3 text-center px-4 border border-gray-300">No</th>
-                    <th class="py-3 px-4 text-center border border-gray-300">Nama Produk</th>
-                    <th class="py-3 px-4 text-center border border-gray-300">Stok Tercatat</th>
-                    <th class="py-3 px-4 text-center border border-gray-300">Stok Fisik</th>
-                    <th class="py-3 px-4 text-center border border-gray-300">Selisih</th>
-                    <th class="py-3 px-4 text-center border border-gray-300">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-300">
-                @foreach ($products as $index => $product)
-                    @php
-                        $stockOpname = $product->stockOpname; // Pastikan ada relasi di model Product
-                        $actualStock = $stockOpname->actual_stock ?? $product->stock;
-                        $difference = $stockOpname->difference ?? 0;
-                    @endphp
-                    <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
-                        <td class="py-3 px-4 border text-center border-gray-300">{{ $index + 1 }}</td>
-                        <td class="py-3 px-4 border text-left border-gray-300">{{ $product->name }}</td>
-                        <td class="py-3 px-4 border text-center border-gray-300" id="recorded_stock_{{ $product->id }}">{{ $product->stock }}</td>
-                        <td class="py-3 px-4 border text-center border-gray-300">
-                            <input type="number" name="actual_stock" id="actual_stock_{{ $product->id }}" 
-                                class="border text-center p-1 w-full"
-                                value="{{ $actualStock }}"
-                                min="0"
-                                oninput="calculateDifference({{ $product->id }})">
-                        </td>
-                        <td class="py-3 px-4 text-center border border-gray-300" id="difference_{{ $product->id }}">{{ $difference }}</td>
-                        <td class="py-3 px-4 text-center border border-gray-300">
-                            <form action="{{ route('stock_opname.store') }}" method="POST" onsubmit="return setAuditValues({{ $product->id }})">
+    <table class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden border border-gray-300">
+        <!-- Header Tabel -->
+        <thead class="bg-gray-800 bg-opacity-70 text-white">
+            <tr>
+                <th class="py-3 px-4 text-center border border-gray-300">No</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Nama Produk</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Stok Tercatat</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Stok Fisik</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Selisih</th>
+                <th class="py-3 px-4 text-center border border-gray-300">Aksi</th>
+            </tr>
+        </thead>
+
+        <!-- Body Tabel -->
+        <tbody class="divide-y divide-gray-300">
+            @foreach ($products as $index => $product)
+                @php
+                    $stockOpname = $product->stockOpname;
+                    $actualStock = $stockOpname->actual_stock ?? $product->stock;
+                    $difference = $stockOpname->difference ?? 0;
+                @endphp
+
+                <tr class="hover:bg-gray-100 bg-white bg-opacity-50 transition-all">
+                    <!-- No -->
+                    <td class="py-3 px-4 text-center border border-gray-300">{{ $index + 1 }}</td>
+
+                    <!-- Nama Produk -->
+                    <td class="py-3 px-4 text-left border border-gray-300">{{ $product->name }}</td>
+
+                    <!-- Stok Tercatat -->
+                    <td class="py-3 px-4 text-center border border-gray-300" id="recorded_stock_{{ $product->id }}">
+                        {{ $product->stock }}
+                    </td>
+
+                    <!-- Stok Fisik -->
+                    <td class="py-3 px-4 text-center border border-gray-300">
+                        <input type="number"
+                            name="actual_stock"
+                            id="actual_stock_{{ $product->id }}"
+                            class="border text-center p-1 w-full"
+                            value="{{ $actualStock }}"
+                            min="0"
+                            oninput="calculateDifference({{ $product->id }})">
+                    </td>
+
+                    <!-- Selisih -->
+                    <td class="py-3 px-4 text-center border border-gray-300" id="difference_{{ $product->id }}">
+                        {{ $difference }}
+                    </td>
+
+                    <!-- Aksi -->
+                    <td class="py-3 px-4 text-center border border-gray-300">
+                        <div class="flex justify-center gap-2">
+                            <!-- Form Simpan -->
+                            <form action="{{ route('stock_opname.store') }}"
+                                method="POST"
+                                onsubmit="return setAuditValues({{ $product->id }})">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                                 <input type="hidden" name="recorded_stock" id="recorded_stock_hidden_{{ $product->id }}" value="{{ $product->stock }}">
                                 <input type="hidden" name="actual_stock" id="actual_stock_hidden_{{ $product->id }}" value="{{ $actualStock }}">
                                 <input type="hidden" name="difference" id="difference_hidden_{{ $product->id }}" value="{{ $difference }}">
-                                <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">Simpan</button>
+                                <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
+                                    Simpan
+                                </button>
                             </form>
+
                             <!-- Form Update ke Stok Fisik -->
-    <form action="{{ route('stock_opname.updateStock', $product->id) }}" method="POST" class="mt-2">
-        @csrf
-        @method('PUT')
-        <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">Update ke Stok Fisik</button>
-    </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+                            <form action="{{ route('stock_opname.updateStock', $product->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                    Update ke Stok Fisik
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
 </div>
+
+
 
 <script>
     function calculateDifference(productId) {

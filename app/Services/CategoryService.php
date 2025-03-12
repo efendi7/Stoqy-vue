@@ -3,8 +3,9 @@
 namespace App\Services;
 
 use App\Interfaces\CategoryRepositoryInterface;
+use App\Models\Category;
+use App\Models\ActivityLog;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 
 class CategoryService
 {
@@ -15,25 +16,58 @@ class CategoryService
         $this->categoryRepository = $categoryRepository;
     }
 
-
+    // Ambil semua kategori
     public function getAllCategories(): LengthAwarePaginator
     {
         return $this->categoryRepository->getAllCategories();
     }
 
-    public function createCategory(array $data)
+    // Buat kategori baru dan catat aktivitas
+    public function createCategory(array $data): Category
     {
-        return $this->categoryRepository->createCategory($data);
+        $category = $this->categoryRepository->createCategory($data);
+        $this->logActivity("Menambahkan kategori: {$category->name}", $category, ['data' => $data]);
+
+        return $category;
     }
 
+    // Update kategori dan catat aktivitas
     public function updateCategory($categoryId, array $data): bool
     {
-        return $this->categoryRepository->updateCategory($categoryId, $data);
+        $category = $this->categoryRepository->getCategoryById($categoryId);
+        $oldData = $category->toArray();
+
+        $updated = $this->categoryRepository->updateCategory($categoryId, $data);
+        if ($updated) {
+            $this->logActivity("Mengedit kategori: {$category->name}", $category, [
+                'before' => $oldData,
+                'after' => $data,
+            ]);
+        }
+
+        return $updated;
     }
 
+    // Hapus kategori dan catat aktivitas
     public function deleteCategory($categoryId): bool
     {
-        return $this->categoryRepository->deleteCategory($categoryId);
+        $category = $this->categoryRepository->getCategoryById($categoryId);
+        $deleted = $this->categoryRepository->deleteCategory($categoryId);
+        if ($deleted) {
+            $this->logActivity("Menghapus kategori: {$category->name}", $category, $category->toArray());
+        }
+
+        return $deleted;
     }
 
+    // Catat aktivitas pengguna
+    private function logActivity($action, Category $category, array $properties = [])
+    {
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role,
+            'action' => $action,
+            'properties' => json_encode($properties),
+        ]);
+    }
 }

@@ -21,6 +21,15 @@ use App\Repositories\StockReportRepository;
 use App\Interfaces\ActivityLogRepositoryInterface;
 use App\Repositories\ActivityLogRepository;
 
+use App\Interfaces\CategoryRepositoryInterface;
+use App\Repositories\CategoryRepository;
+
+use App\Interfaces\ProductAttributeRepositoryInterface;
+use App\Repositories\ProductAttributeRepository;
+
+use App\Interfaces\SupplierRepositoryInterface;
+use App\Repositories\SupplierRepository;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -28,11 +37,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Bind semua repository
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
         $this->app->bind(StockTransactionRepositoryInterface::class, StockTransactionRepository::class);
         $this->app->bind(StockOpnameRepositoryInterface::class, StockOpnameRepository::class);
         $this->app->bind(StockReportRepositoryInterface::class, StockReportRepository::class);
         $this->app->bind(ActivityLogRepositoryInterface::class, ActivityLogRepository::class);
+        $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
+        $this->app->bind(ProductAttributeRepositoryInterface::class, ProductAttributeRepository::class);
+        $this->app->bind(SupplierRepositoryInterface::class, SupplierRepository::class);
     }
 
     /**
