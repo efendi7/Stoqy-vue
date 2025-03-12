@@ -1,9 +1,9 @@
 <?php
-
 namespace App\Services;
 
 use App\Interfaces\StockOpnameRepositoryInterface;
 use App\Models\ActivityLog;
+use App\Models\Product;  // Ensure this is imported
 use Illuminate\Support\Facades\Auth;
 
 class StockOpnameService
@@ -17,25 +17,36 @@ class StockOpnameService
 
     public function storeStockOpname($data)
     {
-        $stockOpname = $this->stockOpnameRepository->storeOrUpdateStockOpname($data);
+        // Fetch the product by ID
+        $product = Product::find($data['product_id']); // Use product_id instead of expecting 'product' in the data
 
-        // Simpan log aktivitas
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'role' => Auth::user()->role,
-            'action' => "Melakukan stock opname untuk produk ID: {$data['product_id']}",
-            'properties' => json_encode([
-                'recorded_stock' => $data['recorded_stock'],
-                'actual_stock' => $data['actual_stock'],
-                'difference' => $data['difference'],
-            ]),
-        ]);
+        // Check if the product exists
+        if ($product) {
+            // Store or update stock opname
+            $stockOpname = $this->stockOpnameRepository->storeOrUpdateStockOpname($data);
 
-        return $stockOpname;
+            // Log the activity
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'role' => Auth::user()->role,
+                'action' => "Melakukan stock opname untuk produk: {$product->name}", // Now using the fetched product object
+
+                'properties' => json_encode([
+                    'recorded_stock' => $data['recorded_stock'],
+                    'actual_stock' => $data['actual_stock'],
+                    'difference' => $data['difference'],
+                ]),
+            ]);
+
+            return $stockOpname;
+        }
+
+        // Handle the case where the product was not found
+        return null; // Or handle the error as needed
     }
-    public function updateStockToActual($productId)
-{
-    return $this->stockOpnameRepository->updateSystemStock($productId);
-}
 
+    public function updateStockToActual($productId)
+    {
+        return $this->stockOpnameRepository->updateSystemStock($productId);
+    }
 }
