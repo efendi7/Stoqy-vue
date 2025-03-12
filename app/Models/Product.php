@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,39 +19,37 @@ class Product extends Model
         'sku',
         'purchase_price',
         'sale_price',
-        'stock',
         'image',
         'initial_stock'
     ];
 
+    // Relasi ke kategori
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
+    // Relasi ke supplier
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
     }
 
+    // Relasi ke transaksi stok
     public function stockTransactions()
     {
         return $this->hasMany(StockTransaction::class);
     }
 
+    // Relasi ke atribut produk
     public function attributes()
-{
-    return $this->hasMany(ProductAttribute::class, 'product_id');
-}
+    {
+        return $this->hasMany(ProductAttribute::class, 'product_id');
+    }
 
-public function transactions()
-{
-    return $this->hasMany(StockTransaction::class);
+    // Relasi ke opname stok
+    public function stockOpname()
+    {
+        return $this->hasOne(StockOpname::class);
+    }
 }
-public function stockOpname()
-{
-    return $this->hasOne(StockOpname::class);
-}
-
-}
-
