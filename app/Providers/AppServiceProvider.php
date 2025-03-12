@@ -8,6 +8,8 @@ use App\Interfaces\ProductRepositoryInterface;
 use App\Repositories\ProductRepository;
 use App\Interfaces\StockTransactionRepositoryInterface;
 use App\Repositories\StockTransactionRepository;
+use App\Interfaces\StockOpnameRepositoryInterface;
+use App\Repositories\StockOpnameRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -18,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
         $this->app->bind(StockTransactionRepositoryInterface::class, StockTransactionRepository::class);
+        $this->app->bind(StockOpnameRepositoryInterface::class, StockOpnameRepository::class);
     }
 
     /**
