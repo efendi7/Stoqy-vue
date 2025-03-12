@@ -5,6 +5,7 @@ namespace App\Interfaces;
 interface ProductRepositoryInterface
 {
     public function getAllProducts();
+    public function findById($id);  // Tambahkan ini biar konsisten
     public function getProductById($id);
     public function createProduct(array $data);
     public function updateProduct($id, array $data);

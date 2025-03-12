@@ -2,216 +2,82 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\UserService;
-use App\Models\Product;
 use App\Services\ProductService;
+use App\Services\CategoryService;
+use App\Services\SupplierService;
+
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-
-
 
 class ProductController extends Controller
 {
     protected $productService;
-    protected $userService;
+    protected $categoryService;
+    protected $supplierService;
 
-    public function __construct(ProductService $productService, UserService $userService)
+    public function __construct(ProductService $productService, CategoryService $categoryService, SupplierService $supplierService)
     {
         $this->productService = $productService;
-        $this->userService = $userService;
+        $this->categoryService = $categoryService;
+        $this->supplierService = $supplierService;
     }
 
     public function index(Request $request)
-    {   
-        $query = Product::query()->with(['category', 'supplier']);
-    
-        // Filter berdasarkan pencarian (jika ada)
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%")
-                  ->orWhereHas('category', function ($cat) use ($search) {
-                      $cat->where('name', 'like', "%{$search}%");
-                  });
-            });
-        }
-    
-        // Filter berdasarkan status
-        if ($request->filled('status')) {
-            $status = $request->input('status');
-    
-            $query->where(function ($q) use ($status) {
-                if ($status == 'Habis') {
-                    $q->where('stock', 0);
-                } elseif ($status == 'Warning') {
-                    $q->whereColumn('stock', '<', 'minimum_stock')->where('stock', '>', 0);
-                } elseif ($status == 'Tersedia') {
-                    $q->whereColumn('stock', '>=', 'minimum_stock');
-                }
-            });
-        }
-    
-        // Ambil data produk dengan pagination dan simpan filter dalam URL
-        $products = $query->paginate(10)->appends(request()->query());
-        $userRole = $this->userService->getUserRole(auth()->id());
-    
-        return view('products.index', compact('products', 'userRole'));
-    }
-    
-    public function create()
     {
-        $categories = $this->productService->getCategories();
-        $suppliers = $this->productService->getSuppliers();
-        $userRole = $this->userService->getUserRole(auth()->id());
-        return view('products.create', compact('categories', 'suppliers', 'userRole'));
+        $products = $this->productService->searchProducts($request->input('search'), $request->input('status'));
+        return view('products.index', compact('products'));
     }
 
     public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'sku' => 'required|string|unique:products,sku',
+        'category_id' => 'required|exists:categories,id',
+        'supplier_id' => 'required|exists:suppliers,id',
+        'stock' => 'required|integer|min:0',
+        'minimum_stock' => 'nullable|integer|min:0',
+        'purchase_price' => 'required|numeric|min:0', // Tambahkan validasi purchase_price
+        'sale_price' => 'required|numeric|min:0', // Tambahkan validasi sale_price
+        'image' => 'nullable|image|max:2048',
+    ]);
+
+    $validated['minimum_stock'] = $validated['minimum_stock'] ?? 0;
+
+    $product = $this->productService->createProduct($validated);
+
+    return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
+}
+
+
+
+    public function create()
+{
+    $categories = $this->categoryService->getAllCategories();
+    $suppliers = $this->supplierService->getAllSuppliers();
+
+    return view('products.create', compact('categories', 'suppliers'));
+}
+
+
+public function update(Request $request, $id)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'stock' => 'required|integer|min:0',
+        'minimum_stock' => 'required|integer|min:0',
+        'purchase_price' => 'required|numeric|min:0', // Tambahkan validasi harga beli
+        'sale_price' => 'required|numeric|min:0', // Tambahkan validasi harga jual
+        'image' => 'nullable|image|max:2048',
+    ]);
+
+    $this->productService->updateProduct($id, $validated);
+    return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui!');
+}
+
+    public function destroy($id)
     {
-        $userRole = $this->userService->getUserRole(auth()->id());
-    
-        if ($userRole !== 'admin') {
-            return redirect()->route('products.index')->with('error', 'You do not have permission to add products.');
-        }
-    
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'sku' => 'required|string|unique:products,sku',
-            'category_id' => 'required|exists:categories,id',
-            'supplier_id' => 'nullable|exists:suppliers,id',
-            'purchase_price' => 'nullable|numeric',
-            'sale_price' => 'nullable|numeric',
-            'stock' => 'required|integer|min:0',
-            'minimum_stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-    
-        try {
-            // Proses upload gambar jika ada
-            if ($request->hasFile('image')) {
-                $validatedData['image'] = $request->file('image')->store('product_images', 'public');
-            }
-    
-            // Set initial_stock sama dengan stock
-            $validatedData['initial_stock'] = $validatedData['stock'];
-    
-            // Gunakan service untuk membuat produk
-            $product = $this->productService->createProduct($validatedData);
-            
-            // Simpan log aktivitas
-            \App\Models\ActivityLog::create([
-                'user_id' => auth()->id(),
-                'role' => auth()->user()->role, 
-                'action' => "Menambahkan produk: {$product->name}",
-                'properties' => json_encode([
-                    'product_id' => $product->id,
-                    'data' => $validatedData,
-                ]),
-            ]);
-    
-            return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
-        } catch (\Exception $e) {
-            \Log::error('Error creating product: ' . $e->getMessage(), ['request' => $request->all()]);
-            return redirect()->route('products.index')->with('error', 'Gagal menambahkan produk: ' . $e->getMessage());
-        }
-    }
-    
-    public function edit(Product $product)
-    {
-        $categories = $this->productService->getCategories();
-        $suppliers = $this->productService->getSuppliers();
-        $userRole = $this->userService->getUserRole(auth()->id());
-        return view('products.edit', compact('product', 'categories', 'suppliers', 'userRole'));
-    }
-
-    public function update(Request $request, Product $product)
-    {
-        $userRole = $this->userService->getUserRole(auth()->id());
-
-        if ($userRole !== 'admin') {
-            return redirect()->route('products.index')->with('error', 'You do not have permission to update products.');
-        }
-
-        // Validasi input
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'sku' => 'required|string|unique:products,sku,' . $product->id,
-            'category_id' => 'required|exists:categories,id',
-            'supplier_id' => 'nullable|exists:suppliers,id',
-            'purchase_price' => 'nullable|numeric',
-            'sale_price' => 'nullable|numeric',
-            'stock' => 'required|integer',
-            'minimum_stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        try {
-            // Simpan data lama sebelum update
-            $oldData = $product->toArray();
-
-            // Update produk
-            $this->productService->updateProduct($product->id, $validatedData);
-
-            // Simpan log aktivitas
-            \App\Models\ActivityLog::create([
-                'user_id' => auth()->id(),
-                'role' => auth()->user()->role, 
-                'action' => "Mengedit produk: {$product->name}",
-                'properties' => json_encode([
-                    'before' => $oldData,
-                    'after' => $validatedData,
-                ]),
-            ]);
-
-            return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui!');
-        } catch (\Exception $e) {
-            \Log::error('Error updating product: ' . $e->getMessage(), ['request' => $request->all(), 'product_id' => $product->id]);
-            return redirect()->route('products.index')->with('error', 'Gagal memperbarui produk: ' . $e->getMessage());
-        }
-    }
-
-    public function destroy(Product $product)
-    {
-        $userRole = $this->userService->getUserRole(auth()->id());
-    
-        if ($userRole !== 'admin') {
-            return redirect()->route('products.index')->with('error', 'You do not have permission to delete products.');
-        }
-    
-        try {
-            // Hapus gambar produk jika ada
-            if ($product->image) {
-                Storage::disk('public')->delete($product->image);
-            }
-    
-            // Simpan log aktivitas sebelum produk dihapus
-            \App\Models\ActivityLog::create([
-                'user_id' => auth()->id(),
-                'role' => auth()->user()->role, 
-                'action' => "Menghapus produk: {$product->name}",
-                'properties' => json_encode([
-                    'product_id' => $product->id,
-                    'data' => $product->toArray(),
-                ]),
-            ]);
-    
-            // Hapus produk
-            $product->delete();
-    
-            return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus.');
-        } catch (\Exception $e) {
-            \Log::error('Error deleting product: ' . $e->getMessage(), ['product_id' => $product->id]);
-            return redirect()->route('products.index')->with('error', 'Gagal menghapus produk: ' . $e->getMessage());
-        }
-    }
-    
-    
-    public function show($id)
-    {
-        $product = $this->productService->getProductById($id);
-        $userRole = $this->userService->getUserRole(auth()->id());
-        return view('products.show', compact('product', 'userRole'));
+        $this->productService->deleteProduct($id);
+        return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
     }
 
     public function export()
@@ -221,13 +87,28 @@ class ProductController extends Controller
 
     public function import(Request $request)
     {
-        $request->validate(['file' => 'required|mimes:xlsx,csv']);
-        try {
-            $this->productService->importProducts($request->file('file'));
-            return back()->with('success', 'Produk berhasil diimpor!');
-        } catch (\Exception $e) {
-            \Log::error('Error importing products: ' . $e->getMessage());
-            return back()->with('error', 'Gagal mengimpor produk: ' . $e->getMessage());
-        }
+        $request->validate(['file' => 'required|mimes:xlsx']);
+        $this->productService->importProducts($request->file('file'));
+        return redirect()->route('products.index')->with('success', 'Produk berhasil diimpor!');
     }
+    public function show($id)
+    {
+    $product = $this->productService->getProductById($id);
+
+    if (!$product) {
+        return redirect()->route('products.index')->with('error', 'Produk tidak ditemukan.');
+    }
+
+    return view('products.show', compact('product'));
+    }
+
+    public function edit($id)
+    {
+        $product = $this->productService->getProductById($id);
+        $categories = $this->categoryService->getAllCategories();
+        $suppliers = $this->supplierService->getAllSuppliers();
+        
+        return view('products.edit', compact('product', 'categories', 'suppliers'));
+    }
+
 }

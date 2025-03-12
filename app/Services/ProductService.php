@@ -3,12 +3,13 @@
 namespace App\Services;
 
 use App\Interfaces\ProductRepositoryInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\Product;
+use App\Models\ActivityLog;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProductsExport;
 use App\Imports\ProductsImport;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductService
 {
@@ -19,93 +20,118 @@ class ProductService
         $this->productRepository = $productRepository;
     }
 
+    // Ambil semua produk dengan pagination
     public function getAllProducts(): LengthAwarePaginator
     {
         return $this->productRepository->getAllProducts();
     }
 
+    // Cari produk berdasarkan ID
     public function getProductById($id): ?Product
     {
         return $this->productRepository->getProductById($id);
     }
 
+    // Buat produk baru
     public function createProduct(array $data): Product
     {
-        \Log::info('ProductService: Meneruskan data ke repository', ['data' => $data]);
-
-        // Menangani upload gambar jika ada
         if (isset($data['image']) && is_object($data['image'])) {
-            $imagePath = $data['image']->store('product_images', 'public');
-            $data['image'] = $imagePath;
+            $data['image'] = $data['image']->store('product_images', 'public');
         }
 
-        // Membuat produk melalui repository
         $product = $this->productRepository->createProduct($data);
-
-        \Log::info('ProductService: Produk berhasil dibuat', ['product' => $product]);
+        $this->logActivity("Menambahkan produk: {$product->name}", $product);
 
         return $product;
     }
-    public function updateProductStock($productId, $newStock)
-{
-    $product = $this->productRepository->getProductById($productId);
 
-    if (!$product) {
-        \Log::error("ProductService: Produk dengan ID $productId tidak ditemukan.");
-        return false;
-    }
-
-    $updateData = ['stock' => $newStock];
-
-    return $this->productRepository->updateProduct($productId, $updateData);
-}
-
-
+    // Update produk
     public function updateProduct($id, array $data): bool
     {
-        // Ambil data produk lama untuk referensi
         $existingProduct = $this->productRepository->getProductById($id);
-
         if (!$existingProduct) {
             \Log::error("ProductService: Produk dengan ID $id tidak ditemukan.");
             return false;
         }
-
-        // Menangani update gambar jika ada gambar baru
+    
+        // Handle update gambar jika ada
         if (isset($data['image']) && is_object($data['image'])) {
-            // Hapus gambar lama jika ada
             if ($existingProduct->image) {
                 Storage::disk('public')->delete($existingProduct->image);
             }
-            // Simpan gambar baru
             $data['image'] = $data['image']->store('product_images', 'public');
         } else {
-            // Jika tidak ada gambar baru, gunakan gambar lama
             $data['image'] = $existingProduct->image;
         }
-
-        // Update produk di repository
-        return $this->productRepository->updateProduct($id, $data);
+    
+        // ✨ Tambahkan ini untuk memastikan minimum_stock terupdate ✨
+        if (isset($data['minimum_stock'])) {
+            $existingProduct->minimum_stock = $data['minimum_stock'];
+        }
+    
+        $updated = $this->productRepository->updateProduct($id, $data);
+        if ($updated) {
+            $this->logActivity("Memperbarui produk: {$existingProduct->name}", $existingProduct, $data);
+        }
+    
+        return $updated;
     }
-
+    
+    // Hapus produk
     public function deleteProduct($id): bool
     {
-        // Ambil data produk sebelum dihapus
         $product = $this->productRepository->getProductById($id);
-
         if (!$product) {
             \Log::error("ProductService: Produk dengan ID $id tidak ditemukan.");
             return false;
         }
 
-        // Hapus gambar produk jika ada
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }
 
-        return $this->productRepository->deleteProduct($id);
+        $deleted = $this->productRepository->deleteProduct($id);
+        if ($deleted) {
+            $this->logActivity("Menghapus produk: {$product->name}", $product);
+        }
+
+        return $deleted;
     }
 
+    // Cari produk dengan filter
+    public function searchProducts($search, $status): LengthAwarePaginator
+    {
+        return $this->productRepository->searchProducts($search, $status);
+    }
+
+    // Log aktivitas
+    public function logActivity($action, $product, $oldData = null)
+    {
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role,
+            'action' => $action,
+            'properties' => json_encode([
+                'product_id' => $product->id,
+                'before' => $oldData,
+                'after' => $product->toArray(),
+            ]),
+        ]);
+    }
+
+    // Export produk
+    public function exportProducts()
+    {
+        return Excel::download(new ProductsExport, 'products.xlsx');
+    }
+
+    // Import produk
+    public function importProducts($file)
+    {
+        Excel::import(new ProductsImport, $file);
+    }
+
+    // Ambil kategori dan supplier (bisa dimasukkan ke repository jika mau)
     public function getCategories()
     {
         return $this->productRepository->getCategories();
@@ -114,15 +140,5 @@ class ProductService
     public function getSuppliers()
     {
         return $this->productRepository->getSuppliers();
-    }
-
-    public function exportProducts()
-    {
-        return Excel::download(new ProductsExport, 'products.xlsx');
-    }
-
-    public function importProducts($file)
-    {
-        Excel::import(new ProductsImport, $file);
     }
 }
