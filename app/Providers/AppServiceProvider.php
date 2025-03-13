@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Bind semua repository
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
-        $this->app->bind(StockTransactionRepositoryInterface::class, StockTransactionRepository::class);
+        $this->app->bind(StockTransactionRepository::class, StockTransactionRepository::class);
         $this->app->bind(StockOpnameRepositoryInterface::class, StockOpnameRepository::class);
         $this->app->bind(StockReportRepositoryInterface::class, StockReportRepository::class);
         $this->app->bind(ActivityLogRepositoryInterface::class, ActivityLogRepository::class);

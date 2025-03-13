@@ -2,186 +2,161 @@
 
 namespace App\Services;
 
-use App\Models\StockTransaction;
+use App\Repositories\StockTransactionRepository;
 use App\Models\Product;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\TransactionLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class StockTransactionService
 {
-    /**
-     * Get all stock transactions with pagination.
-     */
-    public function getAllStockTransactionsPaginated($perPage = 10): LengthAwarePaginator
+    protected $stockTransactionRepository;
+
+    public function __construct(StockTransactionRepository $stockTransactionRepository)
     {
-        return StockTransaction::with(['product', 'user'])->latest()->paginate($perPage);
+        $this->stockTransactionRepository = $stockTransactionRepository;
     }
 
-    /**
-     * Get a single stock transaction by ID.
-     */
-    public function getStockTransactionById($id): StockTransaction
+    public function getAllTransactionsPaginated($perPage = 10)
     {
-        return StockTransaction::with(['product', 'user'])->findOrFail($id);
+        return $this->stockTransactionRepository->getAllTransactionsPaginated($perPage);
     }
 
-    /**
-     * Create a new stock transaction.
-     */
-    public function createStockTransaction(array $data): StockTransaction|bool
+    public function getStockTransactionById($id)
+    {
+        return $this->stockTransactionRepository->findById($id);
+    }
+
+    public function createStockTransaction($data)
     {
         DB::beginTransaction();
         try {
-            $transaction = StockTransaction::create($data);
+            $transaction = $this->stockTransactionRepository->create($data);
+            $this->updateProductStock($transaction->product_id, $transaction->quantity, $transaction->transaction_type);
             DB::commit();
             return $transaction;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating stock transaction: ' . $e->getMessage());
-            return false;
+            Log::error('Failed to create stock transaction: ' . $e->getMessage());
+            return null;
         }
     }
 
-    /**
-     * Update an existing stock transaction.
-     */
-    public function updateStockTransaction($id, array $data): bool
+    public function updateStockTransaction($id, $data)
     {
-        $transaction = StockTransaction::find($id);
-        if (!$transaction) {
-            return false;
-        }
-
         DB::beginTransaction();
         try {
-            $transaction->update($data);
+            $transaction = $this->getStockTransactionById($id);
+            if (!$transaction) return null;
+
+            // Rollback stock before update
+            $this->rollbackProductStock($transaction->product_id, $transaction->quantity, $transaction->transaction_type);
+
+            $transaction = $this->stockTransactionRepository->update($id, $data);
+
+            // Apply new stock change
+            $this->updateProductStock($transaction->product_id, $transaction->quantity, $transaction->transaction_type);
+
+            DB::commit();
+            return $transaction;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to update stock transaction: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function deleteStockTransaction($id)
+    {
+        DB::beginTransaction();
+        try {
+            $transaction = $this->getStockTransactionById($id);
+            if (!$transaction) return false;
+
+            // Rollback stock when deleting transaction
+            $this->rollbackProductStock($transaction->product_id, $transaction->quantity, $transaction->transaction_type);
+
+            $this->stockTransactionRepository->delete($id);
             DB::commit();
             return true;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating stock transaction: ' . $e->getMessage());
+            Log::error('Failed to delete stock transaction: ' . $e->getMessage());
             return false;
         }
     }
 
-    /**
-     * Delete a stock transaction and revert stock if necessary.
-     */
-    public function deleteStockTransaction($id): bool
+    public function confirmTransaction($transaction)
     {
-        $transaction = StockTransaction::find($id);
-        if (!$transaction) {
-            return false;
-        }
-
-        if ($transaction->status === 'Diterima') {
-            $this->handleStockUpdate($transaction, 'revert');
-        }
-
-        $transaction->delete();
-        return true;
-    }
-
-    /**
-     * Update stock transaction status and handle stock changes.
-     */
-    public function updateTransactionStatus($id, $newStatus): bool
-    {
-        $transaction = StockTransaction::find($id);
-        if (!$transaction) {
-            return false;
-        }
-
         DB::beginTransaction();
         try {
-            $oldStatus = $transaction->status;
-            $transaction->status = $newStatus;
-            $transaction->save();
+            $transaction->update(['status' => 'Confirmed']);
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to confirm stock transaction: ' . $e->getMessage());
+            return false;
+        }
+    }
 
-            if ($oldStatus !== 'Diterima' && $newStatus === 'Diterima') {
-                $this->handleStockUpdate($transaction, 'process');
-            } elseif ($oldStatus === 'Diterima' && $newStatus !== 'Diterima') {
-                $this->handleStockUpdate($transaction, 'revert');
+    private function updateProductStock($productId, $quantity, $transactionType)
+    {
+        $product = Product::find($productId);
+        if (!$product) {
+            throw new \Exception("Produk tidak ditemukan.");
+        }
+
+        if ($transactionType === 'In') {
+            $product->stock += $quantity;
+        } else {
+            if ($product->stock < $quantity) {
+                throw new \Exception("Stok tidak mencukupi.");
             }
-
-            DB::commit();
-            return true;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error updating transaction status: ' . $e->getMessage());
-            return false;
+            $product->stock -= $quantity;
         }
+
+        $product->save();
     }
 
-    public function getStockTransactionsByDateAndStatus($date, $status)
-{
-    return StockTransaction::whereDate('transaction_date', $date)
-        ->where('status', $status)
-        ->get();
-}
-
-
-    /**
-     * Process or revert stock updates based on transaction type.
-     */
-    private function handleStockUpdate(StockTransaction $transaction, string $action)
-{
-    $product = Product::find($transaction->product_id);
-    if (!$product) {
-        throw new \Exception('Product not found.');
-    }
-
-    Log::info('Sebelum update stok', [
-        'product_id' => $product->id,
-        'stok_sekarang' => $product->stock,
-        'jumlah_transaksi' => $transaction->quantity,
-        'aksi' => $action
-    ]);
-
-    if ($transaction->type === 'Masuk') {
-        $amount = $transaction->quantity;
-        if ($action === 'revert' && $product->stock < $amount) {
-            Log::warning("Stock not enough to revert. Product ID: {$product->id}, Current Stock: {$product->stock}, Amount: {$amount}");
-            return; // Jangan throw error, cukup log dan lanjutkan penghapusan
+    private function rollbackProductStock($productId, $quantity, $transactionType)
+    {
+        $product = Product::find($productId);
+        if (!$product) {
+            throw new \Exception("Produk tidak ditemukan.");
         }
-        
-        $product->stock += ($action === 'process') ? $amount : -$amount;
-    } else { // type 'Keluar'
-        $amount = $transaction->quantity;
-        if ($action === 'process' && $product->stock < $amount) {
-            throw new \Exception('Insufficient stock.');
+
+        if ($transactionType === 'In') {
+            $product->stock -= $quantity;
+        } else {
+            $product->stock += $quantity;
         }
-        $product->stock -= ($action === 'process') ? $amount : -$amount;
+
+        $product->save();
     }
 
-    $product->save();
-
-    Log::info('Setelah update stok', [
-        'product_id' => $product->id,
-        'stok_baru' => $product->stock
-    ]);
-}
-
-
-    public function updateStatus(Request $request, $id)
-{
-    $userRole = $this->userService->getUserRole(auth()->id());
-    if ($userRole !== 'warehouse_manager') {
-        return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengubah status transaksi.');
+    public function logTransactionActivity($action, $transaction, $userId)
+    {
+        TransactionLog::create([
+            'user_id' => $userId,
+            'transaction_id' => $transaction->id,
+            'action' => $action,
+            'description' => "$action transaksi stok ID: {$transaction->id} - Produk: {$transaction->product->name}",
+        ]);
     }
 
-    $request->validate(['status' => 'required|in:Pending,Diterima,Ditolak']);
-
-    $transaction = $this->stockTransactionService->getStockTransactionById($id);
-    if (!$transaction) {
-        return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
+    public function getRecentPendingTransactions($limit = 3)
+    {
+    return $this->stockTransactionRepository
+        ->getAllTransactionsPaginated($limit)
+        ->filter(fn($transaction) => $transaction->status === 'Pending');
     }
-
-    // Hapus logika update stok di sini, karena sudah dikelola oleh service
-    return $this->stockTransactionService->updateTransactionStatus($id, $request->status)
-        ? redirect()->route('stock_transactions.index')->with('success', 'Status transaksi berhasil diubah!')
-        : redirect()->route('stock_transactions.index')->with('error', 'Gagal mengubah status transaksi.');
-}
+    public function getRecentConfirmedTransactions($limit = 3)
+    {
+        return $this->stockTransactionRepository
+            ->getAllTransactionsPaginated($limit)
+            ->filter(fn($transaction) => in_array($transaction->status, ['Confirmed', 'Diterima', 'Ditolaks']));
+    }
+    
 
 }

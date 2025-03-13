@@ -1,33 +1,47 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Models\StockTransaction;
-use App\Interfaces\StockTransactionRepositoryInterface;
 
-class StockTransactionRepository implements StockTransactionRepositoryInterface
+class StockTransactionRepository
 {
-    public function getAllStockTransactions()
+    public function getAllTransactionsPaginated($perPage = 10)
     {
-        return StockTransaction::all();
+        return StockTransaction::with('product')->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
-    public function getStockTransactionById($stockTransactionId)
+    public function findById($id)
     {
-        return StockTransaction::findOrFail($stockTransactionId);
+        return StockTransaction::with('product')->find($id);
     }
 
-    public function createStockTransaction(array $stockTransactionDetails)
+    public function create($data)
     {
-        return StockTransaction::create($stockTransactionDetails);
+        return StockTransaction::create($data);
     }
 
-    public function updateStockTransaction($stockTransactionId, array $newDetails)
+    public function update($id, $data)
     {
-        return StockTransaction::whereId($stockTransactionId)->update($newDetails);
+        $transaction = $this->findById($id);
+        if ($transaction) {
+            $transaction->update($data);
+        }
+        return $transaction;
     }
 
-    public function deleteStockTransaction($stockTransactionId)
+    public function delete($id)
     {
-        return StockTransaction::destroy($stockTransactionId);
+        $transaction = $this->findById($id);
+        if ($transaction) {
+            $transaction->delete();
+            return true;
+        }
+        return false;
     }
+    public function getConfirmedTransactions()
+    {
+    return StockTransaction::where('status', 'confirmed')->get();
+    }
+
 }

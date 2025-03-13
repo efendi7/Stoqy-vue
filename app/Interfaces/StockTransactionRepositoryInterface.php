@@ -2,11 +2,13 @@
 
 namespace App\Interfaces;
 
+use App\Models\StockTransaction;
+
 interface StockTransactionRepositoryInterface
 {
-    public function getAllStockTransactions();
-    public function getStockTransactionById($stockTransactionId);
-    public function createStockTransaction(array $stockTransactionDetails);
-    public function updateStockTransaction($stockTransactionId, array $newDetails);
-    public function deleteStockTransaction($stockTransactionId);
+    public function getAllStockTransactions(): \Illuminate\Database\Eloquent\Collection;
+    public function getStockTransactionById(int $stockTransactionId): ?StockTransaction;
+    public function createStockTransaction(array $stockTransactionDetails): StockTransaction;
+    public function updateStockTransaction(int $stockTransactionId, array $newDetails): bool;
+    public function deleteStockTransaction(int $stockTransactionId): bool;
 }
