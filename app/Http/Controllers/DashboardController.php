@@ -128,25 +128,22 @@ $recentActivities = ActivityLog::with('user')
             'endDate' => $endDate->format('Y-m-d')
         ];
     
-        // Data tambahan berdasarkan role pengguna
         if ($user->role === 'warehouse_staff') {
-            // Tugas barang masuk hanya untuk warehouse_staff
             $incomingTaskStaff = StockTransaction::where('type', 'Masuk')
                 ->where('status', 'Pending')
                 ->latest()
-                ->limit(5)
-                ->get();
-
+                ->paginate(10); // Tampilkan 10 item per halaman
+        
             $outgoingTaskStaff = StockTransaction::where('type', 'Keluar')
                 ->where('status', 'Pending')
                 ->latest()
-                ->limit(5)
-                ->get();
-
-                $completeTaskStaff = StockTransaction::whereIn('status', ['Diterima', 'Ditolak', 'Confirmed'])
+                ->paginate(10);
+        
+            $completeTaskStaff = StockTransaction::whereIn('status', ['Diterima', 'Ditolak', 'Confirmed'])
                 ->latest()
-                ->limit(5)
-                ->get();
+                ->paginate(10);
+        
+        
 
             $viewData['incomingTaskStaff'] = $incomingTaskStaff;
             $viewData['outgoingTaskStaff'] = $outgoingTaskStaff;

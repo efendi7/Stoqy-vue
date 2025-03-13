@@ -34,7 +34,7 @@
                         <button type="submit" 
                             class="px-5 py-2 text-white font-medium rounded-md transition-all duration-300
                                 {{ $transaction->type === 'Masuk' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-orange-500 hover:bg-orange-600' }}">
-                            {{ $transaction->type === 'Masuk' ? '✔ Konfirmasi Masuk' : 'Konfirmasi Keluar' }}
+                            {{ $transaction->type === 'Masuk' ? 'Konfirmasi Masuk' : 'Konfirmasi Keluar' }}
                         </button>
 
                         <!-- Textarea Note -->
