@@ -15,7 +15,11 @@ use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ProductImportExportController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\ProfileController;
 
+
+Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit')->middleware('auth');
+Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update')->middleware('auth');
 
 // Halaman utama
 Route::get('/', function () {
