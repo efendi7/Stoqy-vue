@@ -68,7 +68,9 @@
 
                     <div class="relative">
     <button id="user-menu-button" class="flex items-center space-x-2 bg-purple-800 px-3 py-1 rounded-lg hover:bg-purple-700 transition focus:outline-none hover:scale-105 duration-300">
-        <img class="w-8 h-8 rounded-full object-cover" src="{{ asset('img/logofenn.png') }}" alt="user photo">
+    <img class="w-8 h-8 rounded-full object-cover" 
+     src="{{ Auth::user()->profile_picture ? asset('storage/'.Auth::user()->profile_picture) : asset('img/logofenn.png') }}" 
+     alt="user photo">
         <span class="text-white">{{ Auth::user()->name }}</span>
         <i class="fas fa-chevron-down text-gray-300"></i>
     </button>

@@ -18,14 +18,11 @@ class DatabaseSeeder extends Seeder
             // Seeder lainnya...
             SettingsSeeder::class,
             CategorySeeder::class,
-            SuppliersTableSeeder::class,
+            SupplierSeeder::class,
             ProductAttributeSeeder::class,
+            ProductSeeder::class,
+            UserSeeder::class,
         ]);
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        
     }
 }

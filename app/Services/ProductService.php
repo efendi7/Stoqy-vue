@@ -119,6 +119,23 @@ class ProductService
         ]);
     }
 
+    public function updateProductStock($productId, $newStock)
+{
+    $product = $this->productRepository->getProductById($productId);
+
+    if (!$product) {
+        \Log::error("ProductService: Produk dengan ID $productId tidak ditemukan.");
+        return false;
+    }
+
+    $product->stock = $newStock;
+    $product->save();
+
+    $this->logActivity("Memperbarui stok produk: {$product->name}", $product, ['stock' => $newStock]);
+    return true;
+}
+
+
     // Export produk
     public function exportProducts()
     {

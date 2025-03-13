@@ -27,9 +27,16 @@ class ProfileController extends Controller
             'name' => 'required|string|max:255',
             'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
-
+    
         $this->profileService->updateProfile($request->all());
-
+        
+        // Refresh the authenticated user
+        $request->session()->forget('_old_input');
+        Auth::user()->refresh();  // This refreshes the user model from the database
+        
+        // Or alternatively:
+        // Auth::login(Auth::user()->fresh());
+    
         return redirect()->back()->with('success', 'Profil berhasil diperbarui.');
     }
 }

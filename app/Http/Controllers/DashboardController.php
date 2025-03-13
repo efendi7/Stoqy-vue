@@ -128,6 +128,22 @@ $recentActivities = ActivityLog::with('user')
             'endDate' => $endDate->format('Y-m-d')
         ];
     
+        if ($user->role === 'warehouse_manager') {
+            $viewData['pendingIncomingTasks'] = StockTransaction::where('type', 'Masuk')
+                ->where('status', 'Pending')
+                ->latest()
+                ->limit(5)
+                ->get();
+                
+            $viewData['pendingOutgoingTasks'] = StockTransaction::where('type', 'Keluar')
+                ->where('status', 'Pending')
+                ->latest()
+                ->limit(5)
+                ->get();
+        } else {
+            $viewData['pendingIncomingTasks'] = collect();
+            $viewData['pendingOutgoingTasks'] = collect();
+        }
         if ($user->role === 'warehouse_staff') {
             $incomingTaskStaff = StockTransaction::where('type', 'Masuk')
                 ->where('status', 'Pending')
