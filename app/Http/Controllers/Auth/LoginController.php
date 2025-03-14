@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 class LoginController extends Controller
@@ -27,20 +26,21 @@ class LoginController extends Controller
 
         // Attempt to login the user
         if (Auth::attempt($request->only('email', 'password'))) {
-            \Log::info('Login attempt successful for email: ' . $request->input('email'));
-            
-            // Update is_logged_in status
-            Auth::user()->update(['is_logged_in' => true]);
+            \Log::info('Login successful for email: ' . $request->input('email'));
 
-            return redirect()->intended('dashboard')->with('success', 'Login berhasil');
-        } else {
-            \Log::info('Login attempt failed for email: ' . $request->input('email'));
-            \Log::info('Provided password: ' . $request->input('password'));
-            \Log::info('Stored password hash for email ' . $request->input('email') . ' is: ' . optional(User::where('email', $request->email)->first())->password);
+            $request->session()->regenerate(); // Regenerate session to prevent session fixation
+
+            if (Auth::check()) {
+                Auth::user()->update(['is_logged_in' => true]);
+            }
+
+            return redirect()->route('dashboard')->with('success', 'Login berhasil');
         }
 
+        \Log::warning('Login failed for email: ' . $request->input('email'));
+
         // Return back with error if login fails
-        return back()->withErrors(['email' => 'Email atau kata sandi salah.']);
+        return back()->withErrors(['email' => 'Email atau kata sandi salah.'])->withInput($request->only('email'));
     }
 
     // Handle logout
@@ -53,9 +53,9 @@ class LoginController extends Controller
         }
 
         Auth::logout();
-        
-        $request->session()->invalidate(); // Menghapus sesi lama
-        $request->session()->regenerateToken(); // Mencegah CSRF setelah logout
+
+        $request->session()->invalidate(); // Hapus sesi lama
+        $request->session()->regenerateToken(); // Cegah CSRF setelah logout
 
         return redirect('/login')->with('success', 'Logout berhasil');
     }

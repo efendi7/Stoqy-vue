@@ -59,7 +59,7 @@
             </a>
 
             {{-- Tombol Lihat Semua Dikonfirmasi --}}
-            <a href="{{ route('stock-transactions.confirmed') }}" 
+            <a href="{{ route('stock_transactions.confirmed') }}" 
                 class="block text-center text-green-500 font-medium">
                 Lihat Semua Transaksi yang Dikonfirmasi
             </a>
@@ -124,7 +124,7 @@
 
                     <!-- Tombol Lihat Semua -->
                     @if(request()->show_all !== 'confirmed')
-                        <a href="{{ route('stock-transactions.confirmed') }}" 
+                        <a href="{{ route('stock_transactions.confirmed') }}" 
                            class="block text-center text-blue-500 font-medium mt-4 hover:underline">
                            🔍 Lihat Semua Transaksi Dikonfirmasi
                         </a>
@@ -180,7 +180,7 @@
 
                     <!-- Tombol Lihat Semua Pending -->
                     @if(request()->show_all !== 'pending')
-                        <a href="{{ route('stock-transactions.pending') }}" 
+                        <a href="{{ route('stock_transactions.pending') }}" 
                            class="block text-center text-blue-500 font-medium mt-4 hover:underline">
                            🔍 Lihat Semua Transaksi Pending
                         </a>
@@ -226,7 +226,7 @@
                     <td class="py-3 px-4 border border-gray-300 text-center">{{ $transaction->quantity }}</td>
                     <td class="py-3 px-4 border border-gray-300">
                         @if($userRole === 'warehouse_manager')
-                            <form action="{{ route('stock_transactions.update-status', $transaction->id) }}" method="POST" class="inline">
+                            <form action="{{ route('stock_transactions.update_status', $transaction->id) }}" method="POST" class="inline">
                                 @csrf
                                 <select name="status" onchange="this.form.submit()" 
                                     class="border border-gray-300 rounded-lg px-2 py-1 text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
