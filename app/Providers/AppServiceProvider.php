@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\View;
 use App\Models\Setting;
 
 // Import semua interface dan repository yang digunakan
+use App\Interfaces\DashboardRepositoryInterface;
+use App\Repositories\DashboardRepository;
+
 use App\Interfaces\ProductRepositoryInterface;
 use App\Repositories\ProductRepository;
 
@@ -46,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
         $this->app->bind(ProductAttributeRepositoryInterface::class, ProductAttributeRepository::class);
         $this->app->bind(SupplierRepositoryInterface::class, SupplierRepository::class);
+        $this->app->bind(DashboardRepositoryInterface::class, DashboardRepository::class);
+
     }
 
     /**
