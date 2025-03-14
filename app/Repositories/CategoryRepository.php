@@ -1,42 +1,35 @@
 <?php
-
 namespace App\Repositories;
 
-use App\Models\Category;
 use App\Interfaces\CategoryRepositoryInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\Category;
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
-    // Ambil semua kategori dengan paginasi
-    public function getAllCategories(): LengthAwarePaginator
+    public function getAllCategories()
     {
         return Category::paginate(10);
     }
 
-    // Ambil kategori berdasarkan ID
-    public function getCategoryById($categoryId): Category
+    public function createCategory(array $data): Category
     {
-        return Category::findOrFail($categoryId);
+        return Category::create($data);
     }
 
-    // Buat kategori baru
-    public function createCategory(array $categoryDetails): Category
+    public function getCategoryById($id): Category
     {
-        return Category::create($categoryDetails);
+        return Category::findOrFail($id);
     }
 
-    // Update kategori berdasarkan ID
-    public function updateCategory($categoryId, array $newDetails): bool
+    public function updateCategory($id, array $data): bool
     {
-        $category = Category::findOrFail($categoryId);
-        return $category->update($newDetails);
+        $category = $this->getCategoryById($id);
+        return $category->update($data);
     }
 
-    // Hapus kategori berdasarkan ID
-    public function deleteCategory($categoryId): bool
+    public function deleteCategory($id): bool
     {
-        $category = Category::findOrFail($categoryId);
+        $category = $this->getCategoryById($id);
         return $category->delete();
     }
 }

@@ -1,20 +1,29 @@
 <?php
 namespace App\Repositories;
-use \App\Interfaces\ActivityLogRepositoryInterface;
+
+use App\Contracts\Repositories\ActivityLogRepositoryInterface;
 use App\Models\ActivityLog;
 
 class ActivityLogRepository implements ActivityLogRepositoryInterface
 {
-    public function getActivityLogs($filters)
+    public function getAll($search = null)
     {
         return ActivityLog::with('user')
-            ->when(!empty($filters['start_date']), function ($query) use ($filters) {
-                return $query->whereDate('created_at', '>=', $filters['start_date']);
-            })
-            ->when(!empty($filters['end_date']), function ($query) use ($filters) {
-                return $query->whereDate('created_at', '<=', $filters['end_date']);
+            ->when($search, function($query, $search) {
+                return $query->where('description', 'like', "%{$search}%")
+                    ->orWhereHas('user', function($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             })
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(50);
+    }
+
+    public function getByUser($userId)
+    {
+        return ActivityLog::where('user_id', $userId)
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
     }
 }

@@ -1,8 +1,8 @@
 <?php
-
-namespace App\Interfaces;
+namespace App\Contracts\Repositories;
 
 interface ActivityLogRepositoryInterface
 {
-    public function getActivityLogs($filters);
+    public function getAll($search = null);
+    public function getByUser($userId);
 }

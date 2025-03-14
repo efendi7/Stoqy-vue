@@ -1,33 +1,28 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Models\ActivityLog;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 
 class ActivityLogController extends Controller
 {
+    protected $activityLogService;
+
+    public function __construct(ActivityLogService $activityLogService)
+    {
+        $this->activityLogService = $activityLogService;
+    }
+
     public function index(Request $request)
     {
-        $activities = ActivityLog::with('user')
-            ->when($request->search, function($query, $search) {
-                return $query->where('description', 'like', "%{$search}%")
-                    ->orWhereHas('user', function($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    });
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(50);
+        $activities = $this->activityLogService->getActivities($request->search);
 
         return view('activities.index', compact('activities'));
     }
 
     public function userActivities($userId)
     {
-        $activities = ActivityLog::where('user_id', $userId)
-            ->with('user')
-            ->orderBy('created_at', 'desc')
-            ->paginate(50);
+        $activities = $this->activityLogService->getUserActivities($userId);
 
         return view('activities.index', compact('activities'));
     }
