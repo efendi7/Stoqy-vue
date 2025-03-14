@@ -33,6 +33,7 @@ use App\Repositories\ProductAttributeRepository;
 use App\Interfaces\SupplierRepositoryInterface;
 use App\Repositories\SupplierRepository;
 
+
 class AppServiceProvider extends ServiceProvider
 {
     /**

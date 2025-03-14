@@ -15,15 +15,14 @@ class ActivityLogController extends Controller
 
     public function index(Request $request)
     {
-        $activities = $this->activityLogService->getActivities($request->search);
+        // Definisikan tanggal awal dan akhir (opsional untuk filter)
+        $startDate = $request->input('tanggal_mulai', now()->startOfMonth()->toDateString());
+        $endDate = $request->input('tanggal_akhir', now()->toDateString());
 
-        return view('activities.index', compact('activities'));
-    }
+        // Ambil data aktivitas log
+        $aktivitas = $this->activityLogService->getActivityLogs($startDate, $endDate);
 
-    public function userActivities($userId)
-    {
-        $activities = $this->activityLogService->getUserActivities($userId);
-
-        return view('activities.index', compact('activities'));
+        // Pastikan semua variabel diteruskan ke view
+        return view('activities.index', compact('aktivitas', 'startDate', 'endDate'));
     }
 }

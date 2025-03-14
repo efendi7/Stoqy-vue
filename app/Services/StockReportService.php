@@ -12,8 +12,13 @@ class StockReportService
         $this->stockReportRepository = $stockReportRepository;
     }
 
-    public function getStockReport($filters)
+    public function getStockReport(array $filters)
     {
-        return $this->stockReportRepository->getStockReport($filters);
+        return $this->stockReportRepository->getFilteredStock($filters);
+    }
+
+    public function getCategories()
+    {
+        return $this->stockReportRepository->getCategories();
     }
 }

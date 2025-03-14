@@ -3,5 +3,6 @@ namespace App\Interfaces;
 
 interface StockReportRepositoryInterface
 {
-    public function getStockReport($filters);
+    public function getFilteredStock(array $filters);
+    public function getCategories();
 }

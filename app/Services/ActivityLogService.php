@@ -1,19 +1,30 @@
 <?php
 namespace App\Services;
 
-use App\Interfaces\ActivityLogRepositoryInterface;
+use App\Models\ActivityLog;
+use Carbon\Carbon;
 
 class ActivityLogService
 {
-    protected $activityLogRepository;
-
-    public function __construct(ActivityLogRepositoryInterface $activityLogRepository)
+    public function getActivityLogs($startDate, $endDate)
     {
-        $this->activityLogRepository = $activityLogRepository;
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+
+        return ActivityLog::whereBetween('created_at', [$start, $end])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10); // Menampilkan 10 data per halaman
     }
 
-    public function getActivityLogs($filters)
+    public function deleteActivityLog($id)
     {
-        return $this->activityLogRepository->getActivityLogs($filters);
+        $activityLog = ActivityLog::find($id);
+
+        if (!$activityLog) {
+            return false;
+        }
+
+        $activityLog->delete();
+        return true;
     }
 }

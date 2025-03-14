@@ -1,7 +1,7 @@
 <?php
 namespace App\Repositories;
 
-use App\Contracts\Repositories\ActivityLogRepositoryInterface;
+use App\Interfaces\ActivityLogRepositoryInterface;
 use App\Models\ActivityLog;
 
 class ActivityLogRepository implements ActivityLogRepositoryInterface

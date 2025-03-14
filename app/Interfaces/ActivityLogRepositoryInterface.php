@@ -1,5 +1,5 @@
 <?php
-namespace App\Contracts\Repositories;
+namespace App\Interfaces;
 
 interface ActivityLogRepositoryInterface
 {

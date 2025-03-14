@@ -7,7 +7,8 @@ use App\Http\Controllers\{
     CategoryController,
     ContactController,
     DashboardController,
-    LaporanController,
+    StockReportController,
+    ActivityLogController,
     ProductAttributeController,
     ProductController,
     ProductImportExportController,
@@ -36,17 +37,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
-// Rute laporan
-Route::prefix('laporan')->middleware('auth')->group(function () {
-    Route::get('/stok', [LaporanController::class, 'stok'])->name('laporan.stok');
-    Route::get('/transaksi', [LaporanController::class, 'transaksi'])->name('laporan.transaksi');
-    Route::get('/aktivitas', [LaporanController::class, 'aktivitas'])->name('laporan.aktivitas');
-    Route::get('/stok/filter', [LaporanController::class, 'stokFilter'])->name('laporan.stok.filter');
-    Route::get('/transaksi/filter', [LaporanController::class, 'transaksiFilter'])->name('laporan.transaksi.filter');
-    Route::get('/stok/export', [LaporanController::class, 'exportStok'])->name('laporan.stok.export');
-    Route::get('/transaksi/export', [LaporanController::class, 'exportTransaksi'])->name('laporan.transaksi.export');
-    Route::delete('/aktivitas/{id}', [LaporanController::class, 'destroy'])->name('laporan.aktivitas.hapus');
+//rute laporan stok
+Route::prefix('laporan/stok')->middleware('auth')->group(function () {
+    Route::get('/', [StockReportController::class, 'index'])->name('laporan.stok'); // Tampilkan laporan stok
+    Route::get('/filter', [StockReportController::class, 'filter'])->name('laporan.stok.filter'); // Filter laporan stok
+    Route::get('/export', [StockReportController::class, 'export'])->name('laporan.stok.export'); // Ekspor laporan stok
 });
+
+//rute aktivitas log
+Route::prefix('laporan/aktivitas')->middleware('auth')->group(function () {
+    Route::get('/', [ActivityLogController::class, 'index'])->name('laporan.aktivitas'); // Lihat laporan aktivitas
+    Route::delete('/{id}', [ActivityLogController::class, 'destroy'])->name('laporan.aktivitas.hapus'); // Hapus aktivitas
+});
+
 
 // Logout
 Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
