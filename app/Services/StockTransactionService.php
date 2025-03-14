@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\StockTransactionRepository;
 use App\Models\Product;
 use App\Models\TransactionLog;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -33,6 +34,13 @@ class StockTransactionService
         try {
             $transaction = $this->stockTransactionRepository->create($data);
             $this->updateProductStock($transaction->product_id, $transaction->quantity, $transaction->transaction_type);
+            
+            // Get product name for logging
+            $productName = Product::find($transaction->product_id)->name ?? 'Unknown Product';
+            
+            // Log activity for creation
+            $this->logActivity("Menambahkan transaksi stok: {$transaction->id} - Produk: {$productName}", $transaction);
+            
             DB::commit();
             return $transaction;
         } catch (\Exception $e) {
@@ -49,6 +57,12 @@ class StockTransactionService
             $transaction = $this->getStockTransactionById($id);
             if (!$transaction) return null;
 
+            // Store old data for logging
+            $oldData = $transaction->toArray();
+
+            // Get product name for logging
+            $productName = Product::find($transaction->product_id)->name ?? 'Unknown Product';
+
             // Rollback stock before update
             $this->rollbackProductStock($transaction->product_id, $transaction->quantity, $transaction->transaction_type);
 
@@ -56,6 +70,9 @@ class StockTransactionService
 
             // Apply new stock change
             $this->updateProductStock($transaction->product_id, $transaction->quantity, $transaction->transaction_type);
+            
+            // Log activity for update
+            $this->logActivity("Memperbarui transaksi stok: {$transaction->id} - Produk: {$productName}", $transaction, $oldData);
 
             DB::commit();
             return $transaction;
@@ -73,10 +90,20 @@ class StockTransactionService
             $transaction = $this->getStockTransactionById($id);
             if (!$transaction) return false;
 
+            // Store old data for logging
+            $oldData = $transaction->toArray();
+
+            // Get product name for logging
+            $productName = Product::find($transaction->product_id)->name ?? 'Unknown Product';
+
             // Rollback stock when deleting transaction
             $this->rollbackProductStock($transaction->product_id, $transaction->quantity, $transaction->transaction_type);
 
             $this->stockTransactionRepository->delete($id);
+            
+            // Log activity for deletion
+            $this->logActivity("Menghapus transaksi stok: {$transaction->id} - Produk: {$productName}", $transaction, $oldData);
+            
             DB::commit();
             return true;
         } catch (\Exception $e) {
@@ -90,7 +117,17 @@ class StockTransactionService
     {
         DB::beginTransaction();
         try {
+            // Store old data for logging
+            $oldData = $transaction->toArray();
+            
+            // Get product name for logging
+            $productName = Product::find($transaction->product_id)->name ?? 'Unknown Product';
+            
             $transaction->update(['status' => 'Confirmed']);
+            
+            // Log activity for confirmation
+            $this->logActivity("Mengkonfirmasi transaksi stok: {$transaction->id} - Produk: {$productName}", $transaction, $oldData);
+            
             DB::commit();
             return true;
         } catch (\Exception $e) {
@@ -137,26 +174,50 @@ class StockTransactionService
 
     public function logTransactionActivity($action, $transaction, $userId)
     {
+        // Get product name
+        $productName = Product::find($transaction->product_id)->name ?? 'Unknown Product';
+        
         TransactionLog::create([
             'user_id' => $userId,
             'transaction_id' => $transaction->id,
             'action' => $action,
-            'description' => "$action transaksi stok ID: {$transaction->id} - Produk: {$transaction->product->name}",
+            'description' => "$action transaksi stok ID: {$transaction->id} - Produk: {$productName}",
+        ]);
+    }
+    
+    // Log aktivitas seperti di ProductService
+    public function logActivity($action, $transaction, $oldData = null)
+    {
+        // Get product name
+        $productName = Product::find($transaction->product_id)->name ?? 'Unknown Product';
+        
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'role' => auth()->user()->role,
+            'action' => $action,
+            'properties' => json_encode([
+                'transaction_id' => $transaction->id,
+                'product_id' => $transaction->product_id,
+                'product_name' => $productName,
+                'transaction_type' => $transaction->transaction_type,
+                'quantity' => $transaction->quantity,
+                'before' => $oldData,
+                'after' => $transaction->toArray(),
+            ]),
         ]);
     }
 
     public function getRecentPendingTransactions($limit = 3)
     {
-    return $this->stockTransactionRepository
-        ->getAllTransactionsPaginated($limit)
-        ->filter(fn($transaction) => $transaction->status === 'Pending');
+        return $this->stockTransactionRepository
+            ->getAllTransactionsPaginated($limit)
+            ->filter(fn($transaction) => $transaction->status === 'Pending');
     }
+    
     public function getRecentConfirmedTransactions($limit = 3)
     {
         return $this->stockTransactionRepository
             ->getAllTransactionsPaginated($limit)
-            ->filter(fn($transaction) => in_array($transaction->status, ['Confirmed', 'Diterima', 'Ditolaks']));
+            ->filter(fn($transaction) => in_array($transaction->status, ['Confirmed', 'Diterima', 'Ditolak']));
     }
-    
-
 }
