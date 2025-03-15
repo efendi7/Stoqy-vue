@@ -30,7 +30,9 @@ class RegisterController extends Controller
         $isFirstUser = User::count() == 0;
 
         // Jika user pertama, set role sebagai 'Staff Gudang', jika tidak default ke 'User'
-        $role = $isFirstUser ? 'Staff Gudang' : 'User';
+        // Jika user pertama, set role sebagai 'Admin', jika tidak set ke 'pending'
+        $role = $isFirstUser ? 'admin' : 'pending';
+
 
         // Membuat user baru
         $user = User::create([
@@ -45,6 +47,13 @@ class RegisterController extends Controller
         Auth::login($user);
 
         // Redirect ke halaman dashboard dengan pesan sukses
-        return redirect()->route('dashboard')->with('success', 'Registrasi berhasil!');
+        // Jika role masih pending, arahkan ke halaman pengajuan role
+if ($role === 'pending') {
+    return redirect()->route('request.role.page')->with('warning', 'Silakan ajukan role Anda sebelum mengakses sistem.');
+}
+
+// Jika user pertama (admin), langsung ke dashboard
+return redirect()->route('dashboard')->with('success', 'Registrasi berhasil!');
+
     }
 }

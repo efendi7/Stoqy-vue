@@ -15,6 +15,21 @@
 
             <!-- Tautan Navigasi -->
             <div class="flex items-center space-x-4">
+            @php
+    $pendingRequests = \App\Models\RoleRequest::where('status', 'pending')->count();
+@endphp
+
+@if(auth()->check() && auth()->user()->role === 'admin' && $pendingRequests > 0)
+    <a href="{{ route('admin.role-requests') }}" class="relative text-gray-300 hover:text-white transition duration-300 hover:scale-110">
+        <i class="fas fa-user-check"></i> Permintaan Role
+        <span class="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+            {{ $pendingRequests }}
+        </span>
+    </a>
+@endif
+
+
+
                 @auth
                     @if(auth()->user()->role === 'admin' || auth()->user()->role === 'warehouse_manager')
                     <a href="{{ route('products.index') }}" class="text-gray-300 hover:text-white transition duration-300 hover:scale-110">
@@ -99,6 +114,14 @@
             <li>
                 <a href="{{ route('settings.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pengaturan</a>
             </li>
+
+            <li>
+                <a href="{{ route('admin.role-requests') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-user-check mr-1"></i> Permintaan Role
+                </a>
+            </li>
+
+
             @endif
 
             <li>

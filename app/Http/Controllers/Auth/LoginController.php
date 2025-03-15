@@ -16,32 +16,38 @@ class LoginController extends Controller
     }
 
     // Handle login attempt
-    public function login(Request $request)
-    {
-        // Validate the request data
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+    // Handle login attempt
+public function login(Request $request)
+{
+    // Validate the request data
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-        // Attempt to login the user
-        if (Auth::attempt($request->only('email', 'password'))) {
-            \Log::info('Login successful for email: ' . $request->input('email'));
+    // Attempt to login the user
+    if (Auth::attempt($request->only('email', 'password'))) {
+        \Log::info('Login successful for email: ' . $request->input('email'));
 
-            $request->session()->regenerate(); // Regenerate session to prevent session fixation
+        $request->session()->regenerate(); // Regenerate session to prevent session fixation
 
-            if (Auth::check()) {
-                Auth::user()->update(['is_logged_in' => true]);
+        if (Auth::check()) {
+            Auth::user()->update(['is_logged_in' => true]);
+
+            // Cek apakah user memiliki role atau tidak
+            if (Auth::user()->role === null || Auth::user()->role === 'pending') {
+                return redirect()->route('request.role.page')->with('warning', 'Silakan ajukan role Anda sebelum mengakses sistem.');
             }
 
             return redirect()->route('dashboard')->with('success', 'Login berhasil');
         }
-
-        \Log::warning('Login failed for email: ' . $request->input('email'));
-
-        // Return back with error if login fails
-        return back()->withErrors(['email' => 'Email atau kata sandi salah.'])->withInput($request->only('email'));
     }
+
+    \Log::warning('Login failed for email: ' . $request->input('email'));
+
+    // Return back with error if login fails
+    return back()->withErrors(['email' => 'Email atau kata sandi salah.'])->withInput($request->only('email'));
+}
 
     // Handle logout
     public function logout(Request $request)

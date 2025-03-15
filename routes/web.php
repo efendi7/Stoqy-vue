@@ -27,6 +27,20 @@ Route::middleware(['guest'])->group(function () {
     Route::post('register', [RegisterController::class, 'register']);
 });
 
+// Halaman untuk user yang ingin mengajukan role
+Route::get('/request-role', [UserController::class, 'showRequestRolePage'])->name('request.role.page');
+Route::post('/request-role', [UserController::class, 'requestRole'])->name('request.role');
+
+// Halaman untuk admin melihat dan menyetujui pengajuan role
+use App\Http\Controllers\AdminController;
+
+Route::get('/admin/role-requests', [AdminController::class, 'roleRequests'])->name('admin.role-requests');
+Route::post('/admin/approve-role/{id}', [AdminController::class, 'approveRole'])->name('approve.role');
+Route::post('/admin/reject-role/{id}', [AdminController::class, 'rejectRole'])->name('reject.role');
+
+
+
+
 // Rute utama
 Route::get('/', fn() => view('welcome'));
 

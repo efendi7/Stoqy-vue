@@ -26,22 +26,23 @@ class UserService
     }
 
     public function createUser(array $data)
-    {
-        $validated = $this->validateUserData($data);
+{
+    $validated = $this->validateUserData($data);
 
-        try {
-            $validated['password'] = Hash::make($validated['password']);
-            $user = User::create($validated);
+    try {
+        $validated['password'] = Hash::make($validated['password']);
+        $validated['role'] = 'pending'; // Set role default ke "pending"
+        $user = User::create($validated);
 
-            $this->logActivity("Menambahkan pengguna: {$user->name} dengan peran {$user->role}", $user->toArray());
+        $this->logActivity("Pengguna baru terdaftar: {$user->name}, menunggu verifikasi role", $user->toArray());
 
-            Log::info("User berhasil dibuat: ", ['id' => $user->id, 'email' => $user->email]);
-            return $user;
-        } catch (Exception $e) {
-            Log::error("Gagal membuat user: " . $e->getMessage());
-            return null;
-        }
+        Log::info("User berhasil dibuat dan menunggu verifikasi: ", ['id' => $user->id, 'email' => $user->email]);
+        return $user;
+    } catch (Exception $e) {
+        Log::error("Gagal membuat user: " . $e->getMessage());
+        return null;
     }
+}
 
     public function updateUser($id, array $data)
     {
@@ -147,6 +148,49 @@ class UserService
     {
         return ['admin', 'warehouse_manager', 'warehouse_staff']; 
     }
+
+    public function requestRoleChange($userId, $requestedRole)
+{
+    $user = $this->getUserById($userId);
+
+    if (!$user || $user->role !== 'pending') {
+        return false; // Hanya user "pending" yang bisa mengajukan role
+    }
+
+    $allowedRoles = ['warehouse_manager', 'warehouse_staff'];
+    if (!in_array($requestedRole, $allowedRoles)) {
+        return false; // Pastikan hanya role yang diperbolehkan
+    }
+
+    $user->requested_role = $requestedRole;
+    $user->save();
+
+    $this->logActivity("Pengguna {$user->name} mengajukan role: $requestedRole", $user->toArray());
+
+    return true;
+}
+
+public function approveRoleChange($userId, $approvedRole)
+{
+    $user = $this->getUserById($userId);
+
+    if (!$user || !$user->requested_role) {
+        return false; // Hanya user yang mengajukan role yang bisa disetujui
+    }
+
+    if ($approvedRole !== $user->requested_role) {
+        return false; // Role yang disetujui harus sesuai dengan yang diajukan
+    }
+
+    $user->role = $approvedRole;
+    $user->requested_role = null;
+    $user->save();
+
+    $this->logActivity("Admin menyetujui role {$approvedRole} untuk pengguna: {$user->name}", $user->toArray());
+
+    return true;
+}
+
 
     
 }
