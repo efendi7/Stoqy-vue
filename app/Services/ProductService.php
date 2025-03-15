@@ -158,4 +158,23 @@ class ProductService
     {
         return $this->productRepository->getSuppliers();
     }
+
+    public function validateProductData(array $data, $productId = null)
+    {
+        return validator($data, [
+            'name' => 'required|string|max:255',
+            'sku' => 'required|string|unique:products,sku' . ($productId ? ",$productId" : ''),
+            'category_id' => 'required|exists:categories,id',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'stock' => 'required|integer|min:0',
+            'initial_stock' => 'required|integer|min:0', // ✅ Tambahkan initial_stock
+            'minimum_stock' => 'nullable|integer|min:0',
+            'purchase_price' => 'required|numeric|min:0',
+            'sale_price' => 'required|numeric|min:0',
+            'image' => 'nullable|image|max:2048',
+        ])->validate();
+    }
+    
+
+
 }
