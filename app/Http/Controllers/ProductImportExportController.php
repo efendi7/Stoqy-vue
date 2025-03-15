@@ -24,60 +24,42 @@ class ProductImportExportController extends Controller
     public function export()
     {
         try {
-            // Create new Spreadsheet object
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
-            
-            // Set column headers
-            $sheet->setCellValue('A1', 'ID');
-            $sheet->setCellValue('B1', 'Nama');
-            $sheet->setCellValue('C1', 'SKU');
-            $sheet->setCellValue('D1', 'Kategori');
-            $sheet->setCellValue('E1', 'Supplier');
-            $sheet->setCellValue('F1', 'Harga Beli');
-            $sheet->setCellValue('G1', 'Harga Jual');
-            $sheet->setCellValue('H1', 'Stok');
-            $sheet->setCellValue('I1', 'Stok Minimum');
-            $sheet->setCellValue('J1', 'Dibuat Pada');
-            
-            // Get all products
-            $products = Product::with(['category', 'supplier'])->get();
-            
-            // Fill data rows
-            $row = 2;
-            foreach ($products as $product) {
-                $sheet->setCellValue('A' . $row, $product->id);
-                $sheet->setCellValue('B' . $row, $product->name);
-                $sheet->setCellValue('C' . $row, $product->sku);
-                $sheet->setCellValue('D' . $row, $product->category ? $product->category->name : 'N/A');
-                $sheet->setCellValue('E' . $row, $product->supplier ? $product->supplier->name : 'N/A');
-                $sheet->setCellValue('F' . $row, $product->purchase_price);
-                $sheet->setCellValue('G' . $row, $product->sale_price);
-                $sheet->setCellValue('H' . $row, $product->stock);
-                $sheet->setCellValue('I' . $row, $product->minimum_stock);
-                $sheet->setCellValue('J' . $row, $product->created_at);
-                $row++;
-            }
-            
-            // Auto size columns
-            foreach(range('A','J') as $columnID) {
-                $sheet->getColumnDimension($columnID)->setAutoSize(true);
-            }
-            
-            // Create file
-            $writer = new Xlsx($spreadsheet);
-            $filename = 'products_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+            $filename = 'products_export_' . date('Y-m-d_H-i-s') . '.csv';
             $path = storage_path('app/public/exports/' . $filename);
-            
-            // Make sure the directory exists
+    
+            // Pastikan folder ada
             if (!file_exists(storage_path('app/public/exports'))) {
                 mkdir(storage_path('app/public/exports'), 0755, true);
             }
+    
+            // Ambil data produk
+            $products = Product::with(['category', 'supplier'])->get();
+    
+            // Buat file CSV
+            $file = fopen($path, 'w');
             
-            // Save file
-            $writer->save($path);
+            // Header CSV
+            fputcsv($file, ['ID', 'Nama', 'SKU', 'Kategori', 'Supplier', 'Harga Beli', 'Harga Jual', 'Stok', 'Stok Minimum', 'Dibuat Pada']);
             
-            // Return download response
+            // Isi data produk
+            foreach ($products as $product) {
+                fputcsv($file, [
+                    $product->id,
+                    $product->name,
+                    $product->sku,
+                    $product->category ? $product->category->name : 'N/A',
+                    $product->supplier ? $product->supplier->name : 'N/A',
+                    $product->purchase_price,
+                    $product->sale_price,
+                    $product->stock,
+                    $product->minimum_stock,
+                    $product->created_at,
+                ]);
+            }
+    
+            fclose($file);
+    
+            // Return file untuk di-download
             return response()->download($path)->deleteFileAfterSend(true);
             
         } catch (\Exception $e) {
@@ -86,6 +68,7 @@ class ProductImportExportController extends Controller
                 ->with('error', 'Gagal mengekspor data produk: ' . $e->getMessage());
         }
     }
+    
 
     /**
      * Export template for importing products
@@ -93,39 +76,23 @@ class ProductImportExportController extends Controller
     public function exportTemplate()
     {
         try {
-            // Create new Spreadsheet object
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
-            
-            // Set column headers
-            $sheet->setCellValue('A1', 'Nama');
-            $sheet->setCellValue('B1', 'SKU');
-            $sheet->setCellValue('C1', 'Kategori ID');
-            $sheet->setCellValue('D1', 'Supplier ID');
-            $sheet->setCellValue('E1', 'Harga Beli');
-            $sheet->setCellValue('F1', 'Harga Jual');
-            $sheet->setCellValue('G1', 'Stok');
-            $sheet->setCellValue('H1', 'Stok Minimum');
-            
-            // Auto size columns
-            foreach(range('A','H') as $columnID) {
-                $sheet->getColumnDimension($columnID)->setAutoSize(true);
-            }
-            
-            // Create file
-            $writer = new Xlsx($spreadsheet);
-            $filename = 'products_import_template.xlsx';
+            $filename = 'products_import_template.csv';
             $path = storage_path('app/public/exports/' . $filename);
-            
-            // Make sure the directory exists
+    
+            // Pastikan folder ada
             if (!file_exists(storage_path('app/public/exports'))) {
                 mkdir(storage_path('app/public/exports'), 0755, true);
             }
+    
+            // Buat file CSV
+            $file = fopen($path, 'w');
             
-            // Save file
-            $writer->save($path);
+            // Header CSV
+            fputcsv($file, ['Nama', 'SKU', 'Kategori ID', 'Supplier ID', 'Harga Beli', 'Harga Jual', 'Stok', 'Stok Minimum']);
             
-            // Return download response
+            fclose($file);
+    
+            // Return file untuk di-download
             return response()->download($path)->deleteFileAfterSend(true);
             
         } catch (\Exception $e) {
@@ -134,6 +101,7 @@ class ProductImportExportController extends Controller
                 ->with('error', 'Gagal membuat template impor: ' . $e->getMessage());
         }
     }
+    
 
     /**
      * Import products from Excel file
@@ -141,45 +109,43 @@ class ProductImportExportController extends Controller
     public function import(Request $request)
     {
         try {
-            // Validate file
+            // Validasi file
             $validator = Validator::make($request->all(), [
-                'file' => 'required|mimes:xlsx,xls|max:10240', // 10MB max
+                'file' => 'required|mimes:csv,txt|max:10240', // Hanya terima CSV
             ]);
-            
+    
             if ($validator->fails()) {
                 return redirect()->route('products.import-export.index')
                     ->withErrors($validator)
                     ->with('error', 'Format file tidak valid.');
             }
-            
-            // Get file and store it
+    
+            // Simpan file sementara
             $file = $request->file('file');
             $path = $file->store('temp');
             $fullPath = storage_path('app/' . $path);
-            
-            // Load the Excel file
-            $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($fullPath);
-            $reader->setReadDataOnly(true);
-            $spreadsheet = $reader->load($fullPath);
-            $worksheet = $spreadsheet->getActiveSheet();
-            $rows = $worksheet->toArray();
-            
-            // Remove header row
-            array_shift($rows);
-            
-            // Initialize counters
+    
+            // Buka file CSV
+            $fileHandle = fopen($fullPath, 'r');
+            if ($fileHandle === false) {
+                throw new \Exception("Gagal membuka file CSV.");
+            }
+    
+            // Lewati baris header
+            fgetcsv($fileHandle);
+    
+            // Inisialisasi counter
             $imported = 0;
             $errors = 0;
             $errorMessages = [];
-            
-            // Process each row
-            foreach ($rows as $rowIndex => $row) {
-                // Skip empty rows
+    
+            // Baca tiap baris
+            while (($row = fgetcsv($fileHandle, 1000, ",")) !== false) {
                 if (empty(array_filter($row))) {
-                    continue;
+                    continue; // Skip baris kosong
                 }
-                
-                // Extract data
+    
+                // Ekstrak data
                 $productData = [
                     'name' => $row[0] ?? null,
                     'sku' => $row[1] ?? null,
@@ -190,8 +156,8 @@ class ProductImportExportController extends Controller
                     'stock' => $row[6] ?? 0,
                     'minimum_stock' => $row[7] ?? 0,
                 ];
-                
-                // Validate data
+    
+                // Validasi data
                 $rowValidator = Validator::make($productData, [
                     'name' => 'required|string|max:255',
                     'sku' => 'required|string|unique:products,sku,NULL,id,deleted_at,NULL',
@@ -202,27 +168,27 @@ class ProductImportExportController extends Controller
                     'stock' => 'required|integer',
                     'minimum_stock' => 'required|integer|min:0',
                 ]);
-                
+    
                 if ($rowValidator->fails()) {
                     $errors++;
-                    $errorMessages[] = "Baris " . ($rowIndex + 2) . ": " . implode(', ', $rowValidator->errors()->all());
+                    $errorMessages[] = "Baris " . ($imported + $errors + 2) . ": " . implode(', ', $rowValidator->errors()->all());
                     continue;
                 }
-                
-                // Create product
+    
+                // Simpan produk ke database
                 Product::create($productData);
                 $imported++;
             }
-            
-            // Clean up
-            unlink($fullPath);
-            
-            // Prepare response message
+    
+            fclose($fileHandle);
+            unlink($fullPath); // Hapus file sementara
+    
+            // Pesan hasil impor
             $message = "Impor produk selesai. $imported produk berhasil diimpor.";
             if ($errors > 0) {
                 $message .= " $errors produk gagal diimpor.";
             }
-            
+    
             return redirect()->route('products.import-export.index')
                 ->with('success', $message)
                 ->with('errorMessages', $errorMessages);
@@ -233,4 +199,5 @@ class ProductImportExportController extends Controller
                 ->with('error', 'Gagal mengimpor data produk: ' . $e->getMessage());
         }
     }
+    
 }

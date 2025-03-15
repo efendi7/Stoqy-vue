@@ -37,7 +37,8 @@
                 <input type="file" name="file" class="block w-full text-sm border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" required>
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Import</button>
             </div>
-            <small class="text-gray-500">File Excel harus dalam format .xlsx atau .xls (max 10MB)</small>
+            <small class="text-gray-500">File harus dalam format .csv (max 10MB)</small>
+
         </form>
     </div>
 
@@ -52,7 +53,7 @@
     <div class="bg-white bg-opacity-50 p-6 rounded-lg shadow-lg">
         <h5 class="text-lg font-semibold mb-2">Export Produk</h5>
         <a href="{{ route('products.export') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Export Semua Produk</a>
-        <small class="block text-gray-500 mt-1">Download semua data produk dalam format Excel</small>
+        <small class="block text-gray-500 mt-1">Download semua data produk dalam format .csv</small>
     </div>
 </div>
 @endsection
