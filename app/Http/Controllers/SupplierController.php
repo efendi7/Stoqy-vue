@@ -1,7 +1,6 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Supplier;
 use App\Services\SupplierService;
 use Illuminate\Http\Request;
 
@@ -17,58 +16,65 @@ class SupplierController extends Controller
     public function index()
     {
         $suppliers = $this->supplierService->getAllSuppliers();
+
+        // Log aktivitas
+        $this->supplierService->logActivity('Melihat daftar supplier');
+
         return view('suppliers.index', compact('suppliers'));
     }
 
     public function create()
     {
+        // Log aktivitas
+        $this->supplierService->logActivity('Mengakses formulir tambah supplier');
+
         return view('suppliers.create');
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'contact' => 'nullable|string|max:255',
-            'address' => 'nullable|string',
-            'email' => 'required|email|max:255',
-        ]);
+        $supplier = $this->supplierService->createSupplier($request->all());
 
-        $this->supplierService->createSupplier($validated);
-
-        return redirect()->route('suppliers.index')
-            ->with('success', 'Supplier berhasil ditambahkan!');
+        return $supplier
+            ? redirect()->route('suppliers.index')->with('success', 'Supplier berhasil ditambahkan!')
+            : redirect()->back()->with('error', 'Gagal menambahkan supplier.');
     }
 
-    public function edit(Supplier $supplier)
+    public function edit($id)
     {
+        $supplier = $this->supplierService->getSupplierById($id);
+
+        // Log aktivitas
+        $this->supplierService->logActivity("Mengakses formulir edit supplier: {$supplier->name}");
+
         return view('suppliers.edit', compact('supplier'));
     }
 
-    public function show(Supplier $supplier)
+    public function show($id)
     {
+        $supplier = $this->supplierService->getSupplierById($id);
+
+        // Log aktivitas
+        $this->supplierService->logActivity("Melihat detail supplier: {$supplier->name}");
+
         return view('suppliers.show', compact('supplier'));
     }
 
-    public function update(Request $request, Supplier $supplier)
+    public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'contact' => 'nullable|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'email' => 'required|string|email|max:255',
-        ]);
+        $supplier = $this->supplierService->updateSupplier($id, $request->all());
 
-        $this->supplierService->updateSupplier($supplier->id, $validated);
-
-        return redirect()->route('suppliers.index')
-            ->with('success', 'Supplier berhasil diperbarui!');
+        return $supplier
+            ? redirect()->route('suppliers.index')->with('success', 'Supplier berhasil diperbarui!')
+            : redirect()->back()->with('error', 'Gagal memperbarui supplier.');
     }
 
-    public function destroy(Supplier $supplier)
+    public function destroy($id)
     {
-        $this->supplierService->deleteSupplier($supplier->id);
+        $deleted = $this->supplierService->deleteSupplier($id);
 
-        return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil dihapus!');
+        return $deleted
+            ? redirect()->route('suppliers.index')->with('success', 'Supplier berhasil dihapus!')
+            : redirect()->back()->with('error', 'Gagal menghapus supplier.');
     }
 }

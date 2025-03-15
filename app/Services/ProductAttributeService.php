@@ -102,4 +102,14 @@ class ProductAttributeService
             'properties' => json_encode($properties),
         ]);
     }
+
+    public function validateProductAttributeData(array $data): array
+    {
+    return validator($data, [
+        'attribute_name' => 'required|string|max:255',
+        'attribute_value' => 'required|string|max:255',
+        'product_id' => 'required|exists:products,id',
+    ])->validate();
+    }
+
 }

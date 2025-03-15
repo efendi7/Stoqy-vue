@@ -29,10 +29,7 @@ class CategoryController extends Controller
     // Menyimpan kategori baru
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        $validated = $this->categoryService->validateCategoryData($request->all());
 
         $this->categoryService->createCategory($validated);
 
@@ -49,11 +46,8 @@ class CategoryController extends Controller
     // Memperbarui kategori
     public function update(Request $request, $categoryId)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
+        $validated = $this->categoryService->validateCategoryData($request->all());
+        
         $this->categoryService->updateCategory($categoryId, $validated);
 
         return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui!');

@@ -1,80 +1,99 @@
 <?php
 namespace App\Services;
 
-use App\Interfaces\SupplierRepositoryInterface;
+use App\Models\Supplier;
 use App\Models\ActivityLog;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Exception;
 
 class SupplierService
 {
-    protected $supplierRepository;
-
-    public function __construct(SupplierRepositoryInterface $supplierRepository)
+    public function getAllSuppliers()
     {
-        $this->supplierRepository = $supplierRepository;
+        return Supplier::paginate(10);
     }
 
-    public function getAllSuppliers(): LengthAwarePaginator
+    public function getSupplierById($id)
     {
-        return $this->supplierRepository->getAllSuppliers();
+        return Supplier::findOrFail($id);
     }
 
     public function createSupplier(array $data)
     {
-        $supplier = $this->supplierRepository->createSupplier($data);
+        try {
+            // Validasi
+            $validated = $this->validateSupplier($data);
 
-        // Simpan log aktivitas
+            $supplier = Supplier::create($validated);
+
+            // Log aktivitas
+            $this->logActivity("Menambahkan supplier: {$supplier->name}");
+
+            return $supplier;
+        } catch (Exception $e) {
+            Log::error("Gagal menambahkan supplier: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function updateSupplier($id, array $data)
+    {
+        try {
+            $supplier = Supplier::findOrFail($id);
+            $validated = $this->validateSupplier($data);
+
+            $supplier->update($validated);
+
+            // Log aktivitas
+            $this->logActivity("Memperbarui supplier: {$supplier->name}");
+
+            return $supplier;
+        } catch (ModelNotFoundException $e) {
+            Log::error("Supplier dengan ID {$id} tidak ditemukan!");
+            return null;
+        } catch (Exception $e) {
+            Log::error("Gagal memperbarui supplier: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function deleteSupplier($id)
+    {
+        try {
+            $supplier = Supplier::findOrFail($id);
+            $supplier->delete();
+
+            // Log aktivitas
+            $this->logActivity("Menghapus supplier: {$supplier->name}");
+
+            return true;
+        } catch (ModelNotFoundException $e) {
+            Log::error("Supplier dengan ID {$id} tidak ditemukan!");
+            return false;
+        } catch (Exception $e) {
+            Log::error("Gagal menghapus supplier: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function validateSupplier($data)
+    {
+        return validator($data, [
+            'name' => 'required|string|max:255',
+            'contact' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'email' => 'required|email|max:255',
+        ])->validate();
+    }
+
+    public function logActivity($action, $properties = null)
+    {
         ActivityLog::create([
             'user_id' => auth()->id(),
-            'role' => auth()->user()->role, 
-            'action' => "Menambahkan supplier: {$supplier->name}",
-            'properties' => json_encode([
-                'supplier_id' => $supplier->id,
-                'data' => $data,
-            ]),
+            'role' => auth()->user()->role,
+            'action' => $action,
+            'properties' => $properties ? json_encode($properties) : null,
         ]);
-
-        return $supplier;
-    }
-
-    public function updateSupplier($supplierId, array $data): bool
-    {
-        $supplier = $this->supplierRepository->getSupplierById($supplierId);
-        $oldData = $supplier->toArray();
-        $updated = $this->supplierRepository->updateSupplier($supplierId, $data);
-
-        if ($updated) {
-            // Simpan log aktivitas
-            ActivityLog::create([
-                'user_id' => auth()->id(),
-                'role' => auth()->user()->role, 
-                'action' => "Mengedit supplier: {$supplier->name}",
-                'properties' => json_encode([
-                    'before' => $oldData,
-                    'after' => $data,
-                ]),
-            ]);
-        }
-
-        return $updated;
-    }
-
-    public function deleteSupplier($supplierId): bool
-    {
-        $supplier = $this->supplierRepository->getSupplierById($supplierId);
-        $supplierData = $supplier->toArray();
-        $deleted = $this->supplierRepository->deleteSupplier($supplierId);
-
-        if ($deleted) {
-            // Simpan log aktivitas
-            ActivityLog::create([
-                'user_id' => auth()->id(),
-                'role' => auth()->user()->role, 
-                'action' => "Menghapus supplier: {$supplier->name}",
-                'properties' => json_encode($supplierData),
-            ]);
-        }
-
-        return $deleted;
     }
 }

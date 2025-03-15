@@ -32,11 +32,7 @@ class ProductAttributeController extends Controller
     // Menyimpan atribut baru
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'attribute_name' => 'required|string|max:255',
-            'attribute_value' => 'required|string|max:255',
-            'product_id' => 'required|exists:products,id',
-        ]);
+        $validatedData = $this->productAttributeService->validateProductAttributeData($request->all());
 
         $this->productAttributeService->createProductAttribute($validatedData);
 
@@ -52,10 +48,7 @@ class ProductAttributeController extends Controller
     // Menyimpan hasil edit atribut
     public function update(Request $request, ProductAttribute $productAttribute)
     {
-        $validatedData = $request->validate([
-            'attribute_name' => 'required|string|max:255',
-            'attribute_value' => 'required|string|max:255',
-        ]);
+        $validatedData = $this->productAttributeService->validateProductAttributeData($request->all());
 
         $this->productAttributeService->updateProductAttribute($productAttribute->id, $validatedData);
 

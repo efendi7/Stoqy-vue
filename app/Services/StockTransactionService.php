@@ -220,4 +220,6 @@ class StockTransactionService
             ->getAllTransactionsPaginated($limit)
             ->filter(fn($transaction) => in_array($transaction->status, ['Confirmed', 'Diterima', 'Ditolak']));
     }
+
+    
 }
