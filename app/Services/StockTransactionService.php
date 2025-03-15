@@ -8,6 +8,8 @@ use App\Models\TransactionLog;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\StockTransaction;
+
 
 class StockTransactionService
 {
@@ -84,34 +86,37 @@ class StockTransactionService
     }
 
     public function deleteStockTransaction($id)
-    {
-        DB::beginTransaction();
-        try {
-            $transaction = $this->getStockTransactionById($id);
-            if (!$transaction) return false;
+{
+    DB::beginTransaction();
+    try {
+        $transaction = $this->getStockTransactionById($id);
+        if (!$transaction) return false;
 
-            // Store old data for logging
-            $oldData = $transaction->toArray();
+        // Store old data for logging
+        $oldData = $transaction->toArray();
 
-            // Get product name for logging
-            $productName = Product::find($transaction->product_id)->name ?? 'Unknown Product';
+        // Get product name for logging
+        $productName = Product::find($transaction->product_id)->name ?? 'Unknown Product';
 
-            // Rollback stock when deleting transaction
-            $this->rollbackProductStock($transaction->product_id, $transaction->quantity, $transaction->transaction_type);
+        // Log activity for deletion **SEBELUM transaksi dihapus**
+        $this->logActivity("Menghapus transaksi stok: {$transaction->id} - Produk: {$productName}", $transaction, $oldData);
+        
+        // Log transaction activity juga **SEBELUM transaksi dihapus**
+        $this->logTransactionActivity("Menghapus", $transaction, auth()->id());
 
-            $this->stockTransactionRepository->delete($id);
-            
-            // Log activity for deletion
-            $this->logActivity("Menghapus transaksi stok: {$transaction->id} - Produk: {$productName}", $transaction, $oldData);
-            
-            DB::commit();
-            return true;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Failed to delete stock transaction: ' . $e->getMessage());
-            return false;
-        }
+        // Rollback stock when deleting transaction
+        $this->rollbackProductStock($transaction->product_id, $transaction->quantity, $transaction->transaction_type);
+
+        $this->stockTransactionRepository->delete($id);
+
+        DB::commit();
+        return true;
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Failed to delete stock transaction: ' . $e->getMessage());
+        return false;
     }
+}
 
     public function confirmTransaction($transaction)
     {
@@ -174,9 +179,15 @@ class StockTransactionService
 
     public function logTransactionActivity($action, $transaction, $userId)
     {
+        // Cek apakah transaksi masih ada di database
+        if (!StockTransaction::find($transaction->id)) {
+            Log::warning("Gagal mencatat log transaksi: Transaksi ID {$transaction->id} sudah tidak ada.");
+            return;
+        }
+    
         // Get product name
         $productName = Product::find($transaction->product_id)->name ?? 'Unknown Product';
-        
+    
         TransactionLog::create([
             'user_id' => $userId,
             'transaction_id' => $transaction->id,
@@ -184,6 +195,7 @@ class StockTransactionService
             'description' => "$action transaksi stok ID: {$transaction->id} - Produk: {$productName}",
         ]);
     }
+    
     
     // Log aktivitas seperti di ProductService
     public function logActivity($action, $transaction, $oldData = null)
@@ -221,5 +233,4 @@ class StockTransactionService
             ->filter(fn($transaction) => in_array($transaction->status, ['Confirmed', 'Diterima', 'Ditolak']));
     }
 
-    
 }

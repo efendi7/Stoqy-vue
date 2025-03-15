@@ -46,6 +46,7 @@ class DashboardService
         
         // Get activity logs
         $recentActivities = $this->dashboardRepository->getTodayActivitiesPaginated(10);
+
         
         // Get transaction data per day in the selected period
         $dateRange = $startDate->daysUntil($endDate);
@@ -106,6 +107,9 @@ class DashboardService
         $viewData['outgoingTaskStaff'] = collect();
         $viewData['completeTaskStaff'] = collect();
         
+        //dd($viewData['completeTaskStaff']);
+
+
         // Warehouse manager role data
         if ($user->role === 'warehouse_manager') {
             $viewData['pendingIncomingTasks'] = $this->dashboardRepository->getPendingIncomingTransactions(5);

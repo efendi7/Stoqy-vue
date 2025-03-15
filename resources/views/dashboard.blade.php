@@ -140,7 +140,7 @@
                     <span class="text-white font-bold bg-blue-700 px-3 py-1 rounded">{{ $task->quantity }}</span>
                 </div>
                 <p class="text-sm text-yellow-600 font-semibold mt-2">
-                    <a href="{{ route('stock-transactions.pending', ['product_id' => $task->product->id]) }}" class="underline hover:text-yellow-800">
+                    <a href="{{ route('stock_transactions.pending', ['product_id' => $task->product->id]) }}" class="underline hover:text-yellow-800">
                         ⚠️ Perlu diperiksa
                     </a>
                 </p>
@@ -173,7 +173,7 @@
                     <span class="text-white font-bold bg-red-700 px-3 py-1 rounded">{{ $task->quantity }}</span>
                 </div>
                 <p class="text-sm text-yellow-600 font-semibold mt-2">
-                    <a href="{{ route('stock-transactions.pending', ['product_id' => $task->product->id]) }}" class="underline hover:text-yellow-800">
+                    <a href="{{ route('stock_transactions.pending', ['product_id' => $task->product->id]) }}" class="underline hover:text-yellow-800">
                         ⚠️ Perlu diperiksa
                     </a>
                 </p>
@@ -199,7 +199,7 @@
         </h2>
     </div>
     <ul class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        @forelse ($completeTaskStaff as $task)
+        @forelse ($completeTaskStaff->items() as $task)
             <li class="bg-green-50 p-3 rounded-lg flex flex-col hover:bg-green-100 hover:shadow-md transition">
                 <div class="flex justify-between items-center">
                     <strong class="text-green-700 truncate">{{ $task->product->name }}</strong>
@@ -214,7 +214,7 @@
                 </span>
                 <!-- Link -->
                 <p class="text-sm text-slate-600 font-semibold mt-2">
-                    <a href="{{ route('stock-transactions.confirmed', ['product_id' => $task->product->id]) }}" class="underline hover:text-blue-700">
+                    <a href="{{ route('stock_transactions.confirmed', ['product_id' => $task->product->id]) }}" class="underline hover:text-blue-700">
                         🔍 Periksa
                     </a>
                 </p>

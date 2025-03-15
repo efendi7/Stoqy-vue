@@ -159,4 +159,6 @@ class DashboardRepository implements DashboardRepositoryInterface
             ->latest()
             ->paginate($perPage);
     }
+
+
 }

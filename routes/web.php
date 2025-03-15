@@ -5,7 +5,6 @@ use App\Http\Controllers\{
     Auth\LoginController,
     Auth\RegisterController,
     CategoryController,
-    ContactController,
     DashboardController,
     StockReportController,
     ActivityLogController,
@@ -79,13 +78,15 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('stock_transactions', StockTransactionController::class);
     Route::prefix('stock_transactions')->group(function () {
-        Route::patch('/{id}/update_status', [StockTransactionController::class, 'updateStatus'])->name('stock_transactions.update_status');
+        Route::get('/{id}/update_status', [StockTransactionController::class, 'updateStatus'])->name('stock_transactions.update_status');
         Route::post('/{id}/confirm', [StockTransactionController::class, 'confirm'])->name('stock_transactions.confirm');
-        Route::get('/pending', [StockTransactionController::class, 'pending'])->name('stock_transactions.pending');
-        Route::get('/confirmed', [StockTransactionController::class, 'confirmed'])->name('stock_transactions.confirmed');
+       
         Route::post('/{id}/add_note', [StockTransactionController::class, 'addNote'])->name('stock_transactions.add_note');
         Route::post('/set_minimum_stock', [StockTransactionController::class, 'setMinimumStock'])->name('stock_transactions.set_minimum_stock');
     });
+
+    Route::get('/pending', [StockTransactionController::class, 'pending'])->name('stock_transactions.pending');
+    Route::get('/confirmed', [StockTransactionController::class, 'confirmed'])->name('stock_transactions.confirmed');
 
     Route::get('/transactions/outgoing/{transaction}', [StockTransactionController::class, 'showOutgoing'])->name('transactions.outgoing.show');
     Route::get('/transactions/incoming/{transaction}', [StockTransactionController::class, 'show'])->name('transactions.incoming.show');
@@ -93,8 +94,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('stock_opname', StockOpnameController::class)->only(['index', 'store']);
     Route::put('/stock_opname/updateStock/{id}', [StockOpnameController::class, 'updateStock'])->name('stock_opname.updateStock');
-
-    Route::post('/contact-submit', [ContactController::class, 'submit'])->name('contact.submit');
 
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/update', [SettingController::class, 'update'])->name('settings.update');
