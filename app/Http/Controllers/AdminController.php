@@ -8,7 +8,7 @@ class AdminController extends Controller
 {
     public function roleRequests()
     {
-        $users = User::whereNotNull('requested_role')->get();
+        $users = User::whereNotNull('requested_role')->paginate(10);
         return view('admin.role-requests', compact('users'));
     }
 

@@ -69,16 +69,8 @@ class StockTransactionController extends Controller
             return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk membuat transaksi stok.');
         }
 
-        $validatedData = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'user_id' => 'required|exists:users,id',
-            'type' => 'required|in:Masuk,Keluar',
-            'quantity' => 'required|integer|min:1',
-            'transaction_date' => 'nullable|date',
-            'notes' => 'nullable|string'
-        ]);
+        $validatedData = $this->stockTransactionService->validateTransactionData($request->all());
 
-        $validatedData['status'] = 'Pending';
 
         $transaction = $this->stockTransactionService->createStockTransaction($validatedData);
 
@@ -115,14 +107,7 @@ class StockTransactionController extends Controller
             return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk memperbarui transaksi stok.');
         }
 
-        $validatedData = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'user_id' => 'required|exists:users,id',
-            'type' => 'required|in:Masuk,Keluar',
-            'quantity' => 'required|integer|min:1',
-            'transaction_date' => 'required|date',
-            'notes' => 'nullable|string'
-        ]);
+        $validatedData = $this->stockTransactionService->validateTransactionData($request->all());
 
         $transaction = $this->stockTransactionService->getStockTransactionById($id);
         if (!$transaction) {

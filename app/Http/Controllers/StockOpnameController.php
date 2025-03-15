@@ -14,36 +14,28 @@ class StockOpnameController extends Controller
     {
         $this->stockOpnameService = $stockOpnameService;
     }
+
     public function index()
     {
-    $products = Product::with('stockOpname')->paginate(10);
-    return view('stock_opname.index', compact('products'));
-    return view('stock_opname.index');
+        $products = Product::with('stockOpname')->paginate(10);
+        return view('stock_opname.index', compact('products'));
     }
-
 
     public function store(Request $request)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'recorded_stock' => 'required|integer|min:0',
-            'actual_stock' => 'required|integer|min:0',
-            'difference' => 'required|integer'
-        ]);
-
         $this->stockOpnameService->storeStockOpname($request->all());
 
         return redirect()->back()->with('success', 'Stock opname berhasil disimpan.');
     }
+
     public function updateStock(Request $request, $productId)
-{
-    $success = $this->stockOpnameService->updateStockToActual($productId);
+    {
+        $success = $this->stockOpnameService->updateStockToActual($productId);
 
-    if ($success) {
-        return redirect()->back()->with('success', 'Stok berhasil diperbarui ke actual stock.');
+        if ($success) {
+            return redirect()->back()->with('success', 'Stok berhasil diperbarui ke actual stock.');
+        }
+
+        return redirect()->back()->with('error', 'Gagal memperbarui stok.');
     }
-
-    return redirect()->back()->with('error', 'Gagal memperbarui stok.');
-}
-
 }

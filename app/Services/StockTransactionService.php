@@ -9,6 +9,8 @@ use App\Models\ActivityLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\StockTransaction;
+use Illuminate\Support\Facades\Validator;
+
 
 
 class StockTransactionService
@@ -232,5 +234,18 @@ class StockTransactionService
             ->getAllTransactionsPaginated($limit)
             ->filter(fn($transaction) => in_array($transaction->status, ['Confirmed', 'Diterima', 'Ditolak']));
     }
+
+    public function validateTransactionData($data)
+    {
+    return Validator::make($data, [
+        'product_id' => 'required|exists:products,id',
+        'user_id' => 'required|exists:users,id',
+        'type' => 'required|in:Masuk,Keluar',
+        'quantity' => 'required|integer|min:1',
+        'transaction_date' => 'nullable|date',
+        'notes' => 'nullable|string'
+    ])->validate();
+    }
+
 
 }

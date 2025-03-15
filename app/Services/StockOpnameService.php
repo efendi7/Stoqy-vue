@@ -5,6 +5,7 @@ use App\Interfaces\StockOpnameRepositoryInterface;
 use App\Models\ActivityLog;
 use App\Models\Product;  // Ensure this is imported
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class StockOpnameService
 {
@@ -13,6 +14,18 @@ class StockOpnameService
     public function __construct(StockOpnameRepositoryInterface $stockOpnameRepository)
     {
         $this->stockOpnameRepository = $stockOpnameRepository;
+    }
+
+    public function validateStockOpnameData($data)
+    {
+        $validator = Validator::make($data, [
+            'product_id' => 'required|exists:products,id',
+            'recorded_stock' => 'required|integer|min:0',
+            'actual_stock' => 'required|integer|min:0',
+            'difference' => 'required|integer',
+        ]);
+
+        return $validator->validate(); // Akan otomatis throw error jika tidak valid
     }
 
     public function storeStockOpname($data)
