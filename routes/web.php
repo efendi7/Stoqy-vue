@@ -4,18 +4,18 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
     Auth\LoginController,
     Auth\RegisterController,
-    CategoryController,
     DashboardController,
-    StockReportController,
-    ActivityLogController,
-    ProductAttributeController,
     ProductController,
-    ProductImportExportController,
-    ProfileController,
-    SettingController,
-    StockOpnameController,
-    StockTransactionController,
+    CategoryController,
     SupplierController,
+    ProductAttributeController,
+    ProductImportExportController,
+    StockTransactionController,
+    StockReportController,
+    StockOpnameController,
+    ActivityLogController,
+    ProfileController,
+    SettingController, 
     UserController
 };
 
@@ -94,7 +94,6 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('stock_transactions')->group(function () {
         Route::get('/{id}/update_status', [StockTransactionController::class, 'updateStatus'])->name('stock_transactions.update_status');
         Route::post('/{id}/confirm', [StockTransactionController::class, 'confirm'])->name('stock_transactions.confirm');
-       
         Route::post('/{id}/add_note', [StockTransactionController::class, 'addNote'])->name('stock_transactions.add_note');
         Route::post('/set_minimum_stock', [StockTransactionController::class, 'setMinimumStock'])->name('stock_transactions.set_minimum_stock');
     });

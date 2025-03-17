@@ -36,6 +36,9 @@ use App\Repositories\SupplierRepository;
 use App\Interfaces\ProductImportExportRepositoryInterface;
 use App\Repositories\ProductImportExportRepository;
 
+use App\Interfaces\SettingRepositoryInterface;
+use App\Repositories\SettingRepository;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -55,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SupplierRepositoryInterface::class, SupplierRepository::class);
         $this->app->bind(DashboardRepositoryInterface::class, DashboardRepository::class);
         $this->app->bind(ProductImportExportRepositoryInterface::class, ProductImportExportRepository::class);
+        $this->app->bind(SettingRepositoryInterface::class, SettingRepository::class);
 
 
     }
