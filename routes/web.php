@@ -61,6 +61,7 @@ Route::prefix('laporan/stok')->middleware('auth')->group(function () {
 Route::prefix('laporan/aktivitas')->middleware('auth')->group(function () {
     Route::get('/', [ActivityLogController::class, 'index'])->name('laporan.aktivitas'); // Lihat laporan aktivitas
     Route::delete('/{id}', [ActivityLogController::class, 'destroy'])->name('laporan.aktivitas.hapus'); // Hapus aktivitas
+    Route::delete('/activities/delete-all', [ActivityLogController::class, 'deleteAllLogs'])->name('activities.delete-all');
 });
 
 

@@ -14,15 +14,21 @@ class ActivityLogController extends Controller
     }
 
     public function index(Request $request)
+{
+    $search = $request->input('search');
+    $startDate = $request->input('tanggal_mulai', now()->startOfMonth()->toDateString());
+    $endDate = $request->input('tanggal_akhir', now()->toDateString());
+
+    $aktivitas = $this->activityLogService->getAllLogs($search, $startDate, $endDate);
+
+    return view('activities.index', compact('aktivitas', 'search', 'startDate', 'endDate'));
+}
+
+
+    public function deleteAllLogs()
     {
-        // Definisikan tanggal awal dan akhir (opsional untuk filter)
-        $startDate = $request->input('tanggal_mulai', now()->startOfMonth()->toDateString());
-        $endDate = $request->input('tanggal_akhir', now()->toDateString());
+        $this->activityLogService->deleteAllActivityLogs();
+        return redirect()->route('laporan.aktivitas')->with('success', 'Semua log aktivitas berhasil dihapus.');
 
-        // Ambil data aktivitas log
-        $aktivitas = $this->activityLogService->getActivityLogs($startDate, $endDate);
-
-        // Pastikan semua variabel diteruskan ke view
-        return view('activities.index', compact('aktivitas', 'startDate', 'endDate'));
     }
 }

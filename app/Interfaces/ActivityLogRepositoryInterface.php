@@ -1,8 +1,11 @@
 <?php
 namespace App\Interfaces;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+
 interface ActivityLogRepositoryInterface
 {
-    public function getAll($search = null);
-    public function getByUser($userId);
+    public function getAll(?string $search = null, ?string $fromDate = null, ?string $toDate = null, int $perPage = 10): LengthAwarePaginator;
+    public function getByUser(int $userId, int $perPage = 10): LengthAwarePaginator;
+    public function deleteAllLogs(): bool;
 }

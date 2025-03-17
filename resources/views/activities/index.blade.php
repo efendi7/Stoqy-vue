@@ -17,6 +17,7 @@
             </ul>
         </div>
     @endif
+
     {{-- Flash Message Sukses --}}
     @if(session('success'))
     <div id="flash-success" class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
@@ -34,15 +35,14 @@
             let flashMessage = document.getElementById("flash-success");
             if (flashMessage) {
                 flashMessage.classList.add("opacity-0", "transition-opacity", "duration-500");
-                setTimeout(() => flashMessage.remove(), 500); // Hapus elemen setelah transisi selesai
+                setTimeout(() => flashMessage.remove(), 500);
             }
         }, 3000);
     });
-</script>
-
+    </script>
     @endif
-    
 
+    {{-- Bagian Filter Periode --}}
     <div class="bg-white p-6 rounded-lg shadow-md mb-8">
         <h3 class="text-gray-600 text-sm font-medium mb-4">Filter Periode</h3>
         <form id="filterForm" action="{{ route('laporan.aktivitas') }}" method="GET" class="flex flex-wrap gap-4">
@@ -65,6 +65,17 @@
         </form>
     </div>
 
+    {{-- Tombol Hapus Semua Log --}}
+    <div class="mb-4 flex justify-end">
+        <form action="{{ route('activities.delete-all') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus semua log aktivitas?');">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 shadow-md">
+                Hapus Semua Log
+            </button>
+        </form>
+    </div>
+
     {{-- Tabel Aktivitas --}}
     <div class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50">
         <table class="min-w-full border-collapse border border-gray-300">
@@ -74,7 +85,7 @@
                     <th class="py-3 px-4 border border-gray-300 text-left">Role</th>
                     <th class="py-3 px-4 border border-gray-300 text-left">Aksi</th>
                     <th class="py-3 px-4 border border-gray-300 text-center">Waktu</th>
-                    <th class="py-3 px-4 border border-gray-300 text-center">Hapus</th> <!-- Kolom baru -->
+                    <th class="py-3 px-4 border border-gray-300 text-center">Hapus</th> 
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-300">

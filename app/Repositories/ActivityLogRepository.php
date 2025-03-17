@@ -1,29 +1,42 @@
 <?php
 namespace App\Repositories;
 
-use App\Interfaces\ActivityLogRepositoryInterface;
 use App\Models\ActivityLog;
+use App\Interfaces\ActivityLogRepositoryInterface;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ActivityLogRepository implements ActivityLogRepositoryInterface
 {
-    public function getAll($search = null)
+    protected $model;
+
+    public function __construct(ActivityLog $model)
     {
-        return ActivityLog::with('user')
-            ->when($search, function($query, $search) {
-                return $query->where('description', 'like', "%{$search}%")
-                    ->orWhereHas('user', function($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    });
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(50);
+        $this->model = $model;
     }
 
-    public function getByUser($userId)
+    public function getAll(string $search = null, string $fromDate = null, string $toDate = null, int $perPage = 10): LengthAwarePaginator
     {
-        return ActivityLog::where('user_id', $userId)
-            ->with('user')
-            ->orderBy('created_at', 'desc')
-            ->paginate(50);
+        $query = $this->model->newQuery();
+
+        if ($search) {
+            $query->where('activity', 'LIKE', "%{$search}%");
+        }
+
+        if ($fromDate && $toDate) {
+            $query->whereBetween('created_at', [$fromDate, $toDate]);
+        }
+
+        return $query->latest()->paginate($perPage);
+    }
+
+    public function getByUser(int $userId, int $perPage = 10): LengthAwarePaginator
+    {
+        return $this->model->where('user_id', $userId)->latest()->paginate($perPage);
+    }
+
+    public function deleteAllLogs(): bool
+    {
+        return (bool) $this->model->query()->delete();
     }
 }
