@@ -3,25 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Services\DashboardService;
-use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
-class DashboardController extends Controller 
+class DashboardController extends Controller
 {
     protected $dashboardService;
-    protected $userService;
-    
-    public function __construct(DashboardService $dashboardService, UserService $userService)
+
+    public function __construct(DashboardService $dashboardService)
     {
         $this->dashboardService = $dashboardService;
-        $this->userService = $userService;
     }
-    
+
     public function index(Request $request)
     {
-        $user = auth()->user();
-        $viewData = $this->dashboardService->getDashboardData($request, $user);
+        $user = Auth::user(); // Get the authenticated user
         
-        return view('dashboard', $viewData);
+        // Get all necessary data and the determined view path from the service
+        $viewData = $this->dashboardService->getDashboardData($request, $user);
+
+        // Extract the determined view path from the data
+        $dashboardView = $viewData['dashboardView'] ?? 'dashboard.default'; // Fallback to a default view
+
+        // Remove the view path from viewData before passing it to the view
+        unset($viewData['dashboardView']);
+
+        // Pass the remaining data to the determined view
+        return view($dashboardView, $viewData);
     }
 }

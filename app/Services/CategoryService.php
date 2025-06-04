@@ -22,6 +22,12 @@ class CategoryService
         return $this->categoryRepository->getAllCategories();
     }
 
+    public function getCategoryById($categoryId)
+{
+    return Category::findOrFail($categoryId);
+}
+
+
     // Buat kategori baru dan catat aktivitas
     public function createCategory(array $data): Category
     {

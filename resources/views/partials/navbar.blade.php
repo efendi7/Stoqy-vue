@@ -65,10 +65,10 @@
                         <!-- Menu Dropdown Laporan -->
                         <div id="laporan-dropdown" class="absolute hidden bg-white shadow-lg rounded-md mt-2 w-48 right-0 z-50 transform scale-95 opacity-0 transition-all duration-300">
                             @if(auth()->user()->role === 'admin' || auth()->user()->role === 'warehouse_manager')
-                            <a href="{{ route('laporan.stok') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:rounded-md">Laporan Stok</a>
+                            <a href="{{ route('laporan.stok.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:rounded-md">Laporan Stok</a>
                             @endif
                             @if(auth()->user()->role === 'admin')
-                            <a href="{{ route('laporan.aktivitas') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:rounded-md">Laporan Aktivitas</a>
+                            <a href="{{ route('laporan.aktivitas.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:rounded-md">Laporan Aktivitas</a>
                             @endif
                         </div>
                     </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProductAttribute;
+use App\Http\Controllers\ProductController;
 use App\Services\ProductAttributeService;
 use Illuminate\Http\Request;
 
@@ -42,7 +43,8 @@ class ProductAttributeController extends Controller
     // Menampilkan form edit atribut
     public function edit(ProductAttribute $productAttribute)
     {
-        return view('product_attributes.edit', compact('productAttribute'));
+        $products = Product::all(); 
+        return view('product_attributes.edit', compact('productAttribute', 'products'));
     }
 
     // Menyimpan hasil edit atribut

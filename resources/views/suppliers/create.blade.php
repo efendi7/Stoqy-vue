@@ -1,12 +1,6 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Supplier Baru</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen flex items-center justify-center bg-cover bg-center">
+@extends('layouts.app')
+@section('content')
+<div class="min-h-screen flex items-center justify-center bg-cover bg-center">
     <div class="bg-white bg-opacity-70 p-6 rounded-2xl shadow-xl w-full max-w-md animate-fadeIn">
         <h1 class="text-xl font-bold text-gray-800 text-center mb-6">Tambah Supplier Baru</h1>
         
@@ -53,6 +47,7 @@
             <button type="submit" 
                 class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105">Simpan</button>
         </form>
+        </div>
     </div>
 
     <style>
@@ -70,5 +65,5 @@
             animation: fadeIn 0.8s ease-out;
         }
     </style>
-</body>
-</html>
+
+@endsection

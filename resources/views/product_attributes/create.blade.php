@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Atribut Produk</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
+@extends('layouts.app')
+
+@section('content')
 <body class="min-h-screen flex items-center justify-center bg-cover bg-center">
     <div class="bg-white bg-opacity-70 p-6 rounded-2xl shadow-xl w-full max-w-md animate-fadeIn">
         <h1 class="text-xl font-bold text-gray-800 text-center mb-6">Tambah Atribut Produk</h1>
@@ -68,4 +63,4 @@
         }
     </style>
 </body>
-</html>
+
