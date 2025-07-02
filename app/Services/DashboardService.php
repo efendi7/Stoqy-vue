@@ -30,17 +30,14 @@ class DashboardService
 
         $viewData = [];
 
-        // Common data for all roles (e.g., for welcome message)
-        // Assuming you have a getUserRoleLabel method somewhere or in your UserService
         $viewData['userRoleLabel'] = $this->getUserRoleLabel($user->role);
         $viewData['userName'] = $user->name;
 
-        // Initialize dashboardView to a default in case of an unknown role
-        $dashboardView = 'dashboard.default'; // Ensure you have a generic default dashboard view
+        $dashboardView = 'dashboard.default'; 
 
         switch ($user->role) {
             case 'admin':
-                $dashboardView = 'dashboard.admin'; // Path to your admin dashboard Blade file
+                $dashboardView = 'dashboard.admin';
                 $viewData = array_merge($viewData, $this->getAdminDashboardData($request));
                 break;
             case 'warehouse_manager':

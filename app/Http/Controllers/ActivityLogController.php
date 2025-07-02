@@ -28,7 +28,15 @@ class ActivityLogController extends Controller
     public function deleteAllLogs()
     {
         $this->activityLogService->deleteAllActivityLogs();
-        return redirect()->route('laporan.aktivitas')->with('success', 'Semua log aktivitas berhasil dihapus.');
+        return redirect()->route('laporan.aktivitas.index')->with('success', 'Semua log aktivitas berhasil dihapus.');
 
     }
+
+    public function destroy($id)
+{
+    $this->activityLogService->deleteLogById($id);
+
+    return redirect()->route('laporan.aktivitas.index')->with('success', 'Log aktivitas berhasil dihapus.');
+}
+
 }

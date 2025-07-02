@@ -47,7 +47,7 @@
                     <td class="py-3 px-4 text-center border border-gray-300">
                         <div class="flex justify-center gap-2">
                             <!-- Approve Form -->
-                            <form action="{{ route('approve.role', $user->id) }}" method="POST">
+                            <form action="{{ route('admin.approve.role', $user->id) }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="approved_role" value="{{ $user->requested_role }}">
                                 <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600 transition-all">
@@ -56,7 +56,7 @@
                             </form>
 
                             <!-- Reject Form -->
-                            <form action="{{ route('reject.role', $user->id) }}" method="POST">
+                            <form action="{{ route('admin.reject.role', $user->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition-all">
                                     Tolak

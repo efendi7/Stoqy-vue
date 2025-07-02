@@ -22,6 +22,12 @@ class ActivityLogService
         return $this->activityLogRepository->getByUser($userId);
     }
 
+    public function deleteLogById($id): bool
+{
+    return $this->activityLogRepository->deleteById($id);
+}
+
+
     public function deleteAllActivityLogs(): bool
     {
         return $this->activityLogRepository->deleteAllLogs();

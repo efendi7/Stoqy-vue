@@ -39,4 +39,11 @@ class ActivityLogRepository implements ActivityLogRepositoryInterface
     {
         return (bool) $this->model->query()->delete();
     }
+
+    public function deleteById($id): bool
+{
+    $log = ActivityLog::findOrFail($id);
+    return $log->delete();
+}
+
 }

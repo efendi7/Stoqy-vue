@@ -10,6 +10,6 @@ interface ProductRepositoryInterface
     public function createProduct(array $data);
     public function updateProduct($id, array $data);
     public function deleteProduct($id);
-    public function getCategories();
-    public function getSuppliers();
+    // public function getCategories();
+    // public function getSuppliers();
 }

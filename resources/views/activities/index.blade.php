@@ -45,7 +45,7 @@
     {{-- Bagian Filter Periode --}}
     <div class="bg-white p-6 rounded-lg shadow-md mb-8">
         <h3 class="text-gray-600 text-sm font-medium mb-4">Filter Periode</h3>
-        <form id="filterForm" action="{{ route('laporan.aktivitas') }}" method="GET" class="flex flex-wrap gap-4">
+        <form id="filterForm" action="{{ route('laporan.aktivitas.index') }}" method="GET" class="flex flex-wrap gap-4">
             <div class="flex items-center">
                 <label for="tanggal_mulai" class="mr-2 text-sm">Dari</label>
                 <input type="date" id="tanggal_mulai" name="tanggal_mulai" value="{{ $startDate }}" 
@@ -67,7 +67,7 @@
 
     {{-- Tombol Hapus Semua Log --}}
     <div class="mb-4 flex justify-end">
-        <form action="{{ route('activities.delete-all') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus semua log aktivitas?');">
+        <form action="{{ route('laporan.aktivitas.delete-all') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus semua log aktivitas?');">
             @csrf
             @method('DELETE')
             <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 shadow-md">
