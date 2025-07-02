@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\User;
 use App\Models\Product;
+use App\Models\Category;
 use App\Models\Supplier;
 use App\Models\StockTransaction;
 use App\Models\ActivityLog;
@@ -11,6 +12,7 @@ use App\Interfaces\DashboardRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class DashboardRepository implements DashboardRepositoryInterface
 {
@@ -20,13 +22,8 @@ class DashboardRepository implements DashboardRepositoryInterface
     protected $transactionModel;
     protected $activityLogModel;
 
-    public function __construct(
-        User $userModel,
-        Product $productModel,
-        Supplier $supplierModel,
-        StockTransaction $transactionModel,
-        ActivityLog $activityLogModel
-    ) {
+    public function __construct(User $userModel, Product $productModel, Supplier $supplierModel, StockTransaction $transactionModel, ActivityLog $activityLogModel)
+    {
         $this->userModel = $userModel;
         $this->productModel = $productModel;
         $this->supplierModel = $supplierModel;
@@ -42,7 +39,6 @@ class DashboardRepository implements DashboardRepositoryInterface
 
     public function getActiveUsersCount(): int
     {
-        // Assuming 'is_logged_in' correctly reflects active users. You might also check 'last_activity_at'
         return $this->userModel->where('is_logged_in', true)->count();
     }
 
@@ -65,7 +61,6 @@ class DashboardRepository implements DashboardRepositoryInterface
 
     public function getAvailableStockCount(): int
     {
-        // Available means stock >= minimum_stock and stock > 0
         return $this->productModel->whereColumn('stock', '>=', 'minimum_stock')->where('stock', '>', 0)->count();
     }
 
@@ -74,98 +69,121 @@ class DashboardRepository implements DashboardRepositoryInterface
         return $this->productModel->where('stock', 0)->count();
     }
 
-    public function getTopProductsByStock(int $limit): Collection
+    public function getProductsForChart(string $categoryId = 'all', string $sortOrder = 'desc', int $limit = 10): Collection
     {
-        return $this->productModel->orderByDesc('stock')->limit($limit)->get(['id', 'name', 'stock']); // Added 'id' if needed
+        return $this->productModel
+            ->query()
+            // Terapkan filter kategori jika bukan 'all'
+            ->when($categoryId !== 'all', function ($query) use ($categoryId) {
+                return $query->where('category_id', $categoryId);
+            })
+            // PERBAIKAN: Tambahkan validasi untuk data yang valid
+            ->whereNotNull('name')
+            ->where('name', '!=', '')
+            ->whereNotNull('stock')
+            ->where('stock', '>=', 0)
+            ->orderBy('stock', $sortOrder)
+            ->limit($limit)
+            ->get(['id', 'name', 'stock'])
+            // PERBAIKAN: Filter hasil setelah query untuk validasi tambahan
+            ->filter(function ($product) {
+                return !empty(trim($product->name)) && is_numeric($product->stock) && $product->stock >= 0;
+            })
+            // PERBAIKAN: Reindex collection untuk memastikan index berurutan
+            ->values();
+    }
+
+    public function getAllCategories(): Collection
+    {
+        // Asumsi Anda memiliki model Category
+        return Category::orderBy('name')->get();
     }
 
     // Stock Transaction related methods
     public function getIncomingTransactionsCountInPeriod(Carbon $startDate, Carbon $endDate): int
     {
-        return $this->transactionModel->where('type', 'Masuk')
-            ->where('status', 'Diterima') // Only count accepted transactions
+        return $this->transactionModel
+            ->where('type', 'Masuk')
+            ->where('status', 'Diterima')
             ->whereBetween('transaction_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->count();
     }
 
     public function getOutgoingTransactionsCountInPeriod(Carbon $startDate, Carbon $endDate): int
     {
-        return $this->transactionModel->where('type', 'Keluar')
-            ->where('status', 'Diterima') // Only count accepted transactions
+        return $this->transactionModel
+            ->where('type', 'Keluar')
+            ->where('status', 'Diterima')
             ->whereBetween('transaction_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->count();
     }
 
-     public function getTransactionsCountByDate(string $date, string $type, string $status): int
+    /**
+     * [BARU & OPTIMAL] Mengambil data transaksi yang dikelompokkan per hari untuk chart.
+     * Ini menggantikan N+1 query dengan satu query tunggal yang efisien.
+     */
+    public function getTransactionCountsGroupedByDate(Carbon $startDate, Carbon $endDate): Collection
     {
-        return $this->transactionModel->whereDate('transaction_date', $date)
-            ->where('type', $type)
-            ->where('status', $status)
-            ->count();
+        return $this->transactionModel
+            ->select(DB::raw('DATE(transaction_date) as date'), DB::raw("SUM(CASE WHEN type = 'Masuk' THEN 1 ELSE 0 END) as incoming_count"), DB::raw("SUM(CASE WHEN type = 'Keluar' THEN 1 ELSE 0 END) as outgoing_count"))
+            ->where('status', 'Diterima')
+            ->whereBetween('transaction_date', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
     }
 
-    public function getTodayIncomingTransactionsCount(): int // <--- This implementation
+    public function getTodayIncomingTransactionsCount(): int
     {
-        return $this->getTransactionsCountByDate(Carbon::now()->format('Y-m-d'), 'Masuk', 'Diterima');
+        return $this->transactionModel->whereDate('transaction_date', Carbon::today())->where('type', 'Masuk')->where('status', 'Diterima')->count();
     }
 
     public function getTodayOutgoingTransactionsCount(): int
     {
-        return $this->getTransactionsCountByDate(Carbon::now()->format('Y-m-d'), 'Keluar', 'Diterima');
+        return $this->transactionModel->whereDate('transaction_date', Carbon::today())->where('type', 'Keluar')->where('status', 'Diterima')->count();
     }
 
-    // For Warehouse Manager: pending transactions that need manager approval (e.g., status 'Confirmed' by staff, awaiting manager 'Diterima'/'Ditolak')
     public function getManagerPendingIncomingTransactions(int $limit): Collection
     {
-        return $this->transactionModel->where('type', 'Masuk')
-            ->where('status', 'Confirmed') // Assuming 'Confirmed' means awaiting manager decision
-            ->with('product') // Eager load product for display
-            ->latest()
-            ->limit($limit)
-            ->get();
+        return $this->transactionModel->where('type', 'Masuk')->where('status', 'Confirmed')->with('product')->latest()->limit($limit)->get();
     }
 
     public function getManagerPendingOutgoingTransactions(int $limit): Collection
     {
-        return $this->transactionModel->where('type', 'Keluar')
-            ->where('status', 'Confirmed') // Assuming 'Confirmed' means awaiting manager decision
-            ->with('product') // Eager load product for display
-            ->latest()
-            ->limit($limit)
-            ->get();
+        return $this->transactionModel->where('type', 'Keluar')->where('status', 'Confirmed')->with('product')->latest()->limit($limit)->get();
     }
 
-      public function getIncomingTasksPaginated(int $perPage, int $page = 1, string $pageName = 'page'): LengthAwarePaginator
+    public function getIncomingTasksPaginated(int $perPage, int $page = 1, string $pageName = 'page'): LengthAwarePaginator
     {
-        return $this->transactionModel->where('type', 'Masuk')
-            ->where('status', 'Pending') // 'Pending' for staff to process
-            ->with('product') // Eager load product for display
+        return $this->transactionModel
+            ->where('type', 'Masuk')
+            ->where('status', 'Pending')
+            ->with('product')
             ->latest()
             ->paginate($perPage, ['*'], $pageName, $page);
     }
 
     public function getOutgoingTasksPaginated(int $perPage, int $page = 1, string $pageName = 'page'): LengthAwarePaginator
     {
-        return $this->transactionModel->where('type', 'Keluar')
-            ->where('status', 'Pending') // 'Pending' for staff to process
-            ->with('product') // Eager load product for display
+        return $this->transactionModel
+            ->where('type', 'Keluar')
+            ->where('status', 'Pending')
+            ->with('product')
             ->latest()
             ->paginate($perPage, ['*'], $pageName, $page);
     }
 
     public function getCompletedTasksPaginated(int $perPage, int $page = 1, string $pageName = 'page'): LengthAwarePaginator
     {
-        return $this->transactionModel->whereIn('status', ['Diterima', 'Ditolak', 'Confirmed'])
+        return $this->transactionModel
+            ->whereIn('status', ['Diterima', 'Ditolak', 'Confirmed'])
             ->latest()
-            ->with('product') // Eager load product for display
+            ->with('product')
             ->paginate($perPage, ['*'], $pageName, $page);
     }
 
-     public function getTodayActivitiesPaginated(int $perPage): LengthAwarePaginator
+    public function getTodayActivitiesPaginated(int $perPage): LengthAwarePaginator
     {
-        return $this->activityLogModel->with('user')
-            ->whereDate('created_at', Carbon::today())
-            ->orderByDesc('created_at')
-            ->paginate($perPage);
+        return $this->activityLogModel->with('user')->whereDate('created_at', Carbon::today())->orderByDesc('created_at')->paginate($perPage);
     }
 }

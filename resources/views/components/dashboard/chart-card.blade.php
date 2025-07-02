@@ -1,22 +1,28 @@
-@props(['id', 'title', 'icon', 'delay'])
+{{-- resources/views/components/dashboard/chart-card.blade.php --}}
+@props(['title', 'icon', 'hasData' => true, 'delay' => '0ms'])
 
-<div class="backdrop-blur-xl bg-gray-50/80 border border-gray-200/50 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-in-up
-            dark:bg-white/5 dark:border-white/10 dark:shadow-2xl dark:hover:shadow-3xl"
-    style="animation-delay: {{ $delay }}ms;">
-    <div class="flex items-center justify-between mb-6">
+<div class="backdrop-blur-xl bg-white/80 border border-gray-200/50 p-6 md:p-8 rounded-2xl shadow-lg animate-fade-in-up dark:bg-white/5 dark:border-white/10"
+    style="animation-delay: {{ $delay }};">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <h3 class="text-xl font-semibold text-gray-800 flex items-center dark:text-gray-100">
-            <span
-                class="text-2xl mr-3 group-hover:scale-110 transition-transform duration-300">{{ $icon }}</span>
-            {{ $title }}
+            <span class="text-2xl mr-3">{{ $icon }}</span>{{ $title }}
         </h3>
-        <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+        {{-- Slot untuk filter khusus chart --}}
+        @if (isset($filters))
+            {{ $filters }}
+        @endif
     </div>
-    <div class="relative">
-        <canvas id="{{ $id }}"
-            class="w-full h-64 transition-all duration-500 group-hover:scale-[1.02]"></canvas>
-        <div
-            class="absolute inset-0 bg-gradient-to-t from-blue-500/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg
-                     dark:from-blue-600/5">
+
+    @if ($hasData)
+        <div class="h-80">
+            {{ $slot }} {{-- Canvas chart akan ditempatkan di sini --}}
         </div>
-    </div>
+    @else
+        <div class="h-80 flex items-center justify-center text-center">
+            <div>
+                <div class="text-5xl mb-2 opacity-50">{{ $noDataIcon ?? '🚫' }}</div>
+                <p class="text-gray-600 dark:text-gray-400">{{ $noDataMessage ?? 'Tidak ada data untuk ditampilkan.' }}</p>
+            </div>
+        </div>
+    @endif
 </div>
