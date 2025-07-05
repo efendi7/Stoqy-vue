@@ -3,222 +3,302 @@
 @extends('layouts.app')
 
 @section('content')
-    <div
-        class="container mx-auto px-4 min-h-screen bg-cover bg-center mt-16
-                 dark:bg-gray-900 dark:text-gray-100">
-        <h1 class="text-3xl font-extrabold my-6 text-slate-600 text-center
-                   dark:text-gray-200">Daftar
-            Produk</h1>
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
+        {{-- Header Section --}}
+        <div class="border-b border-gray-200/60 dark:border-gray-800/60 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+            <div class="container mx-auto px-6 py-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Products</h1>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage your product inventory</p>
+                    </div>
 
-        {{-- Flash Messages --}}
-        @if (session('success'))
-            <div id="flash-success"
-                class="max-w-lg mx-auto bg-green-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
-            </div>
-        @endif
-        @if (session('error'))
-            <div id="flash-error"
-                class="max-w-lg mx-auto bg-red-500 text-white p-3 rounded-lg mb-6 flex justify-between items-center shadow-lg transition-opacity opacity-90 hover:opacity-100 backdrop-blur-md mt-4">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
-                    <span>{{ session('error') }}</span>
-                </div>
-                <button onclick="this.parentElement.remove()" class="text-white font-bold hover:text-gray-200">✖</button>
-            </div>
-        @endif
-
-        {{-- Form Pencarian (keep as is) --}}
-        <form method="GET" action="{{ route('products.index') }}" class="mb-6 flex gap-4">
-            <input type="text" id="search" name="search" value="{{ request('search') }}"
-                placeholder="Cari berdasarkan nama, SKU, atau kategori"
-                class="w-full border border-gray-300 rounded-lg py-2 px-4 text-black bg-white bg-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all
-                       dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400">
-            <select name="status"
-                class="border border-gray-300 rounded-lg py-2 px-4 bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all
-                           dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400">
-                <option value="">Semua Status</option>
-                <option value="Tersedia" {{ request('status') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
-                <option value="Warning" {{ request('status') == 'Warning' ? 'selected' : '' }}>Warning</option>
-                <option value="Habis" {{ request('status') == 'Habis' ? 'selected' : '' }}>Habis</option>
-            </select>
-            <button type="submit"
-                class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all
-                       dark:bg-blue-700 dark:hover:bg-blue-800">
-                Cari
-            </button>
-        </form>
-
-        @if (auth()->user()->role === 'admin')
-            <div class="flex flex-wrap gap-4 mb-6">
-                <button id="openAddProductModal" type="button"
-                    class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-all
-                   dark:bg-green-700 dark:hover:bg-green-800">
-                    + Tambah Produk
-                </button>
-
-                <a href="{{ route('categories.index') }}"
-                    class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-all
-                   dark:bg-blue-700 dark:hover:bg-blue-800">
-                    📂 Lihat Kategori Produk
-                </a>
-                <a href="{{ route('product_attributes.index') }}"
-                    class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-all
-                   dark:bg-purple-700 dark:hover:bg-purple-800">
-                    🔖 Lihat Atribut Produk
-                </a>
-                <a href="{{ route('products.import-export.index') }}"
-                    class="bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 transition-all
-                   dark:bg-yellow-700 dark:hover:bg-yellow-800">
-                    📥📤 Import/Export Produk
-                </a>
-            </div>
-        @endif
-
-        <div
-            class="overflow-x-auto rounded-lg shadow-lg bg-white bg-opacity-50
-                    dark:bg-gray-800 dark:bg-opacity-70 dark:shadow-xl dark:border-gray-700">
-            <table
-                class="min-w-full bg-white bg-opacity-50 rounded-lg shadow overflow-hidden border border-gray-300
-                          dark:bg-gray-800 dark:bg-opacity-70 dark:border-gray-700">
-                <thead
-                    class="bg-gray-800 bg-opacity-70 text-white
-                              dark:bg-gray-900 dark:bg-opacity-90 dark:text-gray-100">
-                    <tr>
-                        <th class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">Nama</th>
-                        <th class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">Gambar</th>
-                        <th class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">SKU</th>
-                        <th class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">Kategori</th>
-                        <th class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">Supplier</th>
-                        <th class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">Harga Beli</th>
-                        <th class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">Harga Jual</th>
-                        <th class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">Stok</th>
-                        <th class="py-3 px-4 border text-center border-gray-300 dark:border-gray-700">Stok Minimum</th>
-                        <th class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">Status</th>
-                        <th class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-300 dark:divide-gray-700">
-                    @if ($products->isEmpty())
-                        <tr>
-                            <td colspan="11"
-                                class="py-4 text-center text-gray-500 italic
-                                               dark:text-gray-400">
-                                Tidak ada produk untuk saat ini.
-                            </td>
-                        </tr>
-                    @else
-                        @foreach ($products as $product)
-                            <tr
-                                class="product-row hover:bg-gray-100 bg-white bg-opacity-50 transition-all
-                                   dark:bg-gray-800 dark:bg-opacity-50 dark:hover:bg-gray-700">
-                                <td
-                                    class="py-3 px-4 product-name border border-gray-300 text-center dark:border-gray-700 dark:text-gray-200">
-                                    {{ $product->name ?? 'N/A' }}</td>
-                                <td class="text-center border border-gray-300 dark:border-gray-700">
-                                    @if ($product->image)
-                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                                            class="h-8 w-8 object-cover mx-auto rounded">
-                                    @else
-                                        <img src="{{ asset('images/no-image.png') }}" alt=""
-                                            class="h-8 w-8 object-cover mx-auto opacity-30">
-                                    @endif
-                                </td>
-                                <td
-                                    class="py-3 px-4 text-center product-sku border border-gray-300 dark:border-gray-700 dark:text-gray-200">
-                                    {{ $product->sku ?? 'N/A' }}</td>
-                                <td
-                                    class="py-3 px-4 text-center product-category border border-gray-300 dark:border-gray-700 dark:text-gray-200">
-                                    {{ $product->category->name ?? 'N/A' }}</td>
-                                <td
-                                    class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700 dark:text-gray-200">
-                                    {{ $product->supplier->name ?? 'N/A' }}</td>
-                                <td class="py-3 px-4 border border-gray-300 dark:border-gray-700 dark:text-gray-200">
-                                    {{ number_format($product->purchase_price, 0, ',', '.') }}</td>
-                                <td class="py-3 px-4 border border-gray-300 dark:border-gray-700 dark:text-gray-200">
-                                    {{ number_format($product->sale_price, 0, ',', '.') }}</td>
-                                <td
-                                    class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700 dark:text-gray-200">
-                                    {{ $product->stock ?? 0 }}</td>
-                                <td
-                                    class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700 dark:text-gray-200">
-                                    {{ $product->minimum_stock ?? 0 }}</td>
-                                <td class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">
-                                    @php
-                                        $statusMap = [
-                                            'Habis' =>
-                                                'border-red-500 font-semibold text-red-500 dark:border-red-400 dark:text-red-400',
-                                            'Warning' =>
-                                                'border-yellow-500 font-semibold text-yellow-500 dark:border-yellow-400 dark:text-yellow-400',
-                                            'Tersedia' =>
-                                                'border-green-500 font-semibold text-green-500 dark:border-green-400 dark:text-green-400',
-                                        ];
-
-                                        if ($product->stock == 0) {
-                                            $status = 'Habis';
-                                        } elseif ($product->stock < $product->minimum_stock) {
-                                            $status = 'Warning';
-                                        } else {
-                                            $status = 'Tersedia';
-                                        }
-                                    @endphp
-
-                                    <span class="px-3 py-1 rounded-lg border {{ $statusMap[$status] }}">
-                                        {{ $status }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-4 text-center border border-gray-300 dark:border-gray-700">
-                                    {{-- Aksi sesuai role --}}
-                                    @if (auth()->user()->role === 'warehouse_manager')
-                                        <button onclick="openDetailModal({{ json_encode($product) }})"
-                                            class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 transition-all
-            dark:bg-blue-600 dark:hover:bg-blue-700">Detail</button>
-                                    @elseif(auth()->user()->role === 'admin')
-                                        <div class="flex space-x-2 justify-center">
-                                            <button onclick="openDetailModal({{ json_encode($product) }})"
-                                                class="bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 focus:outline-none text-sm
-                dark:bg-blue-600 dark:hover:bg-blue-700">Detail</button>
-                                            <form action="{{ route('products.destroy', $product->id) }}" method="POST"
-                                                onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 focus:outline-none text-sm
-                    dark:bg-red-600 dark:hover:bg-red-700">Hapus</button>
-                                            </form>
-                                        </div>
-                                    @elseif(auth()->user()->role === 'warehouse_staff')
-                                        <span class="text-gray-500 text-sm italic dark:text-gray-400">Aksi tidak
-                                            tersedia</span>
-                                    @endif
-                                </td>
-
-                            </tr>
-                        @endforeach
+                    @if (auth()->user()->role === 'admin')
+                        <div class="flex items-center space-x-3">
+                            <a href="{{ route('products.import-export.index') }}"
+                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10">
+                                    </path>
+                                </svg>
+                                Import/Export
+                            </a>
+                            <button id="openAddProductModal" type="button"
+                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all dark:bg-blue-700 dark:hover:bg-blue-800">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Add Product
+                            </button>
+                        </div>
                     @endif
-                </tbody>
-            </table>
+                </div>
+            </div>
         </div>
 
-        {{-- Pagination --}}
-        <div class="mt-6 flex justify-center">
-            {{ $products->appends(request()->input())->links('vendor.pagination.custom') }}
+        <div class="container mx-auto px-6 py-8">
+            {{-- Flash Messages --}}
+            @if (session('success'))
+                <div
+                    class="mb-6 rounded-lg bg-green-50 border border-green-200 p-4 dark:bg-green-900/20 dark:border-green-800">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="text-sm text-green-800 dark:text-green-200">{{ session('success') }}</p>
+                        <button onclick="this.parentElement.parentElement.remove()"
+                            class="ml-auto text-green-400 hover:text-green-600">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 dark:bg-red-900/20 dark:border-red-800">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="text-sm text-red-800 dark:text-red-200">{{ session('error') }}</p>
+                        <button onclick="this.parentElement.parentElement.remove()"
+                            class="ml-auto text-red-400 hover:text-red-600">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
+            {{-- Search and Filter (Versi Ringkas) --}}
+            <div class="mb-6">
+                <form method="GET" action="{{ route('products.index') }}"
+                    class="flex flex-col md:flex-row items-center gap-3 w-full">
+
+                    {{-- Kolom Pencarian --}}
+                    <div class="relative w-full md:flex-grow">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <input type="text" id="search" name="search" value="{{ request('search') }}"
+                            placeholder="Cari produk berdasarkan nama, SKU..." aria-label="Search products"
+                            class="block w-full h-11 pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    </div>
+
+                    {{-- Filter Status --}}
+                    <select name="status" id="status" aria-label="Status Filter"
+                        class="block w-full md:w-auto h-11 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <option value="">Semua Status</option>
+                        <option value="Tersedia" {{ request('status') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
+                        <option value="Warning" {{ request('status') == 'Warning' ? 'selected' : '' }}>Stok Rendah</option>
+                        <option value="Habis" {{ request('status') == 'Habis' ? 'selected' : '' }}>Habis</option>
+                    </select>
+
+                    {{-- Tombol Cari --}}
+                    <button type="submit"
+                        class="inline-flex items-center justify-center w-full md:w-auto px-5 h-11 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all">
+                        Cari
+                    </button>
+                </form>
+            </div>
+            {{-- Products Table --}}
+            <div
+                class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Product</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    SKU</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Category</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Supplier</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Price</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Stock</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Status</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            @if ($products->isEmpty())
+                                <tr>
+                                    <td colspan="8" class="px-6 py-12 text-center">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <svg class="w-12 h-12 text-gray-400 mb-4" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
+                                                </path>
+                                            </svg>
+                                            <p class="text-gray-500 dark:text-gray-400 text-sm">No products found</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @else
+                                @foreach ($products as $product)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="h-10 w-10 flex-shrink-0">
+                                                    @if ($product->image)
+                                                        <img src="{{ asset('storage/' . $product->image) }}"
+                                                            alt="{{ $product->name }}"
+                                                            class="h-10 w-10 rounded-lg object-cover">
+                                                    @else
+                                                        <div
+                                                            class="h-10 w-10 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                                            <svg class="h-5 w-5 text-gray-400" fill="none"
+                                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                                                </path>
+                                                            </svg>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {{ $product->name ?? 'N/A' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-white">
+                                                {{ $product->sku ?? 'N/A' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-white">
+                                                {{ $product->category->name ?? 'N/A' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-white">
+                                                {{ $product->supplier->name ?? 'N/A' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-white">
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">Buy:
+                                                    {{ number_format($product->purchase_price, 0, ',', '.') }}</div>
+                                                <div class="font-medium">Sell:
+                                                    {{ number_format($product->sale_price, 0, ',', '.') }}</div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-white">
+                                                <div class="font-medium">{{ $product->stock ?? 0 }}</div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">Min:
+                                                    {{ $product->minimum_stock ?? 0 }}</div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @php
+                                                if ($product->stock == 0) {
+                                                    $status = 'Out of Stock';
+                                                    $statusClass =
+                                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+                                                } elseif ($product->stock < $product->minimum_stock) {
+                                                    $status = 'Low Stock';
+                                                    $statusClass =
+                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+                                                } else {
+                                                    $status = 'Available';
+                                                    $statusClass =
+                                                        'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+                                                }
+                                            @endphp
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusClass }}">
+                                                {{ $status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            @if (auth()->user()->role === 'warehouse_manager')
+                                                <button onclick="openDetailModal({{ json_encode($product) }})"
+                                                    class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                                    View Details
+                                                </button>
+                                            @elseif(auth()->user()->role === 'admin')
+                                                <div class="flex items-center space-x-3">
+                                                    <button onclick="openDetailModal({{ json_encode($product) }})"
+                                                        class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                                        View
+                                                    </button>
+                                                    <form action="{{ route('products.destroy', $product->id) }}"
+                                                        method="POST"
+                                                        onsubmit="return confirm('Are you sure you want to delete this product?')"
+                                                        class="inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                                                            Delete
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            @elseif(auth()->user()->role === 'warehouse_staff')
+                                                <span class="text-gray-400 text-sm">No actions available</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
         </div>
     </div>
+    {{-- Wrapper Sticky BARU yang Menggabungkan Pagination dan Footer --}}
+    <div class="sticky bottom-0 z-10">
+        {{-- Bagian Pagination --}}
+        @if ($products->hasPages())
+            <div class="bg-gray-900/80 backdrop-blur-sm border-t border-gray-700 py-3">
+                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {{ $products->appends(request()->input())->links('vendor.pagination.custom') }}
+                </div>
+            </div>
+        @endif
 
-    {{-- MODAL STRUCTURE START --}}
+        {{-- Bagian Footer --}}
+        @include('partials.footer')
+    </div>
+    {{-- Modals --}}
     @include('products.create_modal')
-    @include('products.detail_modal') {{-- Ini adalah perubahan utama --}}
-    {{-- MODAL STRUCTURE END --}}
+    @include('products.detail_modal')
+
+
 
 @endsection
 

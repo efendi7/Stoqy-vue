@@ -95,7 +95,7 @@ Route::middleware(['auth'])->group(function () {
     // Manajemen Transaksi Stok
     Route::resource('stock_transactions', StockTransactionController::class)->except(['show']);
 
-    Route::prefix('stock-transactions')->name('transactions.')->group(function () {
+    Route::prefix('stock-transactions')->name('stock_transactions.')->group(function () {
         Route::get('/pending', [StockTransactionController::class, 'pendingIndex'])->name('pending');
         Route::get('/confirmed', [StockTransactionController::class, 'confirmedIndex'])->name('confirmed');
         Route::get('/incoming/{transaction}', [StockTransactionController::class, 'showIncomingDetail'])->name('incoming.detail');

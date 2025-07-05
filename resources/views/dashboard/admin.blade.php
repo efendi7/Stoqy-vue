@@ -2,8 +2,10 @@
 
 @section('content')
     <div
-        class="min-h-screen bg-white text-gray-900 p-4 relative overflow-hidden
-        dark:bg-gradient-to-br dark:from-[#0A0E15] dark:via-[#0F1419] dark:to-[#1A1F2E] dark:text-gray-100">
+        {{-- PERUBAHAN: Menambahkan gradient untuk light mode --}}
+        class="min-h-screen p-4 relative overflow-hidden text-gray-900 
+               bg-gradient-to-br from-white to-gray-100
+               dark:bg-gradient-to-br dark:from-[#0A0E15] dark:via-[#0F1419] dark:to-[#1A1F2E] dark:text-gray-100">
 
         {{-- 1. Panggil Komponen Animated Background --}}
         <x-dashboard.animated-background />
@@ -17,7 +19,7 @@
                 {{-- (Bagian form filter Anda bisa tetap di sini atau dijadikan komponen juga) --}}
                 @include('partials.dashboard-admin.period-filter') {{-- Asumsi ini partial --}}
 
-                {{-- 3. Panggil Komponen Metric Cards (Kode Anda sudah benar) --}}
+                {{-- 3. Panggil Komponen Metric Cards --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     @foreach ($metrics as $metric)
                         <x-dashboard.metric-card :label="$metric['label']" :value="$metric['value']" :gradient="$metric['gradient']" :border="$metric['border']"
@@ -48,8 +50,8 @@
 
 @push('scripts')
     {{-- 
-    "Jembatan Data" dari PHP (Server) ke JavaScript (Client).
---}}
+     "Jembatan Data" dari PHP (Server) ke JavaScript (Client).
+    --}}
     <script>
         // Safely pass data to JavaScript with fallbacks
         const stockLabels = @json($stockLabels ?? []);

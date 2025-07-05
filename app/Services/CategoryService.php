@@ -6,6 +6,7 @@ use App\Interfaces\CategoryRepositoryInterface;
 use App\Models\Category;
 use App\Models\ActivityLog;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Validator;
 
 class CategoryService
 {

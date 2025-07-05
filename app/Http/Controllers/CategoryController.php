@@ -1,7 +1,8 @@
 <?php
 namespace App\Http\Controllers;
-
+use App\Models\Category;
 use App\Services\CategoryService;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
@@ -26,16 +27,24 @@ class CategoryController extends Controller
         return view('categories.create');
     }
 
-    // Menyimpan kategori baru
-    public function store(Request $request)
-    {
-        $validated = $this->categoryService->validateCategoryData($request->all());
+  public function store(Request $request)
+{
+    // Validasi data (Anda sudah mendelegasikannya ke service, yang mana itu bagus)
+    // Kita tambahkan try-catch di sini untuk menangani ValidationException dari service Anda
+    try {
+        $validatedData = $this->categoryService->validateCategoryData($request->all());
 
-        $this->categoryService->createCategory($validated);
-
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        // Jika validasi gagal, kembalikan error sebagai JSON
+        return response()->json(['message' => $e->getMessage(), 'errors' => $e->errors()], 422);
     }
 
+    // Buat kategori baru
+    $this->categoryService->createCategory($validatedData);
+
+    // KEMBALIKAN RESPON SUKSES SEBAGAI JSON
+    return response()->json(['message' => 'Kategori berhasil ditambahkan!'], 201); // 201 = Created
+}
     // Menampilkan form edit kategori
     public function edit($categoryId)
     {
@@ -44,14 +53,32 @@ class CategoryController extends Controller
     }
 
     // Memperbarui kategori
-    public function update(Request $request, $categoryId)
+    public function update(Request $request, Category $category) // <-- Gunakan Route Model Binding (Category $category)
     {
-        $validated = $this->categoryService->validateCategoryData($request->all());
-        
-        $this->categoryService->updateCategory($categoryId, $validated);
+        // 1. Validasi data yang masuk
+        $validator = Validator::make($request->all(), [
+            // Gunakan ID kategori untuk mengabaikan namanya sendiri saat validasi unique
+            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'description' => 'nullable|string',
+        ]);
 
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui!');
+        // 2. Jika validasi gagal, kembalikan error dalam format JSON
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Data yang diberikan tidak valid.',
+                'errors' => $validator->errors()
+            ], 422); // Kode status 422 untuk error validasi
+        }
+
+        // 3. Jika validasi berhasil, update kategori
+        $category->update($validator->validated());
+
+        // 4. Kembalikan respon sukses dalam format JSON
+        return response()->json([
+            'message' => 'Kategori berhasil diperbarui!'
+        ], 200); // Kode status 200 OK
     }
+
 
     // Menghapus kategori
     public function destroy($categoryId)
