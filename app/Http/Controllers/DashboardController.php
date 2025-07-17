@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\DashboardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -19,13 +20,21 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        
-        
+        // DashboardService akan menggunakan $request untuk memfilter data,
+        // termasuk berdasarkan 'transaction_status' yang baru.
         $viewData = $this->dashboardService->getDashboardData($request, $user);
+        
+        // FIX: Pastikan prop untuk status yang dipilih dikirim kembali ke view.
+        // Ini memungkinkan dropdown untuk menampilkan state yang benar setelah filter.
+        $viewData['selectedTransactionStatus'] = $request->input('transaction_status', 'all');
 
-        $dashboardView = $viewData['dashboardView'];
-        unset($viewData['dashboardView']);
+        $component = match ($user->role) {
+            'admin' => 'Dashboard/AdminDashboard',
+            'warehouse_manager' => 'Dashboard/WarehouseManagerDashboard',
+            'warehouse_staff' => 'Dashboard/WarehouseStaffDashboard',
+            default => 'Dashboard/AdminDashboard',
+        };
 
-        return view($dashboardView, $viewData);
+        return Inertia::render($component, $viewData);
     }
 }

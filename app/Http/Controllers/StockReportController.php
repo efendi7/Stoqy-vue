@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Services\StockReportService;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class StockReportController extends Controller
 {
@@ -29,12 +30,15 @@ class StockReportController extends Controller
             'category' => $request->input('category'),
         ];
 
-        // Ambil data menggunakan StockReportService
-        $stok = $this->stockReportService->getStockReport($filters);
-        $categories = $this->stockReportService->getCategories();
+       $stok = $this->stockReportService->getStockReport($filters);
+    $categories = $this->stockReportService->getCategories();
 
-        // Pastikan semua variabel diteruskan ke view
-        return view('stock.index', compact('stok', 'categories', 'filters', 'startDate', 'endDate'));
+    // Gunakan Inertia::render untuk mengirim data sebagai props ke komponen Vue
+    return Inertia::render('StockReport/Index', [
+        'stok' => $stok,
+        'categories' => $categories,
+        'filters' => $filters, // Kirim filter kembali agar form tetap terisi
+    ]);
     }
 
     /**

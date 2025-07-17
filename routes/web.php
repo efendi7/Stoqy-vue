@@ -2,8 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
-    Auth\LoginController,
-    Auth\RegisterController,
     DashboardController,
     ProductController,
     CategoryController,
@@ -19,117 +17,117 @@ use App\Http\Controllers\{
     UserController,
     AdminController
 };
+use Inertia\Inertia;
 
-// --- Rute Autentikasi & Registrasi ---
-Route::middleware(['guest'])->group(function () {
-    Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('login', [LoginController::class, 'login']);
-    Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-    Route::post('register', [RegisterController::class, 'register']);
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Di sini Anda dapat mendaftarkan rute web untuk aplikasi Anda. Rute-rute
+| ini dimuat oleh RouteServiceProvider dalam sebuah grup yang
+| berisi grup middleware "web".
+|
+*/
+
+// --- Rute Halaman Depan ---
+Route::get('/', function () {
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => app()->version(),
+        'phpVersion' => PHP_VERSION,
+    ]);
 });
 
-// --- Rute Pengajuan & Persetujuan Role (Admin) ---
-Route::get('/request-role', [UserController::class, 'showRequestRolePage'])->name('request.role.page');
-Route::post('/request-role', [UserController::class, 'requestRole'])->name('request.role');
-
-// SEMENTARA: Ganti role:admin dengan pengecekan manual
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/role-requests', [AdminController::class, 'roleRequests'])->name('role-requests');
-    Route::post('/approve-role/{id}', [AdminController::class, 'approveRole'])->name('approve.role');
-    Route::post('/reject-role/{id}', [AdminController::class, 'rejectRole'])->name('reject.role');
-});
-
-// --- Rute Umum ---
-Route::get('/', fn() => view('welcome'));
-
-// --- Rute Yang Membutuhkan Autentikasi ---
-Route::middleware(['auth'])->group(function () {
-    Route::get('/api/categories', [ProductController::class, 'getCategories'])->name('api.categories');
-        Route::get('/api/suppliers', [ProductController::class, 'getSuppliers'])->name('api.suppliers');
+// --- Rute yang Membutuhkan Autentikasi ---
+Route::middleware(['auth', 'verified'])->group(function () {
+    
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
+ 
     // Profil Pengguna
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update'); // Menggunakan PATCH untuk update
+
+    // --- MANAJEMEN ---
 
     // Manajemen Pengguna
-    Route::resource('users', UserController::class);
-    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::get('/users/{user}/activity', [UserController::class, 'activity'])->name('users.activity');
-    
-    // SEMENTARA: Ganti role:admin dengan auth saja
-    Route::get('/activity-logs', [UserController::class, 'allActivities'])->name('activity.logs');
+    Route::resource('users', UserController::class);
 
-    // Manajemen Kategori
+    // Manajemen Produk & Atributnya
     Route::resource('categories', CategoryController::class);
-
-    // Manajemen Supplier
     Route::resource('suppliers', SupplierController::class);
-
-    // Manajemen Atribut Produk
     Route::resource('product_attributes', ProductAttributeController::class);
+    
+    Route::prefix('products')->name('products.')->controller(ProductController::class)->group(function() {
+        Route::get('/{product}/detail', 'showDetail')->name('showDetail');
+    });
+    Route::resource('products', ProductController::class);
 
-   Route::resource('products', ProductController::class)->except(['create']); // Keep except('create') if you don't need a dedicated create page
+    Route::prefix('products')->name('products.')->controller(ProductImportExportController::class)->group(function() {
+        Route::get('/import-export', 'index')->name('import-export.index');
+        Route::get('/export', 'export')->name('export');
+        Route::post('/import', 'import')->name('import');
+        Route::get('/export-template', 'exportTemplate')->name('export-template');
+    });
 
-    Route::prefix('products')->name('products.')->group(function () {
-        // These specific routes are implicitly covered by Route::resource above now,
-        // but it's okay to explicitly define them if you prefer.
-        // If you keep Route::resource('products', ProductController::class),
-        // then products.index, products.store, products.show will be created automatically.
-        // If you used ->except(['index', 'store', 'show']), then the explicit ones below are needed.
-        // Given your current setup:
-        // 'index', 'store', 'show' are defined *outside* the `except` for resource, so they're fine.
-        // Route::get('/', [ProductController::class, 'index'])->name('index'); // This is already covered by resource
-        // Route::post('/', [ProductController::class, 'store'])->name('store'); // This is already covered by resource
-        // Route::get('/{product}', [ProductController::class, 'show'])->where('product', '[0-9]+')->name('show'); // This is already covered by resource
+    // --- GUDANG (WAREHOUSE) ---
 
-        Route::get('/import-export', [ProductImportExportController::class, 'index'])->name('import-export.index');
-        Route::get('/export', [ProductImportExportController::class, 'export'])->name('export');
-        Route::post('/import', [ProductImportExportController::class, 'import'])->name('import');
-        Route::get('/export-template', [ProductImportExportController::class, 'exportTemplate'])->name('export-template');
+    // Transaksi Stok
+    // KONSOLIDASI: Semua view (pending, confirmed, dll) kini ditangani oleh method 'index' di controller.
+    Route::prefix('stock-transactions')->name('stock_transactions.')->controller(StockTransactionController::class)->group(function () {
+        Route::get('/pending', 'pending')->name('pending');
+        Route::get('/confirmed', 'confirmed')->name('confirmed');
+        Route::get('/incoming', 'index')->name('incoming.index');
+        Route::get('/outgoing', 'index')->name('outgoing.index');
         
+        // Rute untuk aksi spesifik
+        Route::patch('/{id}/confirm', 'confirm')->name('confirm');
+        Route::post('/{id}/add_note', 'addNote')->name('add_note');
+        Route::patch('/{id}/update_status', 'updateStatus')->name('update_status'); // Menggunakan PATCH untuk update parsial
+        Route::post('/set_minimum_stock', 'setMinimumStock')->name('set_minimum_stock');
+        
+        // Rute untuk detail (jika masih diperlukan)
+        Route::get('/incoming/{transaction}', 'showIncomingDetail')->name('incoming.detail');
+        Route::get('/outgoing/{transaction}', 'showOutgoingDetail')->name('outgoing.detail');
     });
-
-
-    // Manajemen Transaksi Stok
-    Route::resource('stock_transactions', StockTransactionController::class)->except(['show']);
-
-    Route::prefix('stock-transactions')->name('stock_transactions.')->group(function () {
-        Route::get('/pending', [StockTransactionController::class, 'pendingIndex'])->name('pending');
-        Route::get('/confirmed', [StockTransactionController::class, 'confirmedIndex'])->name('confirmed');
-        Route::get('/incoming/{transaction}', [StockTransactionController::class, 'showIncomingDetail'])->name('incoming.detail');
-        Route::get('/outgoing/{transaction}', [StockTransactionController::class, 'showOutgoingDetail'])->name('outgoing.detail');
-        Route::get('/incoming', [StockTransactionController::class, 'incomingIndex'])->name('incoming.index');
-        Route::get('/outgoing', [StockTransactionController::class, 'outgoingIndex'])->name('outgoing.index');
-        Route::post('/{id}/confirm', [StockTransactionController::class, 'confirm'])->name('confirm');
-        Route::post('/{id}/add_note', [StockTransactionController::class, 'addNote'])->name('add_note');
-        Route::post('/set_minimum_stock', [StockTransactionController::class, 'setMinimumStock'])->name('set_minimum_stock');
-        Route::post('/{id}/update_status', [StockTransactionController::class, 'updateStatus'])->name('update_status');
-    });
-
-    // Laporan Stok
-    Route::prefix('laporan/stok')->name('laporan.stok.')->group(function () {
-        Route::get('/', [StockReportController::class, 'index'])->name('index');
-        Route::get('/filter', [StockReportController::class, 'filter'])->name('filter');
-        Route::get('/export', [StockReportController::class, 'export'])->name('export');
-    });
-
-    // Laporan Aktivitas
-    Route::prefix('laporan/aktivitas')->name('laporan.aktivitas.')->group(function () {
-        Route::get('/', [ActivityLogController::class, 'index'])->name('index');
-        Route::delete('/{id}', [ActivityLogController::class, 'destroy'])->name('hapus');
-        Route::delete('/delete-all', [ActivityLogController::class, 'deleteAllLogs'])->name('delete-all');
-    });
+    Route::resource('stock_transactions', StockTransactionController::class);
 
     // Stock Opname
-    Route::resource('stock_opname', StockOpnameController::class)->only(['index', 'store']);
     Route::put('/stock_opname/updateStock/{id}', [StockOpnameController::class, 'updateStock'])->name('stock_opname.updateStock');
+    Route::resource('stock_opname', StockOpnameController::class)->only(['index', 'store']);
+    
+    // --- LAPORAN & LOG ---
 
-    // Pengaturan Aplikasi (SEMENTARA: tanpa role middleware)
+    // Laporan Stok
+    Route::prefix('laporan/stok')->name('laporan.stok.')->controller(StockReportController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/filter', 'filter')->name('filter');
+        Route::get('/export', 'export')->name('export');
+    });
+
+    // Log Aktivitas
+  Route::prefix('laporan/aktivitas')->name('laporan.aktivitas.')->controller(ActivityLogController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::delete('/delete-all', 'deleteAllLogs')->name('delete-all'); // Pindahkan ke atas
+    Route::delete('/{id}', 'destroy')->name('hapus');
+});
+    
+    // --- PENGATURAN & ADMIN ---
+
+    // Pengaturan Aplikasi
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/update', [SettingController::class, 'update'])->name('settings.update');
 
-    // Logout
-    Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+    // Rute Khusus Admin
+    Route::middleware('can:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/role-requests', [AdminController::class, 'roleRequests'])->name('role-requests');
+        Route::post('/approve-role/{id}', [AdminController::class, 'approveRole'])->name('approve.role');
+        Route::post('/reject-role/{id}', [AdminController::class, 'rejectRole'])->name('reject.role');
+    });
 });
+
+// --- Rute Otentikasi Bawaan Breeze ---
+require __DIR__.'/auth.php';

@@ -2,41 +2,62 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Services\ProfileService;
+use Illuminate\Support\Facades\Redirect;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ProfileController extends Controller
 {
-    protected $profileService;
-
-    public function __construct(ProfileService $profileService)
+    /**
+     * Display the user's profile form.
+     */
+    public function edit(Request $request): Response
     {
-        $this->profileService = $profileService;
+        return Inertia::render('Profile/Edit', [
+            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'status' => session('status'),
+        ]);
     }
 
-    public function edit()
+    /**
+     * Update the user's profile information.
+     */
+    public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $user = Auth::user();
-        return view('profile.edit', compact('user'));
+        $request->user()->fill($request->validated());
+
+        if ($request->user()->isDirty('email')) {
+            $request->user()->email_verified_at = null;
+        }
+
+        $request->user()->save();
+
+        return Redirect::route('profile.edit');
     }
 
-    public function update(Request $request)
+    /**
+     * Delete the user's account.
+     */
+    public function destroy(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'password' => ['required', 'current_password'],
         ]);
-    
-        $this->profileService->updateProfile($request->all());
-        
-        // Refresh the authenticated user
-        $request->session()->forget('_old_input');
-        Auth::user()->refresh();  // This refreshes the user model from the database
-        
-        // Or alternatively:
-        // Auth::login(Auth::user()->fresh());
-    
-        return redirect()->back()->with('success', 'Profil berhasil diperbarui.');
+
+        $user = $request->user();
+
+        Auth::logout();
+
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return Redirect::to('/');
     }
 }

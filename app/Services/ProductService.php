@@ -142,9 +142,9 @@ class ProductService
         return $deleted;
     }
 
-    public function searchProducts($search, $status): LengthAwarePaginator
+    public function searchProducts($search, $status, $perPage = 10): LengthAwarePaginator
     {
-        return $this->productRepository->searchProducts($search, $status);
+        return $this->productRepository->searchProducts($search, $status, $perPage);
     }
 
     public function logActivity($action, $product, $oldData = null)

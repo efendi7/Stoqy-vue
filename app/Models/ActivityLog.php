@@ -25,4 +25,20 @@ class ActivityLog extends Model
     {
         return $this->belongsTo(User::class,'user_id');
     }
+
+     /**
+     * Scope untuk aktivitas hari ini
+     */
+    public function scopeToday($query)
+    {
+        return $query->whereDate('created_at', now()->toDateString());
+    }
+
+    /**
+     * Scope untuk aktivitas dalam rentang tanggal
+     */
+    public function scopeDateRange($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('created_at', [$startDate, $endDate]);
+    }
 }

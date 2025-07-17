@@ -6,184 +6,232 @@ use App\Services\ProductService;
 use App\Services\UserService;
 use App\Services\StockTransactionService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use App\Models\ActivityLog;
+use Inertia\Inertia;
+use Inertia\Response;
 use App\Models\StockTransaction;
-
 
 class StockTransactionController extends Controller
 {
-    private $productService;
+    protected $productService;
     protected $stockTransactionService;
     protected $userService;
 
-    public function __construct(ProductService $productService, StockTransactionService $stockTransactionService, UserService $userService)
-    {
+    public function __construct(
+        ProductService $productService,
+        StockTransactionService $stockTransactionService,
+        UserService $userService
+    ) {
         $this->productService = $productService;
         $this->stockTransactionService = $stockTransactionService;
         $this->userService = $userService;
     }
 
-    public function index()
-    {
-        $userRole = auth()->user()->role;
+  public function index(Request $request): Response
+{
+    $userRole = auth()->user()->role;
+    $filters = $request->only('search', 'status', 'type');
+
+    return Inertia::render('StockTransactions/Index', [
+        'transactions' => $this->stockTransactionService->getAllTransactionsPaginated(10, $filters),
+        'userRole' => $userRole,
+        'filters' => $filters,
+        'pendingTransactions' => $this->stockTransactionService->getRecentPendingTransactions(3),
+        'confirmedTransactions' => $this->stockTransactionService->getRecentConfirmedTransactions(3),
+
+        // --- TAMBAHKAN DUA BARIS INI ---
+        'products' => $this->productService->getAllProducts(),
+        'users' => $this->userService->getAllUsers(),
+    ]);
+}
+
+    public function dashboard(): Response
+{
+    // Debug: Check what's in the database
+    $debug = $this->stockTransactionService->debugTransactions();
+    \Log::info('Debug transactions:', $debug);
+    
+    // Or dump to see immediately
+    // dd($debug);
+
+    return Inertia::render('Dashboard/Index', [
+        'incomingTaskStaff' => $this->stockTransactionService->getPendingTransactionsByType('Masuk'),
+        'outgoingTaskStaff' => $this->stockTransactionService->getPendingTransactionsByType('Keluar'),
+        'completeTaskStaff' => $this->stockTransactionService->getTransactionsByStatus('Confirmed'),
+        'transactions' => $this->stockTransactionService->getTransactionsByStatus('Diterima', 10),
         
-        $pendingTransactions = $this->stockTransactionService->getRecentPendingTransactions(3);
-        $confirmedTransactions = $this->stockTransactionService->getRecentConfirmedTransactions(3);
-        $transactions = $this->stockTransactionService->getAllTransactionsPaginated(10);
+        // Add debug data to view
+        'debug' => $debug
+    ]);
+}
 
-        return view('stock_transactions.index', compact(
-            'transactions', 'userRole', 'pendingTransactions', 'confirmedTransactions'
-        ));
-    }
-
-    public function dashboard()
-    {
-        $incomingTaskStaff = $this->stockTransactionService->getPendingTransactionsByType('Masuk');
-        $outgoingTaskStaff = $this->stockTransactionService->getPendingTransactionsByType('Keluar');
-        $completeTaskStaff = $this->stockTransactionService->getTransactionsByStatus('Confirmed');
-        $transactions = $this->stockTransactionService->getTransactionsByStatus('Diterima', 10);
-
-        return view('dashboard.index', compact(
-            'incomingTaskStaff', 'outgoingTaskStaff', 'completeTaskStaff', 'transactions'
-        ));
-    }
-
-    public function create()
+    public function create(): Response|\Illuminate\Http\RedirectResponse
     {
         $userRole = $this->userService->getUserRole(auth()->id());
+
         if ($userRole !== 'warehouse_manager') {
-            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk membuat transaksi stok.');
+            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin.');
         }
 
-        $products = $this->productService->getAllProducts();
-        $users = $this->userService->getAllUsers();
-
-        return view('stock_transactions.create', compact('products', 'users', 'userRole'));
+        return Inertia::render('StockTransactions/Create', [
+            'products' => $this->productService->getAllProducts(),
+            'users' => $this->userService->getAllUsers(),
+            'userRole' => $userRole,
+        ]);
     }
 
     public function store(Request $request)
     {
         $userRole = $this->userService->getUserRole(auth()->id());
+
         if ($userRole !== 'warehouse_manager') {
-            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk membuat transaksi stok.');
+            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin.');
         }
 
         $validatedData = $this->stockTransactionService->validateTransactionData($request->all());
-
-
         $transaction = $this->stockTransactionService->createStockTransaction($validatedData);
 
         if ($transaction) {
             $this->stockTransactionService->logTransactionActivity('Menambahkan', $transaction, auth()->id());
-            return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dicatat dan menunggu persetujuan!');
+            return redirect()->route('stock_transactions.index')->with('success', 'Transaksi berhasil dicatat!');
         }
 
-        return redirect()->route('stock_transactions.index')->with('error', 'Gagal mencatat transaksi stok.');
+        return redirect()->route('stock_transactions.index')->with('error', 'Gagal mencatat transaksi.');
     }
 
-    public function edit($id)
+    public function edit($id): Response|\Illuminate\Http\RedirectResponse
     {
         $userRole = $this->userService->getUserRole(auth()->id());
+
         if ($userRole !== 'warehouse_manager') {
-            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengedit transaksi stok.');
+            return redirect()->route('stock_transactions.index')->with('error', 'Tidak memiliki izin.');
         }
 
         $transaction = $this->stockTransactionService->getStockTransactionById($id);
         if (!$transaction) {
-            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi stok tidak ditemukan.');
+            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
         }
 
-        $products = $this->productService->getAllProducts();
-        $users = $this->userService->getAllUsers();
-
-        return view('stock_transactions.edit', compact('transaction', 'products', 'users', 'userRole'));
+        return Inertia::render('StockTransactions/Edit', [
+            'transaction' => $transaction,
+            'products' => $this->productService->getAllProducts(),
+            'users' => $this->userService->getAllUsers(),
+            'userRole' => $userRole,
+        ]);
     }
 
     public function update(Request $request, $id)
     {
         $userRole = $this->userService->getUserRole(auth()->id());
+
         if ($userRole !== 'warehouse_manager') {
-            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk memperbarui transaksi stok.');
+            return redirect()->route('stock_transactions.index')->with('error', 'Tidak memiliki izin.');
         }
 
         $validatedData = $this->stockTransactionService->validateTransactionData($request->all());
-
         $transaction = $this->stockTransactionService->getStockTransactionById($id);
+
         if (!$transaction) {
-            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi stok tidak ditemukan.');
+            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
         }
 
-        $isUpdated = $this->stockTransactionService->updateStockTransaction($id, $validatedData);
-        if ($isUpdated) {
+        if ($this->stockTransactionService->updateStockTransaction($id, $validatedData)) {
             $this->stockTransactionService->logTransactionActivity('Memperbarui', $transaction, auth()->id());
-            return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil diperbarui!');
+            return redirect()->route('stock_transactions.index')->with('success', 'Transaksi diperbarui.');
         }
 
-        return redirect()->route('stock_transactions.index')->with('error', 'Gagal memperbarui     transaksi stok.');
+        return redirect()->route('stock_transactions.index')->with('error', 'Gagal memperbarui transaksi.');
     }
 
     public function destroy($id)
     {
         $userRole = $this->userService->getUserRole(auth()->id());
+
         if ($userRole !== 'warehouse_manager') {
-            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk menghapus transaksi stok.');
+            return redirect()->route('stock_transactions.index')->with('error', 'Tidak memiliki izin.');
         }
 
         $transaction = $this->stockTransactionService->getStockTransactionById($id);
+
         if (!$transaction) {
-            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi stok tidak ditemukan.');
+            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan.');
         }
 
-        $isDeleted = $this->stockTransactionService->deleteStockTransaction($id);
-        if ($isDeleted) {
+        if ($this->stockTransactionService->deleteStockTransaction($id)) {
             $this->stockTransactionService->logTransactionActivity('Menghapus', $transaction, auth()->id());
-            return redirect()->route('stock_transactions.index')->with('success', 'Transaksi stok berhasil dihapus!');
+            return redirect()->route('stock_transactions.index')->with('success', 'Transaksi dihapus.');
         }
 
-        return redirect()->route('stock_transactions.index')->with('error', 'Gagal menghapus transaksi stok.');
+        return redirect()->route('stock_transactions.index')->with('error', 'Gagal menghapus transaksi.');
     }
 
     public function confirm($id)
     {
         $userRole = $this->userService->getUserRole(auth()->id());
+
         if ($userRole !== 'warehouse_staff') {
-            return redirect()->route('stock_transactions.index')->with('error', 'Anda tidak memiliki izin untuk mengonfirmasi transaksi stok.');
+            return redirect()->route('stock_transactions.index')->with('error', 'Tidak memiliki izin.');
         }
 
         $transaction = $this->stockTransactionService->getStockTransactionById($id);
+
         if (!$transaction || $transaction->status !== 'Pending') {
-            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak ditemukan atau sudah dikonfirmasi.');
+            return redirect()->route('stock_transactions.index')->with('error', 'Transaksi tidak valid.');
         }
 
-        $isConfirmed = $this->stockTransactionService->confirmTransaction($transaction);
-        if ($isConfirmed) {
+        if ($this->stockTransactionService->confirmTransaction($transaction)) {
             $this->stockTransactionService->logTransactionActivity('Mengonfirmasi', $transaction, auth()->id());
-            return redirect()->route('stock_transactions.index')->with('success', 'Transaksi berhasil dikonfirmasi!');
+            return redirect()->route('stock_transactions.index')->with('success', 'Transaksi dikonfirmasi.');
         }
 
-        return redirect()->route('stock_transactions.index')->with('error', 'Gagal mengonfirmasi transaksi.');
+        return redirect()->route('stock_transactions.index')->with('error', 'Gagal konfirmasi transaksi.');
     }
 
-    public function pending()
-    {
-    $pendingTransactions = StockTransaction::where('status', 'pending')->paginate(10);
-    return view('stock_transactions.pending', compact('pendingTransactions'));
-    }
+   public function pending(): Response
+{
+    // Tambahkan request untuk filter pencarian
+    $filters = request()->only('search');
 
-    public function confirmed()
-    {
-    $confirmedTransactions = StockTransaction::whereIn('status', ['confirmed', 'diterima', 'ditolak'])->paginate(10);
-    return view('stock_transactions.confirmed', compact('confirmedTransactions'));
-    }
+    return Inertia::render('StockTransactions/Pending', [
+        // Ganti nama prop dan buat query lebih efisien
+        'transactions' => StockTransaction::with(['product', 'user'])
+            ->where('status', 'pending')
+            ->filter($filters) // Asumsi Anda punya scope filter
+            ->paginate(10)
+            ->withQueryString(),
+        'filters' => $filters,
+    ]);
+}
+
+public function confirmed(): Response
+{
+    $filters = request()->only('search');
+
+    return Inertia::render('StockTransactions/Confirmed', [
+        // Ganti nama prop dan buat query lebih efisien
+        'transactions' => StockTransaction::with(['product', 'user'])
+            ->whereIn('status', ['Diterima', 'Ditolak']) // Sesuaikan status
+            ->filter($filters) // Asumsi Anda punya scope filter
+            ->paginate(10)
+            ->withQueryString(),
+        'filters' => $filters,
+    ]);
+}
 
     public function updateStatus(Request $request, $id)
     {
-    $transaction = StockTransaction::findOrFail($id);
-    $transaction->status = $request->input('status');
-    $transaction->save();
+        $transaction = StockTransaction::findOrFail($id);
+        $transaction->status = $request->input('status');
+        $transaction->save();
 
-    return redirect()->route('stock_transactions.index')->with('success', 'Status berhasil diperbarui');
+        return redirect()->route('stock_transactions.index')->with('success', 'Status berhasil diperbarui.');
+    }
+     public function show(StockTransaction $stockTransaction): Response
+    {
+        // Load related data to avoid extra database queries in the view
+        $stockTransaction->load('product', 'user', 'activities.user');
+
+        return Inertia::render('StockTransactions/Show', [
+            'transaction' => $stockTransaction,
+        ]);
     }
 }
-

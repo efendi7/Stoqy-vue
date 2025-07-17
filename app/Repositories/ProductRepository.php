@@ -63,7 +63,7 @@ class ProductRepository implements ProductRepositoryInterface
         return $product->update($data);
     }
 
-    // Hapus produk dan semua transaksi terkait
+  
     public function deleteProduct($id): bool
     {
         $product = Product::find($id);
@@ -78,36 +78,39 @@ class ProductRepository implements ProductRepositoryInterface
         return $product->delete();
     }
 
-    // Cari produk dengan filter pencarian dan status
-    public function searchProducts($search, $status): LengthAwarePaginator
+   
+    public function searchProducts($search, $status, $perPage): LengthAwarePaginator
     {
-        $query = Product::query()->with(['category', 'supplier']);
+        return Product::query()
+            ->with(['category', 'supplier']) // Eager load relasi untuk performa
+            
+            // Terapkan filter pencarian hanya jika $search tidak kosong
+            ->when($search, function ($query, $term) {
+                $query->where(function ($q) use ($term) {
+                    $q->where('name', 'like', "%{$term}%")
+                      ->orWhere('sku', 'like', "%{$term}%")
+                      ->orWhereHas('category', function ($catQuery) use ($term) {
+                          $catQuery->where('name', 'like', "%{$term}%");
+                      });
+                });
+            })
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%")
-                    ->orWhereHas('category', function ($cat) use ($search) {
-                        $cat->where('name', 'like', "%{$search}%");
-                    });
-            });
-        }
+            // Terapkan filter status hanya jika $status tidak kosong
+            ->when($status, function ($query, $statusValue) {
+                // Menggunakan 'match' (PHP 8.0+) untuk kode yang lebih bersih
+                $query->where(function ($q) use ($statusValue) {
+                    match ($statusValue) {
+                        'Habis' => $q->where('stock', '=', 0),
+                        'Warning' => $q->whereColumn('stock', '<', 'minimum_stock')->where('stock', '>', 0),
+                        'Tersedia' => $q->whereColumn('stock', '>=', 'minimum_stock'),
+                        default => null, // Abaikan jika status tidak dikenali
+                    };
+                });
+            })
 
-        if ($status) {
-            $query->where(function ($q) use ($status) {
-                if ($status === 'Habis') {
-                    $q->where('stock', 0);
-                } elseif ($status === 'Warning') {
-                    // Pastikan minimum_stock tidak null untuk perbandingan
-                    $q->whereColumn('stock', '<', 'minimum_stock')->where('stock', '>', 0);
-                } elseif ($status === 'Tersedia') {
-                    // Pastikan minimum_stock tidak null untuk perbandingan
-                    $q->whereColumn('stock', '>=', 'minimum_stock');
-                }
-            });
-        }
-
-        return $query->paginate(10)->appends(request()->query());
+            ->latest() // Urutkan dari yang terbaru
+            ->paginate($perPage) // <-- BUG DIPERBAIKI: Gunakan variabel $perPage
+            ->withQueryString(); // <-- Cara modern untuk mempertahankan query string
     }
 
     // Pindahkan getCategories dan getSuppliers ke repository mereka masing-masing

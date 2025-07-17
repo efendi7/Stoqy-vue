@@ -11,6 +11,8 @@ use Exception;
 
 class UserService
 {
+
+    
     public function getAllUsers()
     {
         $users = User::paginate(10);
@@ -19,6 +21,7 @@ class UserService
         }
         return $users;
     }
+    
 
     public function getUserById(int $id): User
     {
@@ -127,17 +130,42 @@ class UserService
         ]);
     }
 
-    public function getRoleLabel($role)
-    {
-        $roleLabels = [
-            'admin' => 'Admin',
-            'warehouse_manager' => 'Manajer Gudang',
-            'warehouse_staff' => 'Staff Gudang',
-        ];
+   public function getPaginatedUsers(array $filters = [])
+{
+    return User::query()
+        // ->with('role') // <-- HAPUS ATAU KOMENTARI BARIS INI
+        ->when($filters['search'] ?? null, function ($query, $search) {
+            $query->where(function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        })
+        ->latest()
+        ->paginate(15)
+        ->withQueryString()
+        ->through(fn ($user) => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'role_label' => $this->getRoleLabel($user->role),
+        ]);
+}
+/**
+ * Helper untuk mendapatkan label dari role.
+ * (Anda mungkin sudah punya ini, pastikan saja ada)
+ */
+public function getRoleLabel($role)
+{
+    $roles = [
+        'admin' => 'Admin',
+        'warehouse_manager' => 'Manajer Gudang',
+        'warehouse_staff' => 'Staff Gudang',
+        'pending' => 'Pending',
+    ];
 
-        return $roleLabels[$role] ?? 'Unknown';
-    }
-
+    return $roles[$role] ?? 'Tidak Diketahui';
+}
     public function getUserRole($userId)
     {
         $user = User::find($userId);

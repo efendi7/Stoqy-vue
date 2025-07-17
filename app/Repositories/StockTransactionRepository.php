@@ -6,11 +6,13 @@ use App\Models\StockTransaction;
 
 class StockTransactionRepository
 {
-    public function getAllTransactionsPaginated($perPage = 10)
-    {
-        return StockTransaction::with('product')->orderBy('created_at', 'desc')->paginate($perPage);
-    }
-
+   public function getAllTransactionsPaginated($perPage = 10)
+{
+    // Tambahkan 'user' di dalam array with()
+    return StockTransaction::with(['product', 'user']) 
+                            ->latest() // latest() adalah shorthand untuk orderBy('created_at', 'desc')
+                            ->paginate($perPage);
+}
     public function findById($id)
     {
         return StockTransaction::with('product')->find($id);

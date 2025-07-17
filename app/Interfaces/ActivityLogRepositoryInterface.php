@@ -9,4 +9,5 @@ interface ActivityLogRepositoryInterface
     public function getByUser(int $userId, int $perPage = 10): LengthAwarePaginator;
     public function deleteById($id): bool;
     public function deleteAllLogs(): bool;
+    public function getTodayActivities($limit = 10);
 }

@@ -1,90 +1,101 @@
 <?php
+
 namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreCategoryRequest; // Kita akan gunakan Form Request
+use App\Http\Requests\UpdateCategoryRequest; // Kita akan gunakan Form Request
 use App\Models\Category;
-use App\Services\CategoryService;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Inertia\Inertia; // <-- WAJIB: Import Inertia
+use Illuminate\Support\Facades\Redirect; // <-- WAJIB: Import Redirect
 
 class CategoryController extends Controller
 {
-    protected $categoryService;
-
-    public function __construct(CategoryService $categoryService)
+    /**
+     * Menampilkan daftar kategori dengan filter dan pagination.
+     */
+    public function index(Request $request)
     {
-        $this->categoryService = $categoryService;
-    }
+        // Ambil query pencarian dari request
+        $filters = $request->only('search');
 
-    // Menampilkan semua kategori
-    public function index()
-    {
-        $categories = $this->categoryService->getAllCategories();
-        return view('categories.index', compact('categories'));
-    }
+        $categories = Category::query()
+            ->when($request->input('search'), function ($query, $search) {
+                // Jika ada keyword pencarian, filter berdasarkan nama atau deskripsi
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+            })
+            ->latest() // Urutkan dari yang terbaru
+            ->paginate(10) // Gunakan pagination
+            ->withQueryString(); // Agar parameter filter tetap ada di link pagination
 
-    // Form tambah kategori
-    public function create()
-    {
-        return view('categories.create');
-    }
-
-  public function store(Request $request)
-{
-    // Validasi data (Anda sudah mendelegasikannya ke service, yang mana itu bagus)
-    // Kita tambahkan try-catch di sini untuk menangani ValidationException dari service Anda
-    try {
-        $validatedData = $this->categoryService->validateCategoryData($request->all());
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        // Jika validasi gagal, kembalikan error sebagai JSON
-        return response()->json(['message' => $e->getMessage(), 'errors' => $e->errors()], 422);
-    }
-
-    // Buat kategori baru
-    $this->categoryService->createCategory($validatedData);
-
-    // KEMBALIKAN RESPON SUKSES SEBAGAI JSON
-    return response()->json(['message' => 'Kategori berhasil ditambahkan!'], 201); // 201 = Created
-}
-    // Menampilkan form edit kategori
-    public function edit($categoryId)
-    {
-        $category = $this->categoryService->getCategoryById($categoryId);
-        return view('categories.edit', compact('category'));
-    }
-
-    // Memperbarui kategori
-    public function update(Request $request, Category $category) // <-- Gunakan Route Model Binding (Category $category)
-    {
-        // 1. Validasi data yang masuk
-        $validator = Validator::make($request->all(), [
-            // Gunakan ID kategori untuk mengabaikan namanya sendiri saat validasi unique
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-            'description' => 'nullable|string',
+        // Kembalikan komponen Vue dengan data yang diperlukan sebagai props
+        return Inertia::render('Categories/Index', [
+            'categories' => $categories,
+            'filters' => $filters,
+            'flash' => [
+                'success' => session('success'),
+            ],
         ]);
-
-        // 2. Jika validasi gagal, kembalikan error dalam format JSON
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $validator->errors()
-            ], 422); // Kode status 422 untuk error validasi
-        }
-
-        // 3. Jika validasi berhasil, update kategori
-        $category->update($validator->validated());
-
-        // 4. Kembalikan respon sukses dalam format JSON
-        return response()->json([
-            'message' => 'Kategori berhasil diperbarui!'
-        ], 200); // Kode status 200 OK
     }
 
-
-    // Menghapus kategori
-    public function destroy($categoryId)
+    /**
+     * Menyimpan kategori baru ke database.
+     * Menggunakan StoreCategoryRequest untuk validasi.
+     */
+    public function store(StoreCategoryRequest $request)
     {
-        $this->categoryService->deleteCategory($categoryId);
+        // Validasi sudah otomatis ditangani oleh StoreCategoryRequest.
+        // Jika validasi gagal, Inertia akan otomatis mengembalikan error ke form.
+        
+        // Ambil data yang sudah tervalidasi
+        $validatedData = $request->validated();
 
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil dihapus!');
+        // Buat kategori baru
+        Category::create($validatedData);
+
+        // Alihkan kembali ke halaman index dengan pesan sukses
+        return Redirect::route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
     }
+
+    /**
+     * Memperbarui kategori yang ada.
+     * Menggunakan UpdateCategoryRequest untuk validasi.
+     */
+    public function update(UpdateCategoryRequest $request, Category $category)
+    {
+        // Validasi sudah otomatis ditangani oleh UpdateCategoryRequest.
+        
+        // Ambil data yang sudah tervalidasi
+        $validatedData = $request->validated();
+        
+        // Update kategori
+        $category->update($validatedData);
+
+        // Alihkan kembali ke halaman index dengan pesan sukses
+        return Redirect::route('categories.index')->with('success', 'Kategori berhasil diperbarui!');
+    }
+
+    /**
+     * Menghapus kategori.
+     */
+    public function destroy(Category $category)
+    {
+        $category->delete();
+
+        // Alihkan kembali ke halaman index dengan pesan sukses
+        return Redirect::route('categories.index')->with('success', 'Kategori berhasil dihapus!');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | METHOD `create()` dan `edit()` TIDAK DIPERLUKAN
+    |--------------------------------------------------------------------------
+    |
+    | Dalam aplikasi Inertia/Vue modern, form untuk "tambah" dan "edit"
+    | biasanya ditampilkan dalam bentuk MODAL di halaman index utama.
+    | Oleh karena itu, kita tidak lagi memerlukan method terpisah untuk
+    | hanya menampilkan halaman form (return view/render).
+    |
+    */
 }

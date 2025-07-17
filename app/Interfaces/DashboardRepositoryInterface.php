@@ -27,13 +27,8 @@ interface DashboardRepositoryInterface
     public function getIncomingTransactionsCountInPeriod(Carbon $startDate, Carbon $endDate): int;
     public function getOutgoingTransactionsCountInPeriod(Carbon $startDate, Carbon $endDate): int;
 
-    // --- PERUBAHAN DI SINI ---
-    // Hapus atau ganti baris ini:
-    // public function getTransactionsCountByDate(string $date, string $type, string $status): int;
-
-    // Dengan baris ini:
-    public function getTransactionCountsGroupedByDate(Carbon $startDate, Carbon $endDate): Collection;
-    // --- AKHIR PERUBAHAN ---
+    // FIX: Menambahkan parameter $transactionStatus dengan nilai default 'all'
+    public function getTransactionCountsGroupedByDate(Carbon $startDate, Carbon $endDate, string $transactionStatus = 'all'): Collection;
 
     public function getTodayIncomingTransactionsCount(): int;
     public function getTodayOutgoingTransactionsCount(): int;

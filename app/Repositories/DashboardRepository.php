@@ -73,11 +73,9 @@ class DashboardRepository implements DashboardRepositoryInterface
     {
         return $this->productModel
             ->query()
-            // Terapkan filter kategori jika bukan 'all'
             ->when($categoryId !== 'all', function ($query) use ($categoryId) {
                 return $query->where('category_id', $categoryId);
             })
-            // PERBAIKAN: Tambahkan validasi untuk data yang valid
             ->whereNotNull('name')
             ->where('name', '!=', '')
             ->whereNotNull('stock')
@@ -85,17 +83,14 @@ class DashboardRepository implements DashboardRepositoryInterface
             ->orderBy('stock', $sortOrder)
             ->limit($limit)
             ->get(['id', 'name', 'stock'])
-            // PERBAIKAN: Filter hasil setelah query untuk validasi tambahan
             ->filter(function ($product) {
                 return !empty(trim($product->name)) && is_numeric($product->stock) && $product->stock >= 0;
             })
-            // PERBAIKAN: Reindex collection untuk memastikan index berurutan
             ->values();
     }
 
     public function getAllCategories(): Collection
     {
-        // Asumsi Anda memiliki model Category
         return Category::orderBy('name')->get();
     }
 
@@ -119,16 +114,24 @@ class DashboardRepository implements DashboardRepositoryInterface
     }
 
     /**
-     * [BARU & OPTIMAL] Mengambil data transaksi yang dikelompokkan per hari untuk chart.
-     * Ini menggantikan N+1 query dengan satu query tunggal yang efisien.
+     * [FIX] Mengambil data transaksi yang dikelompokkan per hari dengan filter status dinamis.
      */
-    public function getTransactionCountsGroupedByDate(Carbon $startDate, Carbon $endDate): Collection
+    public function getTransactionCountsGroupedByDate(Carbon $startDate, Carbon $endDate, string $transactionStatus = 'all'): Collection
     {
-        return $this->transactionModel
-            ->select(DB::raw('DATE(transaction_date) as date'), DB::raw("SUM(CASE WHEN type = 'Masuk' THEN 1 ELSE 0 END) as incoming_count"), DB::raw("SUM(CASE WHEN type = 'Keluar' THEN 1 ELSE 0 END) as outgoing_count"))
-            ->where('status', 'Diterima')
-            ->whereBetween('transaction_date', [$startDate->startOfDay(), $endDate->endOfDay()])
-            ->groupBy('date')
+        $query = $this->transactionModel
+            ->select(
+                DB::raw('DATE(transaction_date) as date'),
+                DB::raw("SUM(CASE WHEN type = 'Masuk' THEN 1 ELSE 0 END) as incoming_count"),
+                DB::raw("SUM(CASE WHEN type = 'Keluar' THEN 1 ELSE 0 END) as outgoing_count")
+            )
+            ->whereBetween('transaction_date', [$startDate->startOfDay(), $endDate->endOfDay()]);
+
+        // Terapkan filter status hanya jika nilainya bukan 'all'
+        $query->when($transactionStatus !== 'all', function ($q) use ($transactionStatus) {
+            return $q->where('status', $transactionStatus);
+        });
+
+        return $query->groupBy('date')
             ->orderBy('date', 'asc')
             ->get();
     }

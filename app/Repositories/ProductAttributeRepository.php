@@ -11,12 +11,26 @@ use Exception;
 class ProductAttributeRepository implements ProductAttributeRepositoryInterface
 {
     /**
-     * Get all product attributes with pagination.
+     * Get all product attributes with pagination and search functionality.
      */
-    public function getAllProductAttributes(): LengthAwarePaginator
+    public function getAllProductAttributes($search = null): LengthAwarePaginator
     {
-        return ProductAttribute::select('id', 'product_id', 'attribute_name', 'attribute_value')
-            ->paginate(10);
+        $query = ProductAttribute::with('product:id,name')
+            ->select('id', 'product_id', 'attribute_name', 'attribute_value');
+        
+        // Jika ada parameter search, lakukan pencarian
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('attribute_name', 'LIKE', "%{$search}%")
+                  ->orWhere('attribute_value', 'LIKE', "%{$search}%")
+                  ->orWhere('product_id', 'LIKE', "%{$search}%")
+                  ->orWhereHas('product', function($productQuery) use ($search) {
+                      $productQuery->where('name', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+        
+        return $query->paginate(10);
     }
 
     /**

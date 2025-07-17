@@ -9,10 +9,19 @@ use Exception;
 
 class SupplierService
 {
-    public function getAllSuppliers()
-    {
-        return Supplier::paginate(10);
+    public function getAllSuppliers(array $filters = [])
+{
+    $query = Supplier::query();
+
+    if (!empty($filters['search'])) {
+        $query->where(function ($q) use ($filters) {
+            $q->where('name', 'like', '%' . $filters['search'] . '%')
+              ->orWhere('contact', 'like', '%' . $filters['search'] . '%');
+        });
     }
+
+    return $query->latest()->paginate(10)->withQueryString();
+}
 
     public function getSupplierById($id)
     {

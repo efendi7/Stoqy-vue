@@ -1,11 +1,14 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Services\UserService;
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
@@ -16,63 +19,60 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-    // Menampilkan daftar pengguna
-    public function index()
+    public function index(Request $request): Response
     {
-        $users = $this->userService->getAllUsers();
-        return view('users.index', compact('users'));
+        $filters = $request->only('search');
+        $users = $this->userService->getPaginatedUsers($filters);
+
+        return Inertia::render('Users/Index', [
+            'users' => $users,
+            'filters' => $filters,
+        ]);
     }
 
-    // Menampilkan form tambah pengguna
+    public function store(StoreUserRequest $request)
+    {
+        $this->userService->createUser($request->validated());
+        return to_route('users.index')->with('success', 'Pengguna baru berhasil ditambahkan.');
+    }
+
+    public function update(UpdateUserRequest $request, User $user)
+    {
+        $this->userService->updateUser($user, $request->validated());
+        return to_route('users.index')->with('success', 'Data pengguna berhasil diperbarui.');
+    }
+
+    public function destroy(User $user)
+    {
+        $this->userService->deleteUser($user);
+        return to_route('users.index')->with('success', 'Pengguna berhasil dihapus.');
+    }
+
+    /**
+     * Mengambil data aktivitas pengguna untuk modal.
+     */
+    public function activity(Request $request, User $user)
+    {
+        // Ambil data aktivitas dari service
+        $activities = $this->userService->getUserActivities($user->id, 15);
+
+        // PERBAIKAN: Hanya kembalikan data 'activities' sebagai prop partial
+        // Ini akan mencegah error "Page not found"
+        return Inertia::render('Users/Index', [
+            'activities' => $activities,
+        ], ['only' => ['activities']]);
+    }
+
+    // Method create() dan edit() tidak lagi diperlukan untuk menampilkan view
+    // karena sudah ditangani oleh modal di frontend.
     public function create()
     {
-        return view('users.create');
+        return redirect()->route('users.index');
     }
 
-    // Menyimpan pengguna baru
-    public function store(Request $request)
+    public function edit(User $user)
     {
-        $user = $this->userService->createUser($request->all());
-
-        return $user 
-            ? redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.')
-            : redirect()->back()->with('error', 'Gagal menambahkan user.');
-    }
-
-    // Menampilkan form edit pengguna
-    public function edit($id)
-    {
-        $user = $this->userService->getUserById($id);
-        return view('users.edit', compact('user'));
-    }
-
-    // Memperbarui data pengguna
-    public function update(Request $request, $id)
-    {
-        $user = $this->userService->updateUser($id, $request->all());
-
-        return $user 
-            ? redirect()->route('users.index')->with('success', 'User berhasil diperbarui.')
-            : redirect()->back()->with('error', 'Gagal memperbarui user.');
-    }
-
-    // Menghapus pengguna
-    public function destroy($id)
-    {
-        $deleted = $this->userService->deleteUser($id);
-
-        return $deleted 
-            ? redirect()->route('users.index')->with('success', 'User berhasil dihapus.')
-            : redirect()->back()->with('error', 'Gagal menghapus user.');
-    }
-
-    // Menampilkan log aktivitas pengguna
-    public function activity($id)
-    {
-        $user = $this->userService->getUserById($id);
-        $activities = $this->userService->getUserActivities($id);
-
-        return view('users.activity', compact('user', 'activities'));
+        return redirect()->route('users.index');
     }
 
     // Menampilkan halaman pengajuan role untuk user

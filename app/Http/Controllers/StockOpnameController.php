@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request; 
 use App\Services\StockOpnameService; 
 use App\Models\Product;
+use Inertia\Inertia;
 
 class StockOpnameController extends Controller 
 {     
@@ -15,12 +16,25 @@ class StockOpnameController extends Controller
         $this->stockOpnameService = $stockOpnameService;
     }
 
-    public function index()
-    {
-        $products = Product::with('stockOpname')->paginate(10);
-        return view('stock_opname.index', compact('products'));
-    }
+public function index(Request $request)
+{
+    $filters = $request->only('search');
 
+    $products = Product::with('stockOpname')
+        ->when($request->input('search'), function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%");
+        })
+        ->paginate(10)
+        ->withQueryString();
+
+    return Inertia::render('StockOpname/Index', [
+        'products' => $products,
+        'filters' => $filters,
+        'flash' => [
+            'success' => session('success'),
+        ],
+    ]);
+}
     public function store(Request $request)
     {
         $this->stockOpnameService->storeStockOpname($request->all());

@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Services\SupplierService;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class SupplierController extends Controller
 {
@@ -13,68 +15,81 @@ class SupplierController extends Controller
         $this->supplierService = $supplierService;
     }
 
-    public function index()
-    {
-        $suppliers = $this->supplierService->getAllSuppliers();
+  public function index(Request $request)
+{
+    $filters = $request->only('search');
 
-        // Log aktivitas
-        $this->supplierService->logActivity('Melihat daftar supplier');
+    $suppliers = $this->supplierService->getAllSuppliers($filters);
 
-        return view('suppliers.index', compact('suppliers'));
-    }
+    // Log aktivitas
+    $this->supplierService->logActivity('Melihat daftar supplier');
 
-    public function create()
-    {
-        // Log aktivitas
-        $this->supplierService->logActivity('Mengakses formulir tambah supplier');
-
-        return view('suppliers.create');
-    }
+    return Inertia::render('Suppliers/Index', [
+        'suppliers' => $suppliers,
+        'filters' => $filters, // <-- tambah ini
+    ]);
+}
 
     public function store(Request $request)
     {
+        $request->validate([
+            'name'    => 'required|string|max:255',
+            'contact' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'email'   => 'nullable|email|max:255',
+        ]);
+
         $supplier = $this->supplierService->createSupplier($request->all());
 
-        return $supplier
-            ? redirect()->route('suppliers.index')->with('success', 'Supplier berhasil ditambahkan!')
-            : redirect()->back()->with('error', 'Gagal menambahkan supplier.');
-    }
-
-    public function edit($id)
-    {
-        $supplier = $this->supplierService->getSupplierById($id);
-
         // Log aktivitas
-        $this->supplierService->logActivity("Mengakses formulir edit supplier: {$supplier->name}");
+        $this->supplierService->logActivity("Menambahkan supplier: {$request->name}");
 
-        return view('suppliers.edit', compact('supplier'));
+        return redirect()->back()->with(
+            $supplier
+                ? ['success' => 'Supplier berhasil ditambahkan!']
+                : ['error' => 'Gagal menambahkan supplier.']
+        );
     }
 
     public function show($id)
     {
         $supplier = $this->supplierService->getSupplierById($id);
 
-        // Log aktivitas
         $this->supplierService->logActivity("Melihat detail supplier: {$supplier->name}");
 
-        return view('suppliers.show', compact('supplier'));
+        return response()->json($supplier);
     }
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'name'    => 'required|string|max:255',
+            'contact' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'email'   => 'nullable|email|max:255',
+        ]);
+
         $supplier = $this->supplierService->updateSupplier($id, $request->all());
 
-        return $supplier
-            ? redirect()->route('suppliers.index')->with('success', 'Supplier berhasil diperbarui!')
-            : redirect()->back()->with('error', 'Gagal memperbarui supplier.');
+        $this->supplierService->logActivity("Memperbarui supplier: {$request->name}");
+
+        return redirect()->back()->with(
+            $supplier
+                ? ['success' => 'Supplier berhasil diperbarui!']
+                : ['error' => 'Gagal memperbarui supplier.']
+        );
     }
 
     public function destroy($id)
     {
         $deleted = $this->supplierService->deleteSupplier($id);
 
-        return $deleted
-            ? redirect()->route('suppliers.index')->with('success', 'Supplier berhasil dihapus!')
-            : redirect()->back()->with('error', 'Gagal menghapus supplier.');
+        $this->supplierService->logActivity("Menghapus supplier ID: $id");
+
+        return redirect()->back()->with(
+            $deleted
+                ? ['success' => 'Supplier berhasil dihapus!']
+                : ['error' => 'Gagal menghapus supplier.']
+        );
     }
 }

@@ -1,11 +1,11 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\ProductAttribute;
-use App\Http\Controllers\ProductController;
 use App\Services\ProductAttributeService;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use App\Models\Product;
 
 class ProductAttributeController extends Controller
 {
@@ -16,52 +16,51 @@ class ProductAttributeController extends Controller
         $this->productAttributeService = $productAttributeService;
     }
 
-    // Menampilkan daftar atribut produk
-    public function index()
+    // Tampilkan halaman index Inertia
+    public function index(Request $request)
     {
-        $attributes = $this->productAttributeService->getAllProductAttributes();
-        return view('product_attributes.index', ['productAttributes' => $attributes]);
+        // Ambil parameter search dari request
+        $search = $request->get('search');
+        
+        // Pass search parameter ke service
+        $attributes = $this->productAttributeService->getAllProductAttributes($search);
+
+        return Inertia::render('ProductAttributes/Index', [
+            'productAttributes' => $attributes,
+            'products' => Product::select('id', 'name')->get(),
+            'flash' => [
+                'success' => session('success'),
+            ],
+            // Pass filters kembali ke frontend
+            'filters' => [
+                'search' => $search,
+            ],
+        ]);
     }
 
-    // Menampilkan form untuk membuat atribut baru
-    public function create()
-    {
-        $products = $this->productAttributeService->getAllProducts();
-        return view('product_attributes.create', compact('products'));
-    }
-
-    // Menyimpan atribut baru
+    // Store data atribut baru
     public function store(Request $request)
     {
         $validatedData = $this->productAttributeService->validateProductAttributeData($request->all());
-
         $this->productAttributeService->createProductAttribute($validatedData);
 
-        return redirect()->route('product_attributes.index')->with('success', 'Product attribute successfully added!');
+        return redirect()->back()->with('success', 'Atribut berhasil ditambahkan.');
     }
 
-    // Menampilkan form edit atribut
-    public function edit(ProductAttribute $productAttribute)
-    {
-        $products = Product::all(); 
-        return view('product_attributes.edit', compact('productAttribute', 'products'));
-    }
-
-    // Menyimpan hasil edit atribut
+    // Update atribut
     public function update(Request $request, ProductAttribute $productAttribute)
     {
         $validatedData = $this->productAttributeService->validateProductAttributeData($request->all());
-
         $this->productAttributeService->updateProductAttribute($productAttribute->id, $validatedData);
 
-        return redirect()->route('product_attributes.index')->with('success', 'Product attribute successfully updated!');
+        return redirect()->back()->with('success', 'Atribut berhasil diperbarui.');
     }
 
-    // Menghapus atribut produk
+    // Hapus atribut
     public function destroy(ProductAttribute $productAttribute)
     {
         $this->productAttributeService->deleteProductAttribute($productAttribute->id);
 
-        return redirect()->route('product_attributes.index')->with('success', 'Product attribute successfully deleted!');
+        return redirect()->back()->with('success', 'Atribut berhasil dihapus.');
     }
 }
